@@ -13,7 +13,7 @@ const Navbar = ({ onOpenAuth }) => {
   const [isDark, setIsDark] = useState(false);
 
   // Définir les pages qui ont un "Hero sombre" en haut de page
-  const hasDarkHero = pathname === '/' || pathname === '/interclubs' || pathname === '/actualites';
+  const hasDarkHero = pathname === '/' || pathname === '/interclubs' || pathname === '/actualites' || pathname === '/presentation';
 
   const navLinks = [
     { name: 'Accueil', href: '/' },
@@ -22,9 +22,9 @@ const Navbar = ({ onOpenAuth }) => {
       href: '#',
       dropdown: [
         { name: 'Présentation', href: '/presentation' },
-        { name: 'nos créneaux', href: '/creneaux' },
-        { name: 'Le Bureau', href: '/bureau' },
         { name: 'Actualités', href: '/actualites' },
+        { name: 'Les Jeunes', href: '/jeunes' },
+        { name: 'nos créneaux', href: '/creneaux' },
         { name: 'Interclubs', href: '/interclubs' },
       ]
     },
@@ -37,6 +37,19 @@ const Navbar = ({ onOpenAuth }) => {
         { name: 'Calendrier', href: '/calendrier' },
       ]
     },
+
+    { 
+      name: 'Vie du Club', 
+      href: '#', 
+      dropdown: [
+        { name: 'Le bureau', href: '/bureau' },
+        { name: 'Communication', href: '/communication' },
+        { name: 'Nos entraîneurs', href: '/entraineurs' },
+        { name: 'Les Bénévoles', href: '/bénévoles' },
+
+      ]
+    },
+
     { name: 'Contact', href: '/contact' },
   ]
 

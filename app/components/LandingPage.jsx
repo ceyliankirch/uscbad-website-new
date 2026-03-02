@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Play, ArrowRight, Trophy, Calendar, ChevronRight, TrendingUp, MapPin, Instagram, Facebook, Mail, Users, Activity, Phone } from 'lucide-react';
+import { Home, Play, ArrowRight, Trophy, Calendar, ChevronRight, TrendingUp, MapPin, Instagram, Facebook, Mail, Users, Activity, Phone, Star } from 'lucide-react';
 
 const LandingPage = () => {
   // --- NOUVEAU : GESTION DU LIVE SCORE ---
@@ -50,63 +50,101 @@ const LandingPage = () => {
       </style>
 
       {/* 1. HERO SECTION */}
-      <section className="relative w-full h-[100svh] lg:h-[1000px] min-h-[600px] flex items-center overflow-hidden">
+      <section className="relative w-full h-[80svh] lg:h-[100svh] min-h-[600px] flex items-end lg:items-center pb-36 lg:pb-0 overflow-hidden">
         <div className="absolute inset-0 w-full h-full">
-          <img 
-            src="/banner-uscbad.webp" 
-            alt="US Créteil Badminton N1" 
-            className="w-full h-full object-cover object-center"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#081031]/80 via-black/20 to-transparent lg:hidden" />
+          
+          {/* BALISE PICTURE POUR LES IMAGES RESPONSIVES */}
+          <picture>
+            <source media="(min-aspect-ratio: 21/9)" srcSet="/assets/bannière-uscbad-21-9.jpg" />
+            <source media="(max-aspect-ratio: 1/1), (max-width: 768px)" srcSet="/assets/bannière-uscbad-9-16.jpg" />
+            <img 
+              src="/assets/bannière-uscbad-16-9.jpg" 
+              alt="US Créteil Badminton N1" 
+              className="w-full h-full object-cover object-right"
+            />
+          </picture>
+
+          {/* Gradient plus prononcé en bas sur mobile pour la lisibilité */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#081031] via-[#081031]/60 to-transparent lg:hidden" />
         </div>
 
-        <div className="relative z-10 w-full max-w-[2000px] mx-auto px-6 lg:px-20 mt-12 lg:mt-0">
+        {/* mt-auto sur mobile pour descendre le contenu, mt-0 sur desktop */}
+        <div className="relative z-10 w-full max-w-[2000px] mx-auto px-6 lg:px-20 mt-auto lg:mt-0">
           <div className="max-w-6xl space-y-4 lg:space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0EE2E2]/10 border border-[#0EE2E2]/20 backdrop-blur-md">
-              <span className="text-[10px] lg:text-[14px] font-[900] uppercase text-[#0EE2E2]">Union Sportive de Créteil</span>
+            
+            {/* EN-TÊTE : BADGE + RÉSEAUX SOCIAUX (Alignés sur mobile et desktop) */}
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0EE2E2]/10 border border-[#0EE2E2]/20 backdrop-blur-md">
+                <span className="text-[10px] lg:text-[14px] font-[900] uppercase text-[#0EE2E2]">Union Sportive de Créteil</span>
+              </div>
+              
+              {/* Nouveaux petits boutons ronds */}
+              <div className="flex gap-2">
+                <MiniSocialBtn icon={<Instagram size={14} />} href="#" />
+                <MiniSocialBtn icon={<Facebook size={14} fill="currentColor" />} href="#" />
+                <MiniSocialBtn icon={<Mail size={14} />} href="#" />
+              </div>
             </div>
             
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-[900] leading-[0.9] tracking-tighter italic uppercase text-white drop-shadow-lg">
-              Rejoignez-Nous !
+            {/* TITRE */}
+            <h1 className="text-4xl md:text-5xl lg:text-7xl font-[900] leading-[0.9] tracking-tighter italic uppercase text-white drop-shadow-lg">
+              Rejoignez Nous !
             </h1>
             
-            <p className="text-sm md:text-lg lg:text-xl text-[#0EE2E2] font-bold leading-relaxed italic max-w-2xl drop-shadow-md">
+            {/* DESCRIPTION (Légèrement plus petite sur mobile) */}
+            <p className="text-xs md:text-lg lg:text-xl text-[#0EE2E2] font-bold leading-relaxed italic max-w-2xl drop-shadow-md">
               Rejoignez le club dynamique dont l'équipe première évolue en Nationale 1. Rassemblant des joueurs de tous niveaux, du loisir à la compétition, et offrant une école de jeunes labellisée.
             </p>
 
-            <div className="flex flex-col md:flex-row items-center gap-3 lg:gap-4 pt-4 lg:pt-8 w-full md:w-auto">
-              <button className="w-full md:w-auto bg-[#081031] dark:bg-[#0EE2E2] text-white dark:text-[#081031] px-8 py-4 lg:px-10 lg:py-5 rounded-2xl font-[900] italic text-base lg:text-xl shadow-2xl hover:scale-[1.02] transition-transform uppercase tracking-normal hover:bg-[#0EE2E2] hover:text-[#081031] dark:hover:bg-[#081031] dark:hover:text-white">
-                REJOINDRE LE CLUB
-              </button>
+            {/* BOUTONS D'ACTION (En ligne sur mobile) */}
+            <div className="flex flex-row items-center gap-2 lg:gap-4 pt-4 lg:pt-8 w-full md:w-auto">
               
-              <button className="w-full md:w-auto flex items-center justify-center gap-4 bg-white/20 lg:bg-white/60 dark:bg-white/10 backdrop-blur-md p-2 pr-6 lg:pr-8 rounded-2xl border border-white/20 lg:border-slate-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/20 transition-all shadow-sm group">
-                <div className="bg-[#0EE2E2] p-3 lg:p-4 rounded-xl text-[#081031] group-hover:bg-[#081031] group-hover:text-[#0EE2E2] transition-colors">
-                  <Play fill="currentColor" size={20} />
+              {/* Bouton Principal : S'INSCRIRE (Affiné, Bleu foncé) */}
+              <a 
+                href="#inscriptions" 
+                className="flex-1 md:flex-none flex items-center justify-center bg-[#0065FF] text-white px-4 py-3 lg:px-8 lg:py-4 rounded-xl lg:rounded-2xl font-[900] italic text-xs lg:text-lg shadow-2xl hover:scale-[1.02] transition-transform uppercase tracking-normal hover:bg-[#0EE2E2] hover:text-[#081031]"
+              >
+                S'INSCRIRE
+              </a>
+              
+              {/* Bouton Secondaire : LE CLUB (Affiné, Icône Maison) */}
+              <a 
+                href="/presentation" 
+                className="flex-1 md:flex-none flex items-center justify-center gap-2 lg:gap-4 bg-white/10 lg:bg-white/60 dark:bg-white/10 backdrop-blur-md p-1 lg:p-1.5 pr-4 lg:pr-6 rounded-xl lg:rounded-2xl border border-white/20 lg:border-slate-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/20 transition-all shadow-sm group"
+              >
+                <div className="bg-[#0EE2E2] p-2 lg:p-3 rounded-lg lg:rounded-xl text-[#081031] group-hover:bg-[#081031] group-hover:text-[#0EE2E2] transition-colors">
+                  <Home size={16} className="lg:w-5 lg:h-5" />
                 </div>
-                <span className="font-bold text-[11px] uppercase tracking-normal text-white lg:text-[#081031] dark:lg:text-white group-hover:text-[#081031] dark:group-hover:text-white">Voir le Teaser</span>
-              </button>
-
-              <div className="hidden lg:block w-px h-12 bg-white/50 mx-2"></div>
-
-              <div className="flex gap-3 mt-4 md:mt-0 w-full justify-center md:w-auto">
-                <SocialBtn icon={<Instagram size={18} />} href="#" />
-                <SocialBtn icon={<Facebook size={18} fill="currentColor" />} href="#" />
-                <SocialBtn icon={<Mail size={18} />} href="#" />
-              </div>
+                <span className="font-bold text-[10px] lg:text-[12px] uppercase tracking-normal text-white lg:text-[#081031] dark:lg:text-white group-hover:text-[#081031] dark:group-hover:text-white">
+                  Le Club
+                </span>
+              </a>
+              
             </div>
+
           </div>
         </div>
       </section>
 
       {/* 2. SCORE NATIONALE 1 (DYNAMIQUE MONGODB) */}
-      <section className="relative z-20 -mt-12 lg:-mt-16 max-w-[1600px] mx-auto">
-        <div className="w-full overflow-x-auto hide-scrollbar pb-8 pt-8 px-6 lg:px-8 snap-x snap-mandatory">
+      <section className="relative z-20 -mt-28 md:-mt-24 lg:-mt-20 max-w-[1600px] mx-auto px-4 md:px-6 lg:px-8">
+        <div className="w-full overflow-x-auto hide-scrollbar pb-8 pt-8 snap-x snap-mandatory">
           
           {/* LE SCOREBOARD DYNAMIQUE */}
-          <div className="relative font-['Montserrat'] flex shadow-2xl dark:shadow-none group min-w-[1000px] h-[100px] md:h-[120px] lg:h-[140px] snap-center rounded-2xl overflow-hidden bg-white dark:bg-slate-900">
+          <div className="relative font-['Montserrat'] shadow-xl dark:shadow-none group rounded-2xl overflow-hidden bg-white dark:bg-slate-900 w-full max-w-sm md:max-w-[1000px] lg:max-w-[1200px] mx-auto flex flex-col md:flex-row h-[172px] md:h-[120px] lg:h-[140px] shrink-0">
             
-            {/* Badges du haut (Division & Date) */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 flex items-center z-30 shadow-md">
+            {/* --- BADGES DU HAUT / HEADER (Version Mobile Uniquement) --- */}
+            <div className="md:hidden flex w-full h-[32px] shrink-0">
+              <div className="flex-1 bg-[#0065FF] text-white px-4 flex items-center justify-center font-[900] uppercase text-[9px] tracking-widest italic text-center">
+                {liveScore.date}
+              </div>
+              <div className="flex-1 bg-[#0EE2E2] text-[#081031] px-4 flex items-center justify-center font-[900] uppercase text-[9px] tracking-widest italic text-center">
+                {liveScore.division}
+              </div>
+            </div>
+
+            {/* --- BADGES DU HAUT (Version Desktop : Flottant au centre) --- */}
+            <div className="hidden md:flex absolute top-0 left-1/2 -translate-x-1/2 items-center z-30 shadow-md">
               <div className="bg-[#0EE2E2] text-[#081031] px-4 lg:px-6 py-1.5 font-[900] uppercase text-[9px] lg:text-[11px] tracking-tighter italic">
                 {liveScore.division}
               </div>
@@ -115,13 +153,17 @@ const LandingPage = () => {
               </div>
             </div>
 
-            {/* --- CÔTÉ GAUCHE : DOMICILE --- */}
-            <div className="flex-[3] h-full flex items-center relative min-w-0">
+            {/* ==========================================================
+                BLOC GAUCHE (Desktop) / BLOC HAUT (Mobile) : DOMICILE
+                ========================================================== */}
+            <div className="flex-[3] flex items-center relative min-w-0 h-[70px] md:h-full shrink-0">
+              
+              {/* Zone Logo */}
               <div 
-                className="w-[90px] lg:w-[140px] h-full bg-white dark:bg-slate-900 flex items-center justify-center shrink-0 border-l-[6px] lg:border-l-[10px]" 
+                className="w-[80px] md:w-[140px] h-full bg-white dark:bg-slate-900 flex items-center justify-center shrink-0 border-l-[6px] lg:border-l-[10px]" 
                 style={{ borderColor: liveScore.homeColor || '#0EE2E2' }}
               >
-                <div className="w-14 h-14 lg:w-20 lg:h-20 rounded-full border border-slate-100 dark:border-slate-800 flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-800/50 shadow-inner">
+                <div className="w-12 h-12 lg:w-20 lg:h-20 rounded-full border border-slate-100 dark:border-slate-800 flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-800/50 shadow-inner">
                   {liveScore.homeLogo ? (
                     <img src={liveScore.homeLogo} alt="Logo Domicile" className="w-full h-full object-contain p-2 lg:p-3" />
                   ) : (
@@ -130,47 +172,42 @@ const LandingPage = () => {
                 </div>
               </div>
 
+              {/* Bandeau Nom Domicile */}
               <div 
                 style={{ backgroundColor: liveScore.homeColor || '#0EE2E2' }} 
-                className="flex-1 h-full flex flex-col justify-center items-end pr-6 lg:pr-10 transition-colors duration-500 min-w-0"
+                className="flex-1 h-full flex flex-col justify-center items-end pr-[80px] md:pr-10 transition-colors duration-500 min-w-0 border-b border-black/10 md:border-none"
               >
-                <h3 className="text-2xl md:text-4xl lg:text-5xl font-[900] uppercase text-[#081031] leading-none tracking-tighter italic truncate w-full text-right">
+                <h3 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-[900] uppercase text-[#081031] leading-none tracking-tighter italic truncate w-full text-right">
                   {liveScore.homeTeam}
                 </h3>
-                <span className="bg-[#081031] text-white px-2 lg:px-3 py-1 font-[900] uppercase text-[8px] lg:text-[10px] tracking-[0.2em] mt-2 italic">
+                <span className="bg-[#081031] text-white px-2 lg:px-3 py-1 font-[900] uppercase text-[7px] md:text-[8px] lg:text-[10px] tracking-[0.2em] mt-1 lg:mt-2 italic">
                   DOMICILE
                 </span>
               </div>
             </div>
 
-            {/* --- CENTRE : LE SCORE --- */}
-            <div className="w-[120px] lg:w-[180px] h-full bg-[#0065FF] flex items-center justify-center relative z-20 shadow-[0_0_40px_rgba(0,101,255,0.3)]">
-              <div className="flex items-center gap-3 lg:gap-5 text-white font-[900]">
-                <span className="text-5xl lg:text-7xl tracking-tighter italic drop-shadow-md">{liveScore.homeScore}</span>
-                <div className="w-0.5 lg:w-1 h-10 lg:h-16 bg-white/30 rounded-full"></div>
-                <span className="text-5xl lg:text-7xl tracking-tighter italic drop-shadow-md">{liveScore.awayScore}</span>
+            {/* ==========================================================
+                BLOC CENTRE (Desktop) / BLOC DROITE-FLOTTANT (Mobile) : SCORE
+                ========================================================== */}
+            <div className="absolute md:relative right-0 top-[32px] md:top-auto bottom-0 w-[70px] md:w-[180px] h-[140px] md:h-full bg-[#0065FF] flex flex-col md:flex-row items-center justify-center z-20 shadow-[-10px_0_20px_rgba(0,0,0,0.15)] md:shadow-[0_0_40px_rgba(0,101,255,0.3)]">
+              <div className="flex flex-col md:flex-row items-center gap-2 md:gap-5 text-white font-[900]">
+                <span className="text-4xl md:text-5xl lg:text-7xl tracking-tighter italic drop-shadow-md">{liveScore.homeScore}</span>
+                <div className="w-6 md:w-0.5 lg:w-1 h-0.5 md:h-10 lg:h-16 bg-white/30 rounded-full shrink-0"></div>
+                <span className="text-4xl md:text-5xl lg:text-7xl tracking-tighter italic drop-shadow-md">{liveScore.awayScore}</span>
               </div>
             </div>
 
-            {/* --- CÔTÉ DROIT : EXTÉRIEUR --- */}
-            <div className="flex-[3] h-full flex items-center relative min-w-0">
+            {/* ==========================================================
+                BLOC DROITE (Desktop) / BLOC BAS (Mobile) : EXTÉRIEUR
+                ========================================================== */}
+            <div className="flex-[3] flex flex-row md:flex-row-reverse items-center relative min-w-0 h-[70px] md:h-full shrink-0">
+              
+              {/* Zone Logo (Magie Tailwind : À gauche sur mobile, À droite sur desktop) */}
               <div 
-                style={{ backgroundColor: liveScore.awayColor || '#081031' }} 
-                className="flex-1 h-full flex flex-col justify-center items-start pl-6 lg:pl-10 transition-colors duration-500 min-w-0"
-              >
-                <h3 className="text-2xl md:text-4xl lg:text-5xl font-[900] uppercase text-white leading-none tracking-tighter italic truncate w-full text-left">
-                  {liveScore.awayTeam}
-                </h3>
-                <span className="bg-white text-[#081031] px-2 lg:px-3 py-1 font-[900] uppercase text-[8px] lg:text-[10px] tracking-[0.2em] mt-2 italic">
-                  EXTÉRIEUR
-                </span>
-              </div>
-
-              <div 
-                className="w-[90px] lg:w-[140px] h-full bg-white dark:bg-slate-900 flex items-center justify-center shrink-0 border-r-[6px] lg:border-r-[10px]" 
+                className="w-[80px] md:w-[140px] h-full bg-white dark:bg-slate-900 flex items-center justify-center shrink-0 border-l-[6px] md:border-l-0 md:border-r-[6px] lg:border-r-[10px]" 
                 style={{ borderColor: liveScore.awayColor || '#081031' }}
               >
-                <div className="w-14 h-14 lg:w-20 lg:h-20 rounded-full border border-slate-100 dark:border-slate-800 flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-800/50 shadow-inner">
+                <div className="w-12 h-12 lg:w-20 lg:h-20 rounded-full border border-slate-100 dark:border-slate-800 flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-800/50 shadow-inner">
                   {liveScore.awayLogo ? (
                     <img src={liveScore.awayLogo} alt="Logo Extérieur" className="w-full h-full object-contain p-2 lg:p-3" />
                   ) : (
@@ -178,11 +215,140 @@ const LandingPage = () => {
                   )}
                 </div>
               </div>
+
+              {/* Bandeau Nom Extérieur */}
+              <div 
+                style={{ backgroundColor: liveScore.awayColor || '#081031' }} 
+                className="flex-1 h-full flex flex-col justify-center items-end md:items-start pr-[80px] md:pr-0 pl-4 md:pl-10 transition-colors duration-500 min-w-0"
+              >
+                <h3 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-[900] uppercase text-white leading-none tracking-tighter italic truncate w-full text-right md:text-left">
+                  {liveScore.awayTeam}
+                </h3>
+                <span className="bg-white text-[#081031] px-2 lg:px-3 py-1 font-[900] uppercase text-[7px] md:text-[8px] lg:text-[10px] tracking-[0.2em] mt-1 lg:mt-2 italic">
+                  EXTÉRIEUR
+                </span>
+              </div>
+
             </div>
 
-          </div> {/* Fermeture du scoreboard */}
-        </div> {/* Fermeture du container de scroll */}
-      </section> {/* Fermeture de la section */}
+          </div> 
+        </div> 
+      </section>
+
+      {/* 3. SECTION : INTÉGRER LE CLUB */}
+      <section className="py-16 lg:py-24 px-6 lg:px-8 bg-slate-50/50 dark:bg-[#0a0f25] transition-colors relative z-10">
+        <div className="max-w-[1600px] mx-auto">
+          
+          <div className="mb-10 lg:mb-16 text-center lg:text-left">
+            <h2 className="text-4xl md:text-5xl lg:text-5xl font-[900] italic uppercase text-[#081031] dark:text-white">
+              Intégrer <span className="text-[#0065FF] block sm:inline">l'US Créteil</span>
+            </h2>
+          </div>
+
+          {/* --- LIGNE 1 : LES 4 OFFRES PRINCIPALES --- */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            <InfoCard 
+              num="01" 
+              title="Jeu Libre & Loisir" 
+              desc="Des créneaux tous les jours pour venir jouer librement avec d'autres passionnés dans une ambiance conviviale." 
+              color="#0065FF" 
+            />
+            <InfoCard 
+              num="02" 
+              title="Compétition & IC" 
+              desc="Entraînements dirigés par des coachs et intégration à nos équipes interclubs, jusqu'en Nationale 1." 
+              color="#0EE2E2" 
+            />
+            <InfoCard 
+              num="03" 
+              title="École des Jeunes" 
+              desc="Une école labellisée pour former les champions de demain dès le plus jeune âge avec des pros." 
+              color="#0A266D" 
+            />
+            
+            {/* CTA d'Inscription */}
+            <div className="bg-[#0065FF] rounded-[1.5rem] lg:rounded-[2rem] p-8 flex flex-col justify-center items-center text-center text-white shadow-xl hover:scale-[1.02] transition-transform duration-300">
+              <h4 className="text-2xl font-[900] italic uppercase mb-3 leading-tight">Prêt à nous rejoindre ?</h4>
+              <p className="text-[11px] font-bold opacity-90 mb-6">Les inscriptions pour la saison sont ouvertes. Rejoignez la famille USC.</p>
+              <button className="bg-[#081031] text-white px-6 py-4 w-full rounded-xl font-[900] uppercase text-xs tracking-widest flex items-center justify-center gap-3 hover:bg-[#0EE2E2] hover:text-[#081031] transition-colors shadow-lg">
+                S'inscrire <ArrowRight size={18} />
+              </button>
+            </div>
+          </div>
+
+          {/* --- LIGNE 2 : LES 4 BLOCS DATAS / INFOS --- */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mt-6">
+            
+            {/* Bloc 1 : Total Licenciés (Animé) */}
+            <div className="bg-white dark:bg-[#0f172a] p-6 rounded-[1.5rem] border border-slate-100 dark:border-white/5 flex items-center justify-between group hover:shadow-lg transition-all">
+              <div>
+                <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Total Licenciés</div>
+                <div className="text-5xl font-[900] italic text-[#081031] dark:text-white">
+                  <AnimatedNumber value={307} />
+                </div>
+              </div>
+              <div className="w-16 h-16 rounded-2xl bg-[#0EE2E2]/10 flex items-center justify-center text-[#0EE2E2] group-hover:scale-110 group-hover:rotate-6 transition-all">
+                <Users size={32} />
+              </div>
+            </div>
+
+            {/* Bloc 2 : Répartition H/F (Graphique Anneau Animé) */}
+            <div className="bg-white dark:bg-[#0f172a] p-6 rounded-[1.5rem] border border-slate-100 dark:border-white/5 flex flex-col justify-center hover:shadow-lg transition-all">
+              <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-4">Parité du club</div>
+              
+              <div className="flex items-center gap-4">
+                {/* Le Graphique */}
+                <AnimatedDonut men={184} women={132} />
+                
+                {/* La Légende */}
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-col">
+                    <span className="text-[#0065FF] text-[9px] font-black uppercase flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#0065FF] shadow-[0_0_8px_#0065FF]"></span> Hommes</span>
+                    <span className="text-xl font-[900] italic text-[#081031] dark:text-white leading-none"><AnimatedNumber value={184} /></span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[#F72585] text-[9px] font-black uppercase flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#F72585] shadow-[0_0_8px_#F72585]"></span> Femmes</span>
+                    <span className="text-xl font-[900] italic text-[#081031] dark:text-white leading-none"><AnimatedNumber value={132} /></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bloc 3 : Label 3 Étoiles */}
+            <div className="bg-white dark:bg-[#0f172a] p-6 rounded-[1.5rem] border border-slate-100 dark:border-white/5 flex flex-col justify-center items-center text-center group hover:shadow-lg transition-all">
+              <div className="flex gap-1 text-[#FFD500] mb-3 group-hover:scale-110 transition-transform">
+                <Star size={28} fill="currentColor" className="drop-shadow-[0_0_10px_rgba(255, 213, 0, 0.5)]" />
+                <Star size={28} fill="currentColor" className="drop-shadow-[0_0_10px_rgba(255, 213, 0, 0.5)] -translate-y-2" />
+                <Star size={28} fill="currentColor" className="drop-shadow-[0_0_10px_rgba(255, 213, 0, 0.5)]" />
+              </div>
+              <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest">École de Badminton</div>
+              <div className="text-sm font-[900] italic text-[#081031] dark:text-white uppercase mt-1">Labellisée FFBAD</div>
+            </div>
+
+            {/* Bloc 4 : En Direct (Prochain créneau) */}
+            <div className="bg-[#081031] dark:bg-[#0065FF]/10 p-6 rounded-[1.5rem] border-none dark:border dark:border-[#0065FF]/20 flex flex-col justify-center relative overflow-hidden group hover:shadow-[0_0_30px_rgba(14,226,226,0.15)] transition-all">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#0EE2E2]/20 blur-[40px] rounded-full group-hover:scale-150 transition-transform duration-700"></div>
+              
+              <div className="flex items-center gap-2 mb-3 relative z-10">
+                <span className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0EE2E2] opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-[#0EE2E2] shadow-[0_0_8px_#0EE2E2]"></span>
+                </span>
+                <span className="text-[10px] font-black uppercase text-[#0EE2E2] tracking-widest">En direct ce soir</span>
+              </div>
+              
+              <div className="text-2xl font-[900] italic text-white uppercase leading-tight mb-2 relative z-10">
+                Jeu Libre <span className="text-slate-400">| 20h00</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase relative z-10">
+                <MapPin size={12} className="text-[#0EE2E2]" /> Gymnase Casalis
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
 
       {/* 4. SECTION : ACTUALITÉS */}
       <section className="py-16 lg:py-24 bg-white dark:bg-[#040817] border-t border-slate-100 dark:border-white/5 overflow-hidden transition-colors">
@@ -283,10 +449,11 @@ const LandingPage = () => {
 
 /* --- SOUS-COMPOSANTS --- */
 
-const SocialBtn = ({ icon, href }) => (
+/* --- NOUVEAU COMPOSANT POUR LES RÉSEAUX SOCIAUX DU HERO --- */
+const MiniSocialBtn = ({ icon, href }) => (
   <a 
     href={href} 
-    className="w-12 h-12 lg:w-14 lg:h-14 bg-white/20 lg:bg-white/60 dark:bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center text-white lg:text-[#081031] dark:lg:text-white border border-white/20 lg:border-none hover:bg-[#0EE2E2] dark:hover:bg-[#0EE2E2] hover:text-[#081031] transition-all shadow-sm"
+    className="w-7 h-7 lg:w-9 lg:h-9 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white border border-white/20 hover:bg-[#0EE2E2] hover:text-[#081031] hover:border-transparent transition-all shadow-sm"
   >
     {icon}
   </a>
@@ -303,43 +470,102 @@ const InfoCard = ({ num, title, desc, color }) => (
   </div>
 );
 
-const StatBox = ({ title, value, desc, icon, color, isDynamic = false }) => {
-  const [displayValue, setDisplayValue] = React.useState(isDynamic ? "..." : value);
-  const [loading, setLoading] = React.useState(isDynamic);
+// --- NOUVEAUX COMPOSANTS ANIMÉS ---
+
+const AnimatedNumber = ({ value, duration = 2000 }) => {
+  const [count, setCount] = React.useState(0);
+  const [hasAnimated, setHasAnimated] = React.useState(false);
+  const ref = React.useRef(null);
 
   React.useEffect(() => {
-    if (isDynamic) {
-      fetch('/api/club-stats')
-        .then(res => res.json())
-        .then(data => {
-          if (data.licencies) {
-            setDisplayValue(data.licencies);
-          }
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.error("Erreur fetch stats:", err);
-          setDisplayValue("307");
-          setLoading(false);
-        });
-    }
-  }, [isDynamic]);
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated) {
+          setHasAnimated(true);
+        }
+      },
+      { threshold: 0.5 } // Se déclenche quand 50% du composant est visible
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [hasAnimated]);
+
+  React.useEffect(() => {
+    if (!hasAnimated) return;
+    let start = null;
+    const step = (timestamp) => {
+      if (!start) start = timestamp;
+      const progress = Math.min((timestamp - start) / duration, 1);
+      // Easing pour ralentir l'animation vers la fin (easeOut)
+      const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+      setCount(Math.floor(easeProgress * value));
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      }
+    };
+    window.requestAnimationFrame(step);
+  }, [hasAnimated, value, duration]);
+
+  return <span ref={ref}>{count}</span>;
+};
+
+const AnimatedDonut = ({ men, women }) => {
+  const [hasAnimated, setHasAnimated] = React.useState(false);
+  const ref = React.useRef(null);
+
+  const total = men + women;
+  const menPct = (men / total) * 100;
+  
+  // Calculs pour le cercle SVG
+  const radius = 15.9155;
+  const circumference = 2 * Math.PI * radius; // Environ 100
+  const menDash = (menPct / 100) * circumference;
+
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasAnimated) setHasAnimated(true);
+      },
+      { threshold: 0.5 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [hasAnimated]);
 
   return (
-    <div className="bg-[#d8f3ff] dark:bg-[#0f172a] p-5 lg:p-6 rounded-[1.2rem] flex items-center gap-4 border border-white/10 dark:border-white/5 hover:border-white/30 dark:hover:border-[#0065FF]/50 transition-colors">
-      <div className="w-12 h-12 lg:w-16 lg:h-16 rounded-[0.8rem] flex items-center justify-center shrink-0" style={{ backgroundColor: color, color: '#082531' }}>
-        {icon}
-      </div>
-      <div className="min-w-0">
-        <div className="text-[9px] uppercase font-bold tracking-normal text-[#0065FF] dark:text-[#0EE2E2] mb-1 truncate">{title}</div>
-        <div className={`text-xl lg:text-2xl font-[900] italic leading-none mb-1 text-black dark:text-white transition-colors ${loading ? 'animate-pulse' : ''}`}>
-          {displayValue}
-        </div>
-        <div className="text-[10px] font-bold text-black dark:text-slate-400 transition-colors truncate">{desc}</div>
+    <div ref={ref} className="relative w-20 h-20 shrink-0">
+      <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90 drop-shadow-lg">
+        {/* Cercle de fond (Femmes : Rose) */}
+        <circle
+          cx="18" cy="18" r={radius}
+          fill="transparent"
+          stroke="#F72585"
+          strokeWidth="4"
+        />
+        {/* Cercle animé (Hommes : Bleu) */}
+        <circle
+          cx="18" cy="18" r={radius}
+          fill="transparent"
+          stroke="#0065FF"
+          strokeWidth="4"
+          strokeDasharray={circumference}
+          strokeDashoffset={hasAnimated ? circumference - menDash : circumference}
+          strokeLinecap="round"
+          className="transition-all ease-out"
+          style={{ transitionDuration: '2000ms' }}
+        />
+      </svg>
+      {/* Pourcentage au centre */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-[#081031] dark:text-white font-[900] text-xs italic">
+          {hasAnimated ? <AnimatedNumber value={menPct} /> : 0}%
+        </span>
       </div>
     </div>
   );
 };
+
+// --- FIN NOUVEAUX COMPOSANTS ANIMÉS ---
 
 const FilterButton = ({ label, active }) => (
   <button 

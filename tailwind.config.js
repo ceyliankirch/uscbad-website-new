@@ -9,6 +9,8 @@ export default {
     extend: {
       colors: {
         'usc-pink': '#F72585',
+        'usc-yellow': '#FFD500',
+        'usc-yellow-shadow': 'rgba(255, 213, 0, 0.5)',
         'usc-deep': '#081031',
         'usc-royal': '#0065FF',
         'usc-sky': '#0EE2E2',

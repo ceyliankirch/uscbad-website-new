@@ -4,14 +4,16 @@ import React, { useState, useEffect } from 'react';
 import { Home, Play, ArrowRight, Trophy, Calendar, ChevronRight, TrendingUp, MapPin, Instagram, Facebook, Mail, Users, Activity, Phone, Star } from 'lucide-react';
 
 const LandingPage = () => {
-  // --- NOUVEAU : GESTION DU LIVE SCORE ---
+  // --- GESTION DU LIVE SCORE ---
   const [liveScore, setLiveScore] = useState({
     division: 'NATIONALE 1 | J05',
     date: 'CHARGEMENT...',
     homeTeam: 'US CRÉTEIL',
     homeScore: '-',
+    homeTextColor: '#081031', // Couleur par défaut
     awayTeam: 'ADVERSAIRE',
-    awayScore: '-'
+    awayScore: '-',
+    awayTextColor: '#FFFFFF'  // Couleur par défaut
   });
 
   useEffect(() => {
@@ -72,13 +74,13 @@ const LandingPage = () => {
         <div className="relative z-10 w-full max-w-[2000px] mx-auto px-6 lg:px-20 mt-auto lg:mt-0">
           <div className="max-w-6xl space-y-4 lg:space-y-6">
             
-            {/* EN-TÊTE : BADGE + RÉSEAUX SOCIAUX (Alignés sur mobile et desktop) */}
+            {/* EN-TÊTE : BADGE + RÉSEAUX SOCIAUX */}
             <div className="flex flex-wrap items-center gap-3">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0EE2E2]/10 border border-[#0EE2E2]/20 backdrop-blur-md">
                 <span className="text-[10px] lg:text-[14px] font-[900] uppercase text-[#0EE2E2]">Union Sportive de Créteil</span>
               </div>
               
-              {/* Nouveaux petits boutons ronds */}
+              {/* Petits boutons ronds */}
               <div className="flex gap-2">
                 <MiniSocialBtn icon={<Instagram size={14} />} href="#" />
                 <MiniSocialBtn icon={<Facebook size={14} fill="currentColor" />} href="#" />
@@ -91,23 +93,20 @@ const LandingPage = () => {
               Rejoignez Nous !
             </h1>
             
-            {/* DESCRIPTION (Légèrement plus petite sur mobile) */}
+            {/* DESCRIPTION */}
             <p className="text-xs md:text-lg lg:text-xl text-[#0EE2E2] font-bold leading-relaxed italic max-w-2xl drop-shadow-md">
               Rejoignez le club dynamique dont l'équipe première évolue en Nationale 1. Rassemblant des joueurs de tous niveaux, du loisir à la compétition, et offrant une école de jeunes labellisée.
             </p>
 
-            {/* BOUTONS D'ACTION (En ligne sur mobile) */}
+            {/* BOUTONS D'ACTION */}
             <div className="flex flex-row items-center gap-2 lg:gap-4 pt-4 lg:pt-8 w-full md:w-auto">
-              
-              {/* Bouton Principal : S'INSCRIRE (Affiné, Bleu foncé) */}
               <a 
                 href="#inscriptions" 
                 className="flex-1 md:flex-none flex items-center justify-center bg-[#0065FF] text-white px-4 py-3 lg:px-8 lg:py-4 rounded-xl lg:rounded-2xl font-[900] italic text-xs lg:text-lg shadow-2xl hover:scale-[1.02] transition-transform uppercase tracking-normal hover:bg-[#0EE2E2] hover:text-[#081031]"
               >
-                S'INSCRIRE
+                M'INSCRIRE
               </a>
               
-              {/* Bouton Secondaire : LE CLUB (Affiné, Icône Maison) */}
               <a 
                 href="/presentation" 
                 className="flex-1 md:flex-none flex items-center justify-center gap-2 lg:gap-4 bg-white/10 lg:bg-white/60 dark:bg-white/10 backdrop-blur-md p-1 lg:p-1.5 pr-4 lg:pr-6 rounded-xl lg:rounded-2xl border border-white/20 lg:border-slate-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/20 transition-all shadow-sm group"
@@ -119,7 +118,6 @@ const LandingPage = () => {
                   Le Club
                 </span>
               </a>
-              
             </div>
 
           </div>
@@ -127,108 +125,118 @@ const LandingPage = () => {
       </section>
 
       {/* 2. SCORE NATIONALE 1 (DYNAMIQUE MONGODB) */}
-      <section className="relative z-20 -mt-28 md:-mt-24 lg:-mt-20 max-w-[1600px] mx-auto px-4 md:px-6 lg:px-8">
-        <div className="w-full overflow-x-auto hide-scrollbar pb-8 pt-8 snap-x snap-mandatory">
+      <section className="relative z-20 -mt-28 md:-mt-24 lg:-mt-20 max-w-[1800px] mx-auto px-4 md:px-6 lg:px-8">
+        <div className="w-full overflow-visible hide-scrollbar pb-8 pt-8">
           
           {/* LE SCOREBOARD DYNAMIQUE */}
-          <div className="relative font-['Montserrat'] shadow-xl dark:shadow-none group rounded-2xl overflow-hidden bg-white dark:bg-slate-900 w-full max-w-sm md:max-w-[1000px] lg:max-w-[1200px] mx-auto flex flex-col md:flex-row h-[172px] md:h-[120px] lg:h-[140px] shrink-0">
+          <div className="relative font-['Montserrat'] w-full max-w-sm md:max-w-[1100px] lg:max-w-[1400px] mx-auto flex flex-col md:flex-row h-[172px] md:h-[120px] lg:h-[140px] shrink-0 overflow-visible">
             
-            {/* --- BADGES DU HAUT / HEADER (Version Mobile Uniquement) --- */}
-            <div className="md:hidden flex w-full h-[32px] shrink-0">
-              <div className="flex-1 bg-[#0065FF] text-white px-4 flex items-center justify-center font-[900] uppercase text-[9px] tracking-widest italic text-center">
+            {/* --- BADGES DU HAUT (Version Mobile) --- */}
+            <div className="md:hidden flex w-full h-[32px] absolute -top-[32px] left-0 z-40 shadow-lg">
+              <div className="flex-1 bg-[#0065FF] text-white px-4 flex items-center justify-center font-[900] uppercase text-[10px] tracking-widest italic text-center">
                 {liveScore.date}
               </div>
-              <div className="flex-1 bg-[#0EE2E2] text-[#081031] px-4 flex items-center justify-center font-[900] uppercase text-[9px] tracking-widest italic text-center">
+              <div className="flex-1 bg-[#0EE2E2] text-[#081031] px-4 flex items-center justify-center font-[900] uppercase text-[10px] tracking-widest italic text-center">
                 {liveScore.division}
               </div>
             </div>
 
-            {/* --- BADGES DU HAUT (Version Desktop : Flottant au centre) --- */}
-            <div className="hidden md:flex absolute top-0 left-1/2 -translate-x-1/2 items-center z-30 shadow-md">
-              <div className="bg-[#0EE2E2] text-[#081031] px-4 lg:px-6 py-1.5 font-[900] uppercase text-[9px] lg:text-[11px] tracking-tighter italic">
+            {/* --- BADGES DU HAUT (Version Desktop) --- */}
+            <div className="hidden md:flex absolute top-[-32px] left-1/2 -translate-x-1/2 items-center z-40 shadow-xl">
+              <div className="bg-[#0EE2E2] text-[#081031] px-6 py-2 font-[900] uppercase text-[11px] tracking-tighter italic">
                 {liveScore.division}
               </div>
-              <div className="bg-[#0065FF] text-white px-4 lg:px-6 py-1.5 font-[900] uppercase text-[9px] lg:text-[11px] tracking-tighter italic whitespace-nowrap">
+              <div className="bg-[#0065FF] text-white px-6 py-2 font-[900] uppercase text-[11px] tracking-tighter italic whitespace-nowrap">
                 {liveScore.date}
               </div>
             </div>
 
-            {/* ==========================================================
-                BLOC GAUCHE (Desktop) / BLOC HAUT (Mobile) : DOMICILE
-                ========================================================== */}
-            <div className="flex-[3] flex items-center relative min-w-0 h-[70px] md:h-full shrink-0">
+            {/* --- CONTENEUR INTERNE SANS ARRONDIS NI BORDURES --- */}
+            <div className="flex flex-col md:flex-row w-full h-full shadow-2xl bg-white dark:bg-slate-900 overflow-hidden">
               
-              {/* Zone Logo */}
-              <div 
-                className="w-[80px] md:w-[140px] h-full bg-white dark:bg-slate-900 flex items-center justify-center shrink-0 border-l-[6px] lg:border-l-[10px]" 
-                style={{ borderColor: liveScore.homeColor || '#0EE2E2' }}
-              >
-                <div className="w-12 h-12 lg:w-20 lg:h-20 rounded-full border border-slate-100 dark:border-slate-800 flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-800/50 shadow-inner">
+              {/* DOMICILE */}
+              <div className="flex-[4] flex items-center relative min-w-0 h-[70px] md:h-full shrink-0">
+                {/* Zone Logo */}
+                <div className="w-[70px] md:w-[110px] lg:w-[130px] h-full bg-white dark:bg-slate-900 flex items-center justify-center shrink-0">
                   {liveScore.homeLogo ? (
-                    <img src={liveScore.homeLogo} alt="Logo Domicile" className="w-full h-full object-contain p-2 lg:p-3" />
+                    <img src={liveScore.homeLogo} alt="Logo Domicile" className="h-[60%] object-contain p-1" />
                   ) : (
                     <span className="text-[8px] lg:text-[10px] font-black text-slate-300 italic uppercase">Logo</span>
                   )}
                 </div>
+
+                <div 
+                  style={{ backgroundColor: liveScore.homeColor || '#0EE2E2' }} 
+                  className="flex-1 h-full flex flex-col justify-center items-end pr-[85px] md:pr-6 transition-colors duration-500 min-w-0 border-none"
+                >
+                  {/* Wrapper pour décaler le texte de 10px vers la gauche */}
+                  <div className="w-full flex flex-col items-end -translate-x-[10px]">
+                    <h3 
+                      style={{ color: liveScore.homeTextColor || '#081031' }}
+                      className="text-xl sm:text-2xl md:text-3xl lg:text-5xl font-[900] uppercase leading-none tracking-tighter italic truncate w-full text-right"
+                    >
+                      {liveScore.homeTeam}
+                    </h3>
+                    <div className="bg-[#081031] text-white px-2 lg:px-3 py-1 font-[900] uppercase text-[7px] md:text-[8px] lg:text-[10px] tracking-[0.2em] mt-1 lg:mt-2 italic">
+                      DOMICILE
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              {/* Bandeau Nom Domicile */}
-              <div 
-                style={{ backgroundColor: liveScore.homeColor || '#0EE2E2' }} 
-                className="flex-1 h-full flex flex-col justify-center items-end pr-[80px] md:pr-10 transition-colors duration-500 min-w-0 border-b border-black/10 md:border-none"
-              >
-                <h3 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-[900] uppercase text-[#081031] leading-none tracking-tighter italic truncate w-full text-right">
-                  {liveScore.homeTeam}
-                </h3>
-                <span className="bg-[#081031] text-white px-2 lg:px-3 py-1 font-[900] uppercase text-[7px] md:text-[8px] lg:text-[10px] tracking-[0.2em] mt-1 lg:mt-2 italic">
-                  DOMICILE
-                </span>
-              </div>
-            </div>
+              {/* SCORE CENTRE */}
+              <div className="absolute md:relative right-0 top-[0px] md:top-auto bottom-0 w-[75px] md:w-[140px] lg:w-[180px] h-full md:h-full bg-[#0065FF] flex flex-col md:flex-row items-center justify-center z-20 shadow-[-10px_0_20px_rgba(0,0,0,0.15)] md:shadow-[0_0_40px_rgba(0,101,255,0.3)]">
+                
+                {/* Score Desktop */}
+                <div className="hidden md:flex flex-row items-center justify-center gap-4 lg:gap-5 text-white font-[900]">
+                  <span className="text-5xl lg:text-7xl tracking-tighter italic drop-shadow-md">{liveScore.homeScore}</span>
+                  <div className="w-0.5 lg:w-1 h-10 lg:h-16 bg-white/30 shrink-0"></div>
+                  <span className="text-5xl lg:text-7xl tracking-tighter italic drop-shadow-md">{liveScore.awayScore}</span>
+                </div>
 
-            {/* ==========================================================
-                BLOC CENTRE (Desktop) / BLOC DROITE-FLOTTANT (Mobile) : SCORE
-                ========================================================== */}
-            <div className="absolute md:relative right-0 top-[32px] md:top-auto bottom-0 w-[70px] md:w-[180px] h-[140px] md:h-full bg-[#0065FF] flex flex-col md:flex-row items-center justify-center z-20 shadow-[-10px_0_20px_rgba(0,0,0,0.15)] md:shadow-[0_0_40px_rgba(0,101,255,0.3)]">
-              <div className="flex flex-col md:flex-row items-center gap-2 md:gap-5 text-white font-[900]">
-                <span className="text-4xl md:text-5xl lg:text-7xl tracking-tighter italic drop-shadow-md">{liveScore.homeScore}</span>
-                <div className="w-6 md:w-0.5 lg:w-1 h-0.5 md:h-10 lg:h-16 bg-white/30 rounded-full shrink-0"></div>
-                <span className="text-4xl md:text-5xl lg:text-7xl tracking-tighter italic drop-shadow-md">{liveScore.awayScore}</span>
-              </div>
-            </div>
+                {/* Score Mobile : Divisé en 2 blocs (flex-1) pour s'aligner parfaitement avec les lignes Domicile/Extérieur */}
+                <div className="flex md:hidden flex-col w-full h-full text-white font-[900] relative">
+                  <div className="flex-1 flex items-center justify-center">
+                    <span className="text-4xl tracking-tighter italic drop-shadow-md">{liveScore.homeScore}</span>
+                  </div>
+                  {/* Trait de séparation centré absolument */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-0.5 bg-white/30 shrink-0"></div>
+                  <div className="flex-1 flex items-center justify-center">
+                    <span className="text-4xl tracking-tighter italic drop-shadow-md">{liveScore.awayScore}</span>
+                  </div>
+                </div>
 
-            {/* ==========================================================
-                BLOC DROITE (Desktop) / BLOC BAS (Mobile) : EXTÉRIEUR
-                ========================================================== */}
-            <div className="flex-[3] flex flex-row md:flex-row-reverse items-center relative min-w-0 h-[70px] md:h-full shrink-0">
-              
-              {/* Zone Logo (Magie Tailwind : À gauche sur mobile, À droite sur desktop) */}
-              <div 
-                className="w-[80px] md:w-[140px] h-full bg-white dark:bg-slate-900 flex items-center justify-center shrink-0 border-l-[6px] md:border-l-0 md:border-r-[6px] lg:border-r-[10px]" 
-                style={{ borderColor: liveScore.awayColor || '#081031' }}
-              >
-                <div className="w-12 h-12 lg:w-20 lg:h-20 rounded-full border border-slate-100 dark:border-slate-800 flex items-center justify-center overflow-hidden bg-slate-50 dark:bg-slate-800/50 shadow-inner">
+              </div>
+
+              {/* EXTÉRIEUR */}
+              <div className="flex-[4] flex flex-row md:flex-row-reverse items-center relative min-w-0 h-[70px] md:h-full shrink-0">
+                {/* Zone Logo */}
+                <div className="w-[70px] md:w-[110px] lg:w-[130px] h-full bg-white dark:bg-slate-900 flex items-center justify-center shrink-0">
                   {liveScore.awayLogo ? (
-                    <img src={liveScore.awayLogo} alt="Logo Extérieur" className="w-full h-full object-contain p-2 lg:p-3" />
+                    <img src={liveScore.awayLogo} alt="Logo Extérieur" className="h-[60%] object-contain p-1" />
                   ) : (
                     <span className="text-[8px] lg:text-[10px] font-black text-slate-300 italic uppercase">Logo</span>
                   )}
                 </div>
-              </div>
 
-              {/* Bandeau Nom Extérieur */}
-              <div 
-                style={{ backgroundColor: liveScore.awayColor || '#081031' }} 
-                className="flex-1 h-full flex flex-col justify-center items-end md:items-start pr-[80px] md:pr-0 pl-4 md:pl-10 transition-colors duration-500 min-w-0"
-              >
-                <h3 className="text-xl sm:text-2xl md:text-4xl lg:text-5xl font-[900] uppercase text-white leading-none tracking-tighter italic truncate w-full text-right md:text-left">
-                  {liveScore.awayTeam}
-                </h3>
-                <span className="bg-white text-[#081031] px-2 lg:px-3 py-1 font-[900] uppercase text-[7px] md:text-[8px] lg:text-[10px] tracking-[0.2em] mt-1 lg:mt-2 italic">
-                  EXTÉRIEUR
-                </span>
+                <div 
+                  style={{ backgroundColor: liveScore.awayColor || '#081031' }} 
+                  className="flex-1 h-full flex flex-col justify-center items-end md:items-start pr-[85px] md:pr-0 pl-4 md:pl-6 transition-colors duration-500 min-w-0"
+                >
+                  {/* Wrapper pour décaler le texte de 10px vers la gauche */}
+                  <div className="w-full flex flex-col items-end md:items-start -translate-x-[10px]">
+                    <h3 
+                      style={{ color: liveScore.awayTextColor || '#FFFFFF' }}
+                      className="text-xl sm:text-2xl md:text-3xl lg:text-5xl font-[900] uppercase leading-none tracking-tighter italic truncate w-full text-right md:text-left"
+                    >
+                      {liveScore.awayTeam}
+                    </h3>
+                    <div className="bg-white text-[#081031] px-2 lg:px-3 py-1 font-[900] uppercase text-[7px] md:text-[8px] lg:text-[10px] tracking-[0.2em] mt-1 lg:mt-2 italic">
+                      EXTÉRIEUR
+                    </div>
+                  </div>
+                </div>
               </div>
-
             </div>
 
           </div> 
@@ -271,7 +279,7 @@ const LandingPage = () => {
               <h4 className="text-2xl font-[900] italic uppercase mb-3 leading-tight">Prêt à nous rejoindre ?</h4>
               <p className="text-[11px] font-bold opacity-90 mb-6">Les inscriptions pour la saison sont ouvertes. Rejoignez la famille USC.</p>
               <button className="bg-[#081031] text-white px-6 py-4 w-full rounded-xl font-[900] uppercase text-xs tracking-widest flex items-center justify-center gap-3 hover:bg-[#0EE2E2] hover:text-[#081031] transition-colors shadow-lg">
-                S'inscrire <ArrowRight size={18} />
+                M'inscrire <ArrowRight size={18} />
               </button>
             </div>
           </div>
@@ -449,7 +457,6 @@ const LandingPage = () => {
 
 /* --- SOUS-COMPOSANTS --- */
 
-/* --- NOUVEAU COMPOSANT POUR LES RÉSEAUX SOCIAUX DU HERO --- */
 const MiniSocialBtn = ({ icon, href }) => (
   <a 
     href={href} 
@@ -470,8 +477,6 @@ const InfoCard = ({ num, title, desc, color }) => (
   </div>
 );
 
-// --- NOUVEAUX COMPOSANTS ANIMÉS ---
-
 const AnimatedNumber = ({ value, duration = 2000 }) => {
   const [count, setCount] = React.useState(0);
   const [hasAnimated, setHasAnimated] = React.useState(false);
@@ -484,7 +489,7 @@ const AnimatedNumber = ({ value, duration = 2000 }) => {
           setHasAnimated(true);
         }
       },
-      { threshold: 0.5 } // Se déclenche quand 50% du composant est visible
+      { threshold: 0.5 }
     );
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
@@ -496,7 +501,6 @@ const AnimatedNumber = ({ value, duration = 2000 }) => {
     const step = (timestamp) => {
       if (!start) start = timestamp;
       const progress = Math.min((timestamp - start) / duration, 1);
-      // Easing pour ralentir l'animation vers la fin (easeOut)
       const easeProgress = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
       setCount(Math.floor(easeProgress * value));
       if (progress < 1) {
@@ -516,9 +520,8 @@ const AnimatedDonut = ({ men, women }) => {
   const total = men + women;
   const menPct = (men / total) * 100;
   
-  // Calculs pour le cercle SVG
   const radius = 15.9155;
-  const circumference = 2 * Math.PI * radius; // Environ 100
+  const circumference = 2 * Math.PI * radius;
   const menDash = (menPct / 100) * circumference;
 
   React.useEffect(() => {
@@ -535,14 +538,12 @@ const AnimatedDonut = ({ men, women }) => {
   return (
     <div ref={ref} className="relative w-20 h-20 shrink-0">
       <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90 drop-shadow-lg">
-        {/* Cercle de fond (Femmes : Rose) */}
         <circle
           cx="18" cy="18" r={radius}
           fill="transparent"
           stroke="#F72585"
           strokeWidth="4"
         />
-        {/* Cercle animé (Hommes : Bleu) */}
         <circle
           cx="18" cy="18" r={radius}
           fill="transparent"
@@ -555,7 +556,6 @@ const AnimatedDonut = ({ men, women }) => {
           style={{ transitionDuration: '2000ms' }}
         />
       </svg>
-      {/* Pourcentage au centre */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-[#081031] dark:text-white font-[900] text-xs italic">
           {hasAnimated ? <AnimatedNumber value={menPct} /> : 0}%
@@ -564,8 +564,6 @@ const AnimatedDonut = ({ men, women }) => {
     </div>
   );
 };
-
-// --- FIN NOUVEAUX COMPOSANTS ANIMÉS ---
 
 const FilterButton = ({ label, active }) => (
   <button 

@@ -12,9 +12,8 @@ const Navbar = ({ onOpenAuth }) => {
   const [mounted, setMounted] = useState(false);
   const [isDark, setIsDark] = useState(false);
 
-  // Conditions de style globales
-  const isHomePage = pathname === '/';
-  const shouldBeDark = isScrolled || !isHomePage || isMobileMenuOpen;
+  // Définir les pages qui ont un "Hero sombre" en haut de page
+  const hasDarkHero = pathname === '/' || pathname === '/interclubs' || pathname === '/actualites';
 
   const navLinks = [
     { name: 'Accueil', href: '/' },
@@ -29,11 +28,18 @@ const Navbar = ({ onOpenAuth }) => {
         { name: 'Interclubs', href: '/interclubs' },
       ]
     },
-    { name: 'à venir', href: '#competition' },
-    { name: 'Jeunes', href: '#jeunes' },
-  ];
+    { 
+      name: 'à venir', 
+      href: '#',
+      dropdown: [
+        { name: 'Tournois', href: '/tournois' },
+        { name: 'Promobad', href: '/promobad' },
+        { name: 'Calendrier', href: '/calendrier' },
+      ]
+    },
+    { name: 'Contact', href: '/contact' },
+  ]
 
-  // Initialisation du thème
   useEffect(() => {
     setMounted(true);
     const storedTheme = localStorage.getItem('theme');
@@ -45,12 +51,22 @@ const Navbar = ({ onOpenAuth }) => {
     }
   }, []);
 
-  // Gestion du scroll
+  // GESTION DU SCROLL DYNAMIQUE
   useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    const handleScroll = () => {
+      // Si la page a un grand hero sombre, on attend d'avoir scrollé 
+      // quasiment toute la hauteur de l'écran (window.innerHeight - 100px)
+      // Sinon, on s'active dès 20px de scroll.
+      const scrollThreshold = hasDarkHero ? window.innerHeight - 100 : 20;
+      setIsScrolled(window.scrollY > scrollThreshold);
+    };
+
+    // On vérifie la position au chargement initial
+    handleScroll();
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [hasDarkHero]);
 
   const toggleTheme = () => {
     const newDark = !isDark;
@@ -59,21 +75,21 @@ const Navbar = ({ onOpenAuth }) => {
     localStorage.setItem('theme', newDark ? 'dark' : 'light');
   };
 
-  // Ne pas afficher la Navbar dans l'administration
   if (pathname.startsWith('/admin')) return null;
 
-  // Helpers pour les classes répétitives
-  const textColor = shouldBeDark ? 'text-[#081031] dark:text-white' : 'text-white';
-  const groupHoverColor = shouldBeDark ? 'group-hover:text-[#0065FF]' : 'group-hover:text-[#0EE2E2]';
+  // La navbar doit être "solide/sombre" si on a scrollé au-delà de la limite, 
+  // si la page n'a PAS de hero sombre, ou si le menu mobile est ouvert
+  const shouldBeSolid = isScrolled || !hasDarkHero || isMobileMenuOpen;
+
+  const textColor = shouldBeSolid ? 'text-[#081031] dark:text-white' : 'text-white';
+  const groupHoverColor = shouldBeSolid ? 'group-hover:text-[#0065FF]' : 'group-hover:text-[#0EE2E2]';
 
   return (
     <nav className={`fixed top-0 w-full z-[100] transition-all duration-500 px-6 py-4 font-['Montserrat'] ${
-      shouldBeDark ? 'bg-white/95 dark:bg-[#081031]/95 backdrop-blur-xl' : 'bg-transparent'
+      shouldBeSolid ? 'bg-white dark:bg-[#081031] shadow-md' : 'bg-transparent'
     }`}>
-      {/* AJOUT: relative et w-full pour que le menu absolu se centre par rapport à ce conteneur */}
       <div className="max-w-[1600px] mx-auto flex justify-between items-center relative w-full">
         
-        {/* LOGO (Reste aligné à gauche grâce au justify-between) */}
         <Link href="/" className="z-10">
           <img 
             src="/logo-uscbadminton.png" 
@@ -82,8 +98,7 @@ const Navbar = ({ onOpenAuth }) => {
           />
         </Link>
 
-        {/* LIENS DESKTOP (PARFAITEMENT CENTRÉS) */}
-        {/* L'astuce : absolute left-1/2 -translate-x-1/2 sort le bloc du flux flexbox pour le centrer géométriquement */}
+        {/* LIENS DESKTOP */}
         <div className="hidden lg:flex absolute left-1/2 -translate-x-1/2 space-x-10 items-center">
           {navLinks.map((link) => (
             <div key={link.name} className="relative group py-2">
@@ -98,16 +113,12 @@ const Navbar = ({ onOpenAuth }) => {
               </div>
 
               {link.dropdown && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-50 bg-white dark:bg-[#081031] rounded-2xl shadow-2xl border-none opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 overflow-hidden">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-52 bg-white rounded-2xl shadow-2xl border border-slate-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 overflow-hidden">
                   {link.dropdown.map((sub) => (
                     <Link 
                       key={sub.name} 
                       href={sub.href} 
-                      className={`block px-6 py-4 text-[11px] font-[900] uppercase transition-colors ${
-                        shouldBeDark 
-                          ? 'text-[#081031] dark:text-white hover:bg-slate-50 hover:text-[#0065FF]' 
-                          : 'text-[#081031] dark:text-white hover:bg-[#0EE2E2] hover:text-[#081031]'
-                      }`}
+                      className="block px-6 py-4 text-[11px] font-bold font-['Montserrat'] uppercase text-black hover:bg-slate-50 hover:text-[#0065FF] transition-colors"
                     >
                       {sub.name}
                     </Link>
@@ -118,20 +129,20 @@ const Navbar = ({ onOpenAuth }) => {
           ))}
         </div>
 
-        {/* BOUTONS D'ACTION (Restent alignés à droite grâce au justify-between) */}
+        {/* ACTIONS DESKTOP */}
         <div className="hidden lg:flex items-center gap-3 z-10">
           <button className={`px-7 py-2.5 rounded-full font-[900] text-xs transition-all flex items-center gap-2 uppercase tracking-normal group ${
-            shouldBeDark
+            shouldBeSolid
               ? 'bg-[#081031] text-white hover:bg-[#0065FF] dark:bg-white dark:text-[#081031] dark:hover:bg-[#0065FF]'
               : 'bg-white text-[#081031] hover:bg-[#0EE2E2]'
           }`}>
-            s'inscrire <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+            m'inscrire <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
           </button>
 
           <button 
             onClick={onOpenAuth}
             className={`p-2.5 rounded-full transition-colors flex items-center justify-center ${
-              shouldBeDark ? 'bg-slate-100 text-[#081031] dark:bg-white/10 dark:text-white' : 'bg-white/20 text-white backdrop-blur-sm'
+              shouldBeSolid ? 'bg-slate-100 text-[#081031] dark:bg-white/10 dark:text-white' : 'bg-white/20 text-white hover:bg-white hover:text-[#081031]'
             }`}
           >
             <User size={18} />
@@ -141,7 +152,7 @@ const Navbar = ({ onOpenAuth }) => {
             <button 
               onClick={toggleTheme} 
               className={`p-2.5 rounded-full transition-colors flex items-center justify-center ${
-                shouldBeDark ? 'bg-slate-100 text-[#081031] dark:bg-white/10 dark:text-yellow-400' : 'bg-white/20 text-white backdrop-blur-sm'
+                shouldBeSolid ? 'bg-slate-100 text-[#081031] dark:bg-white/10 dark:text-yellow-400' : 'bg-white/20 text-white hover:bg-white hover:text-yellow-500'
               }`}
             >
               {isDark ? <Sun size={18} /> : <Moon size={18} />}
@@ -149,34 +160,29 @@ const Navbar = ({ onOpenAuth }) => {
           )}
         </div>
 
-        {/* MOBILE TOGGLE */}
         <button 
-          className={`lg:hidden z-10 ${shouldBeDark ? 'text-[#081031] dark:text-white' : 'text-white'}`} 
+          className={`lg:hidden z-10 ${shouldBeSolid ? 'text-[#081031] dark:text-white' : 'text-white'}`} 
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
           {isMobileMenuOpen ? <X size={35} /> : <Menu size={35} />}
         </button>
       </div>
 
-      {/* MENU MOBILE (Unifié, Sans bordures, Fluide) */}
+      {/* MENU MOBILE */}
       <div 
-        className={`lg:hidden absolute top-full left-0 w-full bg-white/95 dark:bg-[#081031]/95 backdrop-blur-xl shadow-[0_20px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_40px_rgba(0,0,0,0.5)] rounded-b-3xl overflow-hidden transition-all duration-500 ease-in-out origin-top ${
-          isMobileMenuOpen 
-            ? 'max-h-[85vh] opacity-100' 
-            : 'max-h-0 opacity-0 pointer-events-none'
+        className={`lg:hidden absolute top-full left-0 w-full bg-white dark:bg-[#081031] shadow-[0_20px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_40px_rgba(0,0,0,0.5)] rounded-b-3xl overflow-hidden transition-all duration-500 ease-in-out origin-top ${
+          isMobileMenuOpen ? 'max-h-[85vh] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
         }`}
       >
         <div className="flex flex-col px-6 py-2 overflow-y-auto max-h-[85vh] hide-scrollbar">
           {navLinks.map((link) => (
             <div key={link.name} className="flex flex-col">
-              
-              {/* Lien Principal ou Bouton Accordéon */}
               {link.dropdown ? (
                 <button 
                   onClick={() => setOpenMobileDropdown(openMobileDropdown === link.name ? null : link.name)}
                   className="flex items-center justify-between py-3 text-lg font-[900] uppercase text-[#081031] dark:text-white group"
                 >
-                  <span className="group-hover:text-[#0065FF] dark:group-hover:text-[#0EE2E2] transition-colors">
+                  <span className="group-hover:text-[#0065FF] dark:group-hover:text-[#0EE2E2] transition-colors font-['Montserrat']">
                     {link.name}
                   </span>
                   <ChevronDown 
@@ -190,20 +196,18 @@ const Navbar = ({ onOpenAuth }) => {
                 <Link 
                   href={link.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="py-3 text-lg font-[900] uppercase text-[#081031] dark:text-white hover:text-[#0065FF] dark:hover:text-[#0EE2E2] transition-colors"
+                  className="py-3 text-lg font-[900] uppercase text-[#081031] dark:text-white hover:text-[#0065FF] dark:hover:text-[#0EE2E2] transition-colors font-['Montserrat']"
                 >
                   {link.name}
                 </Link>
               )}
 
-              {/* Sous-menu (Accordéon animé) */}
               {link.dropdown && (
                 <div 
                   className={`overflow-hidden transition-all duration-300 ease-in-out ${
                     openMobileDropdown === link.name ? 'max-h-[400px] opacity-100 mb-2' : 'max-h-0 opacity-0'
                   }`}
                 >
-                  {/* On garde juste une petite ligne verticale de couleur pour montrer que c'est un sous-menu */}
                   <div className="flex flex-col pl-4 border-l-2 border-[#0065FF] dark:border-[#0EE2E2] space-y-3 pt-1 pb-2">
                     {link.dropdown.map(sub => (
                       <Link 
@@ -211,9 +215,9 @@ const Navbar = ({ onOpenAuth }) => {
                         href={sub.href} 
                         onClick={() => {
                           setIsMobileMenuOpen(false);
-                          setOpenMobileDropdown(null); // On referme l'accordéon pour la prochaine fois
+                          setOpenMobileDropdown(null);
                         }} 
-                        className="text-sm font-[900] text-slate-500 hover:text-[#0065FF] dark:text-slate-400 dark:hover:text-[#0EE2E2] uppercase transition-colors"
+                        className="text-sm font-bold font-['Montserrat'] text-black dark:text-white hover:text-[#0065FF] dark:hover:text-[#0EE2E2] uppercase transition-colors"
                       >
                         {sub.name}
                       </Link>
@@ -221,15 +225,35 @@ const Navbar = ({ onOpenAuth }) => {
                   </div>
                 </div>
               )}
-              
             </div>
           ))}
-          
-          {/* Bouton d'action final (Design enrichi) */}
-          <div className="pt-4 pb-6">
-            <button className="w-full bg-[#0065FF] text-white py-4 rounded-2xl font-[900] uppercase shadow-lg shadow-[#0065FF]/30 hover:scale-[1.02] hover:shadow-xl transition-all flex items-center justify-center gap-2">
-              Adhérer en ligne <ArrowRight size={18} />
+
+          {/* ACTIONS FINALES MOBILE */}
+          <div className="flex flex-col gap-4 pt-6 pb-6 mt-2 border-t border-slate-100 dark:border-white/10">
+            <button className="w-full bg-[#0065FF] text-white py-4 rounded-2xl font-[900] uppercase shadow-lg shadow-[#0065FF]/30 hover:scale-[1.02] hover:shadow-xl transition-all flex items-center justify-center gap-2 font-['Montserrat']">
+              m'inscrire <ArrowRight size={18} />
             </button>
+
+            <div className="flex items-center justify-center gap-8 mt-1">
+              {mounted && (
+                <button 
+                  onClick={toggleTheme} 
+                  className="p-3 text-[#081031] dark:text-slate-300 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] transition-colors"
+                >
+                  {isDark ? <Sun size={24} /> : <Moon size={24} />}
+                </button>
+              )}
+
+              <button 
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  if (onOpenAuth) onOpenAuth();
+                }}
+                className="p-3 text-[#081031] dark:text-slate-300 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] transition-colors"
+              >
+                <User size={24} />
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -1,0 +1,24 @@
+/* 1. Les polices d'abord */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+/* 2. Tailwind ensuite */
+@import "tailwindcss";
+
+/* 3. La directive du Dark Mode OBLIGATOIREMENT ici */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* 4. Ton code classique */
+:root {
+  font-family: 'Montserrat', sans-serif;
+}
+
+button, 
+a, 
+input[type="submit"], 
+input[type="button"],
+select {
+  cursor: pointer !important;
+}
+.cursor-clickable {
+  cursor: pointer;
+}

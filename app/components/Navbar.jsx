@@ -39,8 +39,9 @@ const Navbar = ({ onOpenAuth }) => {
           href: '#', // Désactivé car c'est un parent
           // Ces données pourront être remplacées par un fetch API depuis le dashboard
           subDropdown: [
-            { name: 'Tournoi Régional - Mai', href: '/tournois/regional-2026' },
-            { name: 'Tournoi Jeunes - Juin', href: '/tournois/jeunes-2026' }
+            { name: 'La Petite Plume - Oct.', href: '/tournois/petite-plume' },
+            { name: 'La Grande Plume - Fév.', href: '/tournois/grande-plume' },
+            { name: 'TLJ de Créteil - Mai', href: '/tournois/tlj-creteil' },
           ] 
         },
         { 
@@ -48,8 +49,8 @@ const Navbar = ({ onOpenAuth }) => {
           href: '#', // Désactivé car c'est un parent
           // Ces données pourront être remplacées par un fetch API depuis le dashboard
           subDropdown: [
-            { name: 'Étape 1 - Novembre', href: '/promobad/etape-1' },
-            { name: 'Étape 2 - Février', href: '/promobad/etape-2' }
+            { name: 'Octobre Rose - Octobre', href: '/promobad/octobre-rose' },
+            { name: 'Saint-Valentin - Février', href: '/promobad/saint-valentin' }
           ] 
         },
         { name: 'Calendrier', href: '/evenements' },

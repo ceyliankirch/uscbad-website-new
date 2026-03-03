@@ -9,14 +9,41 @@ const Navbar = ({ onOpenAuth }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openMobileDropdown, setOpenMobileDropdown] = useState(null);
-  const [openMobileNestedDropdown, setOpenMobileNestedDropdown] = useState(null); // NOUVEAU: Pour le sous-sous-menu mobile
+  const [openMobileNestedDropdown, setOpenMobileNestedDropdown] = useState(null);
   const [mounted, setMounted] = useState(false);
   const [isDark, setIsDark] = useState(false);
 
+  // ÉTATS POUR STOCKER LES DONNÉES DYNAMIQUES DE LA BASE DE DONNÉES
+  const [dynamicTournaments, setDynamicTournaments] = useState([]);
+  const [dynamicPromobads, setDynamicPromobads] = useState([]);
+
   // Définir les pages qui ont un "Hero sombre" en haut de page
-  const hasDarkHero = pathname === '/' || pathname === '/interclubs' || pathname.startsWith('/actualites') || pathname === '/presentation' || pathname === '/communication' || pathname === '/entraineurs' || pathname === '/benevoles' || pathname === '/evenements';  
+  const hasDarkHero = pathname === '/' || pathname === '/interclubs' || pathname.startsWith('/actualites') || pathname === '/presentation' || pathname === '/communication' || pathname === '/entraineurs' || pathname === '/benevoles' || pathname === '/evenements' || pathname.startsWith('/tournois/') || pathname.startsWith('/promobad/'); 
   
-  // STRUCTURE DES LIENS (Prête pour le Dashboard Admin)
+  // APPEL API POUR RÉCUPÉRER LES TOURNOIS ET PROMOBADS DYNAMIQUEMENT
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const res = await fetch('/api/tournaments');
+        const json = await res.json();
+        
+        if (json.success) {
+          // On sépare les officiels des internes
+          const officiels = json.data.filter(t => t.type === 'tournoi');
+          const internes = json.data.filter(t => t.type === 'promobad');
+          
+          // On les formate pour le menu (Nom + Lien vers la route dynamique)
+          setDynamicTournaments(officiels.map(t => ({ name: t.title, href: `/tournois/${t._id}` })));
+          setDynamicPromobads(internes.map(t => ({ name: t.title, href: `/promobad/${t._id}` })));
+        }
+      } catch (error) {
+        console.error("Erreur de récupération des événements pour la Navbar", error);
+      }
+    };
+    fetchEvents();
+  }, []);
+
+  // STRUCTURE DES LIENS (Maintenant mixée avec les données dynamiques)
   const navLinks = [
     { name: 'Accueil', href: '/' },
     { 
@@ -36,27 +63,19 @@ const Navbar = ({ onOpenAuth }) => {
       dropdown: [
         { 
           name: 'Tournois', 
-          href: '#', // Désactivé car c'est un parent
-          // Ces données pourront être remplacées par un fetch API depuis le dashboard
-          subDropdown: [
-            { name: 'La Petite Plume - Oct.', href: '/tournois/petite-plume' },
-            { name: 'La Grande Plume - Fév.', href: '/tournois/grande-plume' },
-            { name: 'TLJ de Créteil - Mai', href: '/tournois/tlj-creteil' },
-          ] 
+          href: '#',
+          // On injecte les tournois trouvés dans la BDD
+          subDropdown: dynamicTournaments.length > 0 ? dynamicTournaments : [{ name: 'Chargement...', href: '#' }]
         },
         { 
           name: 'Promobad', 
-          href: '#', // Désactivé car c'est un parent
-          // Ces données pourront être remplacées par un fetch API depuis le dashboard
-          subDropdown: [
-            { name: 'Octobre Rose - Octobre', href: '/promobad/octobre-rose' },
-            { name: 'Saint-Valentin - Février', href: '/promobad/saint-valentin' }
-          ] 
+          href: '#',
+          // On injecte les promobads trouvés dans la BDD
+          subDropdown: dynamicPromobads.length > 0 ? dynamicPromobads : [{ name: 'Chargement...', href: '#' }]
         },
         { name: 'Calendrier', href: '/evenements' },
       ]
     },
-
     { 
       name: 'Vie du Club', 
       href: '#', 
@@ -67,9 +86,8 @@ const Navbar = ({ onOpenAuth }) => {
         { name: 'Les Bénévoles', href: '/benevoles' },
       ]
     },
-
     { name: 'Contact', href: '/contact' },
-  ]
+  ];
 
   useEffect(() => {
     setMounted(true);
@@ -136,7 +154,6 @@ const Navbar = ({ onOpenAuth }) => {
               </div>
 
               {link.dropdown && (
-                // ATTENTION: Retrait de overflow-hidden pour permettre au sous-menu d'apparaître sur le côté
                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-52 bg-white rounded-2xl shadow-2xl border border-slate-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 py-2">
                   {link.dropdown.map((sub) => (
                     <div key={sub.name} className="relative group/sub">
@@ -151,18 +168,21 @@ const Navbar = ({ onOpenAuth }) => {
                           
                           {/* LE SOUS-SOUS-MENU (Flyout droit) */}
                           <div className="absolute top-0 left-[95%] ml-2 w-56 bg-white rounded-2xl shadow-2xl border border-slate-100 opacity-0 invisible group-hover/sub:opacity-100 group-hover/sub:visible transition-all duration-300 transform -translate-x-2 group-hover/sub:translate-x-0 py-2">
-                            {sub.subDropdown.length > 0 ? (
+                            {sub.subDropdown.length > 0 && sub.subDropdown[0].name !== 'Chargement...' ? (
                               sub.subDropdown.map((nested) => (
                                 <Link 
                                   key={nested.name} 
                                   href={nested.href} 
-                                  className="block px-5 py-3 text-[10px] font-bold font-['Montserrat'] uppercase text-slate-600 hover:bg-slate-50 hover:text-[#0065FF] transition-colors"
+                                  className="block px-5 py-3 text-[10px] font-bold font-['Montserrat'] uppercase text-slate-600 hover:bg-slate-50 hover:text-[#0065FF] transition-colors whitespace-nowrap overflow-hidden text-ellipsis"
+                                  title={nested.name}
                                 >
                                   {nested.name}
                                 </Link>
                               ))
                             ) : (
-                              <span className="block px-5 py-3 text-[10px] font-bold uppercase text-slate-400 italic">Aucun événement</span>
+                              <span className="block px-5 py-3 text-[10px] font-bold uppercase text-slate-400 italic">
+                                {sub.subDropdown[0]?.name || "Aucun événement"}
+                              </span>
                             )}
                           </div>
                         </>
@@ -236,7 +256,7 @@ const Navbar = ({ onOpenAuth }) => {
                 <button 
                   onClick={() => {
                     setOpenMobileDropdown(openMobileDropdown === link.name ? null : link.name);
-                    setOpenMobileNestedDropdown(null); // On ferme les sous-menus si on change de menu principal
+                    setOpenMobileNestedDropdown(null); 
                   }}
                   className="flex items-center justify-between py-3 text-lg font-[900] uppercase text-[#081031] dark:text-white group border-b border-slate-100 dark:border-white/5"
                 >
@@ -271,7 +291,7 @@ const Navbar = ({ onOpenAuth }) => {
                     {link.dropdown.map(sub => (
                       <div key={sub.name} className="flex flex-col">
                         
-                        {/* SOUS-DROPDOWN MOBILE NIVEAU 2 (Ex: Tournois, Promobad) */}
+                        {/* SOUS-DROPDOWN MOBILE NIVEAU 2 */}
                         {sub.subDropdown ? (
                           <>
                             <button 
@@ -284,20 +304,26 @@ const Navbar = ({ onOpenAuth }) => {
                             
                             <div className={`overflow-hidden transition-all duration-300 ease-in-out ${openMobileNestedDropdown === sub.name ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0'}`}>
                               <div className="flex flex-col pl-4 border-l border-slate-200 dark:border-white/10 space-y-3 py-2">
-                                {sub.subDropdown.map((nested) => (
-                                  <Link 
-                                    key={nested.name} 
-                                    href={nested.href} 
-                                    onClick={() => {
-                                      setIsMobileMenuOpen(false);
-                                      setOpenMobileDropdown(null);
-                                      setOpenMobileNestedDropdown(null);
-                                    }} 
-                                    className="text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] uppercase transition-colors"
-                                  >
-                                    {nested.name}
-                                  </Link>
-                                ))}
+                                {sub.subDropdown.length > 0 && sub.subDropdown[0].name !== 'Chargement...' ? (
+                                  sub.subDropdown.map((nested) => (
+                                    <Link 
+                                      key={nested.name} 
+                                      href={nested.href} 
+                                      onClick={() => {
+                                        setIsMobileMenuOpen(false);
+                                        setOpenMobileDropdown(null);
+                                        setOpenMobileNestedDropdown(null);
+                                      }} 
+                                      className="text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] uppercase transition-colors"
+                                    >
+                                      {nested.name}
+                                    </Link>
+                                  ))
+                                ) : (
+                                  <span className="text-[11px] font-bold text-slate-400 uppercase italic">
+                                    {sub.subDropdown[0]?.name || "Aucun événement"}
+                                  </span>
+                                )}
                               </div>
                             </div>
                           </>

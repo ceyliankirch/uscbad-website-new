@@ -4,8 +4,13 @@
     "lib": [
       "dom",
       "dom.iterable",
-      "esnext"
+      "esnext",
+    
     ],
+    "baseUrl": ".", // 👈 Ajoute ça
+    "paths": {
+      "@/*": ["./*"], // 👈 Et ça
+    },
     "allowJs": true,
     "skipLibCheck": true,
     "strict": false,

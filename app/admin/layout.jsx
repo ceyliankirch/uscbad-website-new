@@ -22,13 +22,16 @@ export default function AdminLayout({ children }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Mise à jour du menu avec l'onglet Planning
+  // Mise à jour du menu avec l'onglet Planning, Tournois et Staff
   const menuItems = [
     { name: 'Vue d\'ensemble', icon: <LayoutDashboard size={20} />, path: '/admin' },
     { name: 'Live Score', icon: <Trophy size={20} />, path: '/admin/score' },
     { name: 'Événements', icon: <CalendarDays size={20} />, path: '/admin/events' },
-    { name: 'Planning', icon: <Clock size={20} />, path: '/admin/planning' }, // NOUVEAU
-    { name: 'Actualités', icon: <Newspaper size={20} />, path: '/admin/news' },
-    { name: 'Bureau & CRs', icon: <Users size={20} />, path: '/admin/board' },
+    { name: 'Planning', icon: <Clock size={20} />, path: '/admin/planning' },
+    { name: 'Tournois & Promobad', icon: <Trophy size={20} />, path: '/admin/tournois' }, // NOUVEAU
+    { name: 'Staff & Bénévoles', icon: <Users size={20} />, path: '/admin/equipe' }, // NOUVEAU
+    { name: 'Actualités', icon: <Newspaper size={20} />, path: '/admin/actualites' },
+    { name: 'Bureau & CRs', icon: <Users size={20} />, path: '/admin/board' }, // Note: Tu as deux fois Users, tu pourrais changer l'icône du Bureau en <Briefcase /> si tu veux !
     { name: 'Paramètres Club', icon: <Settings size={20} />, path: '/admin/settings' },
   ];
 

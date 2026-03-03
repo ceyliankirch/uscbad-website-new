@@ -9,12 +9,14 @@ const Navbar = ({ onOpenAuth }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openMobileDropdown, setOpenMobileDropdown] = useState(null);
+  const [openMobileNestedDropdown, setOpenMobileNestedDropdown] = useState(null); // NOUVEAU: Pour le sous-sous-menu mobile
   const [mounted, setMounted] = useState(false);
   const [isDark, setIsDark] = useState(false);
 
   // Définir les pages qui ont un "Hero sombre" en haut de page
-  const hasDarkHero = pathname === '/' || pathname === '/interclubs' || pathname === '/actualites' || pathname === '/presentation';
-
+  const hasDarkHero = pathname === '/' || pathname === '/interclubs' || pathname.startsWith('/actualites') || pathname === '/presentation' || pathname === '/communication' || pathname === '/entraineurs' || pathname === '/benevoles' || pathname === '/evenements';  
+  
+  // STRUCTURE DES LIENS (Prête pour le Dashboard Admin)
   const navLinks = [
     { name: 'Accueil', href: '/' },
     { 
@@ -32,9 +34,25 @@ const Navbar = ({ onOpenAuth }) => {
       name: 'à venir', 
       href: '#',
       dropdown: [
-        { name: 'Tournois', href: '/tournois' },
-        { name: 'Promobad', href: '/promobad' },
-        { name: 'Calendrier', href: '/calendrier' },
+        { 
+          name: 'Tournois', 
+          href: '#', // Désactivé car c'est un parent
+          // Ces données pourront être remplacées par un fetch API depuis le dashboard
+          subDropdown: [
+            { name: 'Tournoi Régional - Mai', href: '/tournois/regional-2026' },
+            { name: 'Tournoi Jeunes - Juin', href: '/tournois/jeunes-2026' }
+          ] 
+        },
+        { 
+          name: 'Promobad', 
+          href: '#', // Désactivé car c'est un parent
+          // Ces données pourront être remplacées par un fetch API depuis le dashboard
+          subDropdown: [
+            { name: 'Étape 1 - Novembre', href: '/promobad/etape-1' },
+            { name: 'Étape 2 - Février', href: '/promobad/etape-2' }
+          ] 
+        },
+        { name: 'Calendrier', href: '/evenements' },
       ]
     },
 
@@ -44,9 +62,8 @@ const Navbar = ({ onOpenAuth }) => {
       dropdown: [
         { name: 'Le bureau', href: '/bureau' },
         { name: 'Communication', href: '/communication' },
-        { name: 'Nos entraîneurs', href: '/entraineurs' },
-        { name: 'Les Bénévoles', href: '/bénévoles' },
-
+        { name: 'Nos Entraîneurs', href: '/entraineurs' },
+        { name: 'Les Bénévoles', href: '/benevoles' },
       ]
     },
 
@@ -67,16 +84,11 @@ const Navbar = ({ onOpenAuth }) => {
   // GESTION DU SCROLL DYNAMIQUE
   useEffect(() => {
     const handleScroll = () => {
-      // Si la page a un grand hero sombre, on attend d'avoir scrollé 
-      // quasiment toute la hauteur de l'écran (window.innerHeight - 100px)
-      // Sinon, on s'active dès 20px de scroll.
       const scrollThreshold = hasDarkHero ? window.innerHeight - 100 : 20;
       setIsScrolled(window.scrollY > scrollThreshold);
     };
 
-    // On vérifie la position au chargement initial
     handleScroll();
-
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [hasDarkHero]);
@@ -90,10 +102,7 @@ const Navbar = ({ onOpenAuth }) => {
 
   if (pathname.startsWith('/admin')) return null;
 
-  // La navbar doit être "solide/sombre" si on a scrollé au-delà de la limite, 
-  // si la page n'a PAS de hero sombre, ou si le menu mobile est ouvert
   const shouldBeSolid = isScrolled || !hasDarkHero || isMobileMenuOpen;
-
   const textColor = shouldBeSolid ? 'text-[#081031] dark:text-white' : 'text-white';
   const groupHoverColor = shouldBeSolid ? 'group-hover:text-[#0065FF]' : 'group-hover:text-[#0EE2E2]';
 
@@ -126,15 +135,47 @@ const Navbar = ({ onOpenAuth }) => {
               </div>
 
               {link.dropdown && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-52 bg-white rounded-2xl shadow-2xl border border-slate-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 overflow-hidden">
+                // ATTENTION: Retrait de overflow-hidden pour permettre au sous-menu d'apparaître sur le côté
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-52 bg-white rounded-2xl shadow-2xl border border-slate-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 py-2">
                   {link.dropdown.map((sub) => (
-                    <Link 
-                      key={sub.name} 
-                      href={sub.href} 
-                      className="block px-6 py-4 text-[11px] font-bold font-['Montserrat'] uppercase text-black hover:bg-slate-50 hover:text-[#0065FF] transition-colors"
-                    >
-                      {sub.name}
-                    </Link>
+                    <div key={sub.name} className="relative group/sub">
+                      
+                      {/* S'il y a un sous-sous-menu (Ex: Tournois / Promobad) */}
+                      {sub.subDropdown ? (
+                        <>
+                          <div className="flex items-center justify-between px-6 py-3 text-[11px] font-bold font-['Montserrat'] uppercase text-black hover:bg-slate-50 hover:text-[#0065FF] transition-colors cursor-pointer">
+                            <span>{sub.name}</span>
+                            <ChevronRight size={14} className="text-slate-400 group-hover/sub:text-[#0065FF]" />
+                          </div>
+                          
+                          {/* LE SOUS-SOUS-MENU (Flyout droit) */}
+                          <div className="absolute top-0 left-[95%] ml-2 w-56 bg-white rounded-2xl shadow-2xl border border-slate-100 opacity-0 invisible group-hover/sub:opacity-100 group-hover/sub:visible transition-all duration-300 transform -translate-x-2 group-hover/sub:translate-x-0 py-2">
+                            {sub.subDropdown.length > 0 ? (
+                              sub.subDropdown.map((nested) => (
+                                <Link 
+                                  key={nested.name} 
+                                  href={nested.href} 
+                                  className="block px-5 py-3 text-[10px] font-bold font-['Montserrat'] uppercase text-slate-600 hover:bg-slate-50 hover:text-[#0065FF] transition-colors"
+                                >
+                                  {nested.name}
+                                </Link>
+                              ))
+                            ) : (
+                              <span className="block px-5 py-3 text-[10px] font-bold uppercase text-slate-400 italic">Aucun événement</span>
+                            )}
+                          </div>
+                        </>
+                      ) : (
+                        /* Lien classique du dropdown */
+                        <Link 
+                          href={sub.href} 
+                          className="block px-6 py-3 text-[11px] font-bold font-['Montserrat'] uppercase text-black hover:bg-slate-50 hover:text-[#0065FF] transition-colors"
+                        >
+                          {sub.name}
+                        </Link>
+                      )}
+
+                    </div>
                   ))}
                 </div>
               )}
@@ -192,8 +233,11 @@ const Navbar = ({ onOpenAuth }) => {
             <div key={link.name} className="flex flex-col">
               {link.dropdown ? (
                 <button 
-                  onClick={() => setOpenMobileDropdown(openMobileDropdown === link.name ? null : link.name)}
-                  className="flex items-center justify-between py-3 text-lg font-[900] uppercase text-[#081031] dark:text-white group"
+                  onClick={() => {
+                    setOpenMobileDropdown(openMobileDropdown === link.name ? null : link.name);
+                    setOpenMobileNestedDropdown(null); // On ferme les sous-menus si on change de menu principal
+                  }}
+                  className="flex items-center justify-between py-3 text-lg font-[900] uppercase text-[#081031] dark:text-white group border-b border-slate-100 dark:border-white/5"
                 >
                   <span className="group-hover:text-[#0065FF] dark:group-hover:text-[#0EE2E2] transition-colors font-['Montserrat']">
                     {link.name}
@@ -209,31 +253,67 @@ const Navbar = ({ onOpenAuth }) => {
                 <Link 
                   href={link.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="py-3 text-lg font-[900] uppercase text-[#081031] dark:text-white hover:text-[#0065FF] dark:hover:text-[#0EE2E2] transition-colors font-['Montserrat']"
+                  className="py-3 text-lg font-[900] uppercase text-[#081031] dark:text-white hover:text-[#0065FF] dark:hover:text-[#0EE2E2] transition-colors font-['Montserrat'] border-b border-slate-100 dark:border-white/5"
                 >
                   {link.name}
                 </Link>
               )}
 
+              {/* DROPDOWN MOBILE NIVEAU 1 */}
               {link.dropdown && (
                 <div 
                   className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                    openMobileDropdown === link.name ? 'max-h-[400px] opacity-100 mb-2' : 'max-h-0 opacity-0'
+                    openMobileDropdown === link.name ? 'max-h-[800px] opacity-100 mb-2' : 'max-h-0 opacity-0'
                   }`}
                 >
-                  <div className="flex flex-col pl-4 border-l-2 border-[#0065FF] dark:border-[#0EE2E2] space-y-3 pt-1 pb-2">
+                  <div className="flex flex-col pl-4 border-l-2 border-[#0065FF] dark:border-[#0EE2E2] space-y-2 pt-2 pb-2 mt-2">
                     {link.dropdown.map(sub => (
-                      <Link 
-                        key={sub.name} 
-                        href={sub.href} 
-                        onClick={() => {
-                          setIsMobileMenuOpen(false);
-                          setOpenMobileDropdown(null);
-                        }} 
-                        className="text-sm font-bold font-['Montserrat'] text-black dark:text-white hover:text-[#0065FF] dark:hover:text-[#0EE2E2] uppercase transition-colors"
-                      >
-                        {sub.name}
-                      </Link>
+                      <div key={sub.name} className="flex flex-col">
+                        
+                        {/* SOUS-DROPDOWN MOBILE NIVEAU 2 (Ex: Tournois, Promobad) */}
+                        {sub.subDropdown ? (
+                          <>
+                            <button 
+                              onClick={() => setOpenMobileNestedDropdown(openMobileNestedDropdown === sub.name ? null : sub.name)}
+                              className="flex items-center justify-between py-2 text-sm font-bold font-['Montserrat'] text-black dark:text-white uppercase transition-colors"
+                            >
+                              <span>{sub.name}</span>
+                              <ChevronDown size={16} className={`transition-transform text-slate-400 ${openMobileNestedDropdown === sub.name ? 'rotate-180 text-[#0065FF]' : ''}`} />
+                            </button>
+                            
+                            <div className={`overflow-hidden transition-all duration-300 ease-in-out ${openMobileNestedDropdown === sub.name ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                              <div className="flex flex-col pl-4 border-l border-slate-200 dark:border-white/10 space-y-3 py-2">
+                                {sub.subDropdown.map((nested) => (
+                                  <Link 
+                                    key={nested.name} 
+                                    href={nested.href} 
+                                    onClick={() => {
+                                      setIsMobileMenuOpen(false);
+                                      setOpenMobileDropdown(null);
+                                      setOpenMobileNestedDropdown(null);
+                                    }} 
+                                    className="text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] uppercase transition-colors"
+                                  >
+                                    {nested.name}
+                                  </Link>
+                                ))}
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          /* Lien classique du dropdown */
+                          <Link 
+                            href={sub.href} 
+                            onClick={() => {
+                              setIsMobileMenuOpen(false);
+                              setOpenMobileDropdown(null);
+                            }} 
+                            className="py-2 text-sm font-bold font-['Montserrat'] text-black dark:text-white hover:text-[#0065FF] dark:hover:text-[#0EE2E2] uppercase transition-colors"
+                          >
+                            {sub.name}
+                          </Link>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -242,7 +322,7 @@ const Navbar = ({ onOpenAuth }) => {
           ))}
 
           {/* ACTIONS FINALES MOBILE */}
-          <div className="flex flex-col gap-4 pt-6 pb-6 mt-2 border-t border-slate-100 dark:border-white/10">
+          <div className="flex flex-col gap-4 pt-6 pb-6 mt-4 border-t border-slate-100 dark:border-white/10">
             <button className="w-full bg-[#0065FF] text-white py-4 rounded-2xl font-[900] uppercase shadow-lg shadow-[#0065FF]/30 hover:scale-[1.02] hover:shadow-xl transition-all flex items-center justify-center gap-2 font-['Montserrat']">
               m'inscrire <ArrowRight size={18} />
             </button>

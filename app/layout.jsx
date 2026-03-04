@@ -1,7 +1,10 @@
 import { Montserrat } from 'next/font/google';
 import './globals.css';
+import Navbar from './components/Navbar'; 
+import Footer from './components/Footer'; 
 
 // 1. Configuration de la police Montserrat optimisée pour Next.js
+// Cela règle définitivement le problème d'affichage (Times New Roman) sur iOS/Safari.
 const montserrat = Montserrat({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700', '800', '900'],
@@ -14,9 +17,8 @@ export const metadata = {
   title: 'US Créteil Badminton | Site Officiel',
   description: 'Découvrez le club de Badminton de Créteil : entraînements, école de jeunes labellisée, compétitions et vie du club.',
   keywords: ['badminton', 'Créteil', 'club', 'sport', 'jeunes', 'compétition'],
-  // Ajout du logo pour l'onglet
   icons: {
-    icon: '/logo-uscbadminton.png', // Chemin vers votre logo dans le dossier /public
+    icon: '/logo-uscbadminton.png',
     shortcut: '/logo-uscbadminton.png',
     apple: '/logo-uscbadminton.png',
   },
@@ -27,16 +29,15 @@ export default function RootLayout({ children }) {
     <html lang="fr" className="scroll-smooth">
       <body className={`${montserrat.variable} font-sans antialiased bg-white dark:bg-[#040817] text-[#081031] dark:text-white transition-colors duration-300`}>
         
-        {/* Vous pouvez insérer ici votre composant <Navbar /> 
-          pour qu'il soit présent sur toutes les pages.
-        */}
+        {/* Barre de navigation présente sur tout le site */}
+        <Navbar />
         
-        <main>
+        <main className="min-h-screen">
           {children}
         </main>
 
-        {/* Vous pouvez insérer ici votre composant <Footer /> 
-        */}
+        {/* Pied de page présent sur tout le site */}
+        <Footer />
 
       </body>
     </html>

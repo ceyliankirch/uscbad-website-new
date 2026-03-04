@@ -1,219 +1,268 @@
 'use client';
+
 import React, { useState, useEffect } from 'react';
-import { 
-  Clock, MapPin, User, Trophy, Calendar, Star, 
-  ArrowRight, Award, Zap, Loader2, ChevronRight, Info 
-} from 'lucide-react';
+import { Star, Clock, MapPin, Trophy, Award } from 'lucide-react';
 
-const days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
-
-export default function JeunesPage() {
-  const [sessions, setSessions] = useState([]);
+const EcoleJeunes = () => {
+  // --- 1. ÉTATS POUR STOCKER LES DONNÉES DE LA BDD ---
+  const [schedules, setSchedules] = useState([]);
+  const [coaches, setCoaches] = useState([]);
+  const [players, setPlayers] = useState([]);
+  const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // --- 2. RÉCUPÉRATION DES DONNÉES (FETCH) ---
   useEffect(() => {
-    const fetchCreneaux = async () => {
-      try {
-        const res = await fetch('/api/creneaux');
-        const data = await res.json();
-        if (data.success) {
-          // On ne garde que les créneaux typés "Jeunes"
-          setSessions(data.data.filter(s => s.type === 'Jeunes'));
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchCreneaux();
+    // On lance toutes les requêtes en même temps pour plus de rapidité
+    Promise.all([
+      fetch('/api/schedules?type=jeunes').then(res => res.json()).catch(() => ({ data: [] })),
+      fetch('/api/coaches?team=jeunes').then(res => res.json()).catch(() => ({ data: [] })),
+      fetch('/api/players?pole=performance').then(res => res.json()).catch(() => ({ data: [] })),
+      fetch('/api/events?category=jeunes').then(res => res.json()).catch(() => ({ data: [] }))
+    ])
+    .then(([schedulesRes, coachesRes, playersRes, eventsRes]) => {
+      // On met à jour les états si la requête a réussi
+      if (schedulesRes.data) setSchedules(schedulesRes.data);
+      if (coachesRes.data) setCoaches(coachesRes.data);
+      if (playersRes.data) setPlayers(playersRes.data);
+      if (eventsRes.data) setEvents(eventsRes.data);
+      setIsLoading(false);
+    })
+    .catch(err => {
+      console.error("Erreur globale lors du chargement des données:", err);
+      setIsLoading(false);
+    });
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#040817] pt-32 lg:pt-48 pb-24 font-['Montserrat']">
+    <div className="bg-white dark:bg-[#040817] font-['Montserrat'] transition-colors duration-300 min-h-screen pb-20">
       
-      {/* --- HERO SECTION --- */}
-      <section className="max-w-[1600px] mx-auto px-6 mb-20 text-center lg:text-left lg:flex items-center gap-12">
-        <div className="lg:w-1/2">
-          <div className="inline-flex items-center gap-2 bg-[#FFD500]/10 text-[#D4AF37] dark:text-[#FFD500] px-4 py-2 rounded-full mb-6">
-            <Zap size={16} fill="currentColor" />
-            <span className="text-[10px] font-black uppercase tracking-widest">Génération US Créteil</span>
+      {/* 1. HERO SECTION (Fixe) */}
+      <section className="relative w-full pt-32 pb-20 lg:pt-40 lg:pb-32 px-6 lg:px-8 overflow-hidden bg-[#081031] text-white">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#0065FF]/20 blur-[100px] rounded-full pointer-events-none" />
+        
+        <div className="relative z-10 max-w-[1200px] mx-auto text-center flex flex-col items-center">
+          <div className="flex flex-col items-center justify-center p-6 lg:p-8 bg-white/5 border border-white/10 backdrop-blur-md rounded-3xl shadow-2xl mb-8 lg:mb-12 hover:bg-white/10 transition-colors">
+            <div className="flex gap-2 text-[#0EE2E2] mb-4">
+              <Star size={40} fill="currentColor" className="drop-shadow-[0_0_15px_rgba(14,226,226,0.5)]" />
+              <Star size={48} fill="currentColor" className="drop-shadow-[0_0_15px_rgba(14,226,226,0.5)] -translate-y-2" />
+              <Star size={40} fill="currentColor" className="drop-shadow-[0_0_15px_rgba(14,226,226,0.5)]" />
+            </div>
+            <div className="text-[#0EE2E2] font-[900] tracking-widest uppercase text-xs lg:text-sm mb-2">
+              Fédération Française de Badminton
+            </div>
+            <h1 className="text-3xl md:text-5xl font-[900] italic uppercase tracking-tighter">
+              École de Badminton <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0EE2E2] to-[#0065FF]">Labellisée 3 Étoiles</span>
+            </h1>
           </div>
-          <h1 className="text-6xl md:text-8xl font-[900] italic uppercase text-[#081031] dark:text-white leading-[0.9] mb-8 tracking-tighter">
-            L'école de <br /><span className="text-[#0065FF]">Badminton</span>
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 font-bold text-sm lg:text-base max-w-xl leading-relaxed uppercase tracking-wide">
-            De l'initiation à l'excellence. Nous formons les champions de demain dans une ambiance conviviale et dynamique au cœur du Val-de-Marne.
+          <p className="text-sm md:text-lg text-slate-300 font-bold max-w-2xl leading-relaxed">
+            Un encadrement de qualité pour vos enfants, du minibad à la compétition. Notre équipe pédagogique diplômée accompagne chaque jeune vers son meilleur niveau.
           </p>
-        </div>
-        <div className="hidden lg:grid lg:w-1/2 grid-cols-2 gap-4">
-            <div className="bg-[#0065FF] h-64 rounded-[3rem] shadow-2xl flex items-end p-8 text-white relative overflow-hidden group">
-                <Trophy className="absolute -top-10 -right-10 w-40 h-40 opacity-10 group-hover:rotate-12 transition-transform" />
-                <h3 className="text-3xl font-[900] italic uppercase leading-none">Compétition<br/>Elite</h3>
-            </div>
-            <div className="bg-[#FFD500] h-64 rounded-[3rem] shadow-2xl mt-12 flex items-end p-8 text-[#081031]">
-                <Star className="absolute top-10 right-10 w-12 h-12" fill="#081031" />
-                <h3 className="text-3xl font-[900] italic uppercase leading-none">Pédagogie<br/>Expert</h3>
-            </div>
         </div>
       </section>
 
-      {/* --- PLANNING JEUNES --- */}
-      <section className="max-w-[1600px] mx-auto px-6 mb-32">
-        <div className="flex items-center gap-4 mb-12">
-          <div className="h-10 w-2 bg-[#FFD500] rounded-full" />
-          <h2 className="text-4xl font-[900] italic uppercase text-[#081031] dark:text-white">Créneaux <span className="text-[#FFD500]">Entraînements</span></h2>
+      {/* 2. CRÉNEAUX D'ENTRAÎNEMENTS (Dynamique) */}
+      <section className="py-16 lg:py-24 max-w-[1600px] mx-auto px-6 lg:px-8">
+        <div className="mb-10 lg:mb-16 text-center">
+          <h2 className="text-4xl lg:text-5xl font-[900] italic uppercase text-[#081031] dark:text-white">
+            Créneaux <span className="text-[#0065FF]">Jeunes</span>
+          </h2>
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-20"><Loader2 className="animate-spin text-[#FFD500]" size={40} /></div>
+          <div className="flex justify-center"><div className="w-10 h-10 border-4 border-[#0065FF] border-t-transparent rounded-full animate-spin"></div></div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-            {days.map(day => {
-              const daySessions = sessions.filter(s => s.day === day).sort((a,b) => a.startTime.localeCompare(b.startTime));
-              return (
-                <div key={day} className="space-y-4">
-                  <div className="bg-white dark:bg-white/5 p-4 rounded-2xl border border-slate-200 dark:border-white/10 text-center">
-                    <h4 className="font-black uppercase text-xs tracking-tighter dark:text-white">{day}</h4>
-                  </div>
-                  {daySessions.map(s => (
-                    <div key={s._id} className="bg-white dark:bg-[#0f172a] p-5 rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-sm">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Clock size={14} className="text-[#FFD500]" />
-                        <span className="font-black italic text-sm dark:text-white">{s.startTime} - {s.endTime}</span>
-                      </div>
-                      <h5 className="font-black uppercase text-[10px] dark:text-[#FFD500] mb-2">{s.title || "Jeunes"}</h5>
-                      <div className="flex items-center gap-2 opacity-50 text-[9px] font-bold uppercase tracking-widest truncate dark:text-white">
-                        <MapPin size={10} /> {s.gymnasium}
-                      </div>
-                    </div>
-                  ))}
-                  {daySessions.length === 0 && <div className="h-20 border-2 border-dashed border-slate-100 dark:border-white/5 rounded-[2rem]" />}
-                </div>
-              )
-            })}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {schedules.length > 0 ? schedules.map((schedule) => (
+              <ScheduleCard 
+                key={schedule._id} 
+                day={schedule.day} 
+                time={schedule.time} 
+                level={schedule.level} 
+                gym={schedule.gym} 
+              />
+            )) : (
+              <p className="text-center col-span-full text-slate-500">Aucun créneau disponible pour le moment.</p>
+            )}
           </div>
         )}
       </section>
 
-      {/* --- CALENDRIER TOURNOIS & ÉVÉNEMENTS --- */}
-      <section className="max-w-[1600px] mx-auto px-6 mb-32 grid lg:grid-cols-2 gap-16">
-        
-        {/* TOURNOIS CDJ / TLJ */}
-        <div className="bg-[#081031] rounded-[4rem] p-10 lg:p-16 text-white relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-10 opacity-10"><Trophy size={200} /></div>
-          <h2 className="text-4xl font-[900] italic uppercase mb-10 relative">Calendrier <br /><span className="text-[#FFD500]">Compétition</span></h2>
-          
-          <div className="space-y-6 relative">
-            {[
-              { label: 'CDJ', full: 'Critérium Départemental Jeunes', color: '#FFD500' },
-              { label: 'TLJ', full: 'Trophée Local Jeunes', color: '#0EE2E2' },
-              { label: 'France', full: 'Championnats de France Jeunes', color: '#0065FF' }
-            ].map((tournoi, i) => (
-              <div key={i} className="flex items-center gap-6 group cursor-pointer border-b border-white/10 pb-6 last:border-0">
-                <div className="w-16 h-16 rounded-2xl flex items-center justify-center font-black italic text-xl shrink-0" style={{ backgroundColor: tournoi.color, color: tournoi.color === '#FFD500' ? '#081031' : 'white' }}>
-                  {tournoi.label}
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-black uppercase text-sm tracking-widest">{tournoi.full}</h4>
-                  <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase">Saison 2024 - 2025</p>
-                </div>
-                <ChevronRight className="opacity-0 group-hover:opacity-100 group-hover:translate-x-2 transition-all" />
-              </div>
-            ))}
+      {/* 3. NOS ENTRAÎNEURS JEUNES (Dynamique) */}
+      <section className="py-16 lg:py-24 bg-slate-50 dark:bg-[#0a0f25] border-y border-slate-100 dark:border-white/5 transition-colors">
+        <div className="max-w-[1200px] mx-auto px-6 lg:px-8">
+          <div className="mb-10 lg:mb-16 text-center">
+            <h2 className="text-4xl lg:text-5xl font-[900] italic uppercase text-[#081031] dark:text-white">
+              Nos <span className="text-[#0EE2E2]">Entraîneurs</span>
+            </h2>
+            <p className="mt-4 text-slate-500 dark:text-slate-400 font-bold">Une équipe encadrante diplômée et passionnée.</p>
           </div>
-        </div>
 
-        {/* ÉVÉNEMENTS CLUB */}
-        <div className="space-y-8">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="h-10 w-2 bg-[#0EE2E2] rounded-full" />
-            <h2 className="text-4xl font-[900] italic uppercase text-[#081031] dark:text-white">Vie du <span className="text-[#0EE2E2]">Club</span></h2>
-          </div>
-          
-          {[
-            { title: 'Stage de la Toussaint', date: 'Octobre 2024', desc: 'Perfectionnement intensif sur 5 jours avec nos coachs experts.' },
-            { title: 'Fête de Noël Jeunes', date: 'Décembre 2024', desc: 'Tournois ludiques, goûter et surprises pour tous nos jeunes adhérents.' },
-            { title: 'Nuit du Badminton', date: 'Février 2025', desc: 'Une soirée exceptionnelle de jeu libre en musique et déguisé.' }
-          ].map((event, i) => (
-            <div key={i} className="bg-white dark:bg-white/5 p-8 rounded-[2.5rem] border border-slate-200 dark:border-white/10 group hover:bg-[#0065FF] transition-all">
-              <div className="flex justify-between items-start mb-4">
-                <Calendar className="text-[#0EE2E2] group-hover:text-white" />
-                <span className="text-[10px] font-black uppercase text-[#0EE2E2] group-hover:text-white/80">{event.date}</span>
-              </div>
-              <h4 className="text-2xl font-[900] italic uppercase text-[#081031] dark:text-white group-hover:text-white mb-2">{event.title}</h4>
-              <p className="text-xs font-bold text-slate-400 dark:text-slate-500 group-hover:text-white/70 leading-relaxed uppercase tracking-wide">{event.desc}</p>
+          {isLoading ? (
+            <div className="flex justify-center"><div className="w-10 h-10 border-4 border-[#0EE2E2] border-t-transparent rounded-full animate-spin"></div></div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {coaches.length > 0 ? coaches.map((coach) => (
+                <CoachCard 
+                  key={coach._id} 
+                  name={coach.name} 
+                  role={coach.role} 
+                  diploma={coach.diploma} 
+                  img={coach.image} 
+                />
+              )) : (
+                <p className="text-center col-span-full text-slate-500">Aucun entraîneur renseigné pour le moment.</p>
+              )}
             </div>
-          ))}
+          )}
         </div>
       </section>
 
-      {/* --- POLE PERFORMANCE --- */}
-      <section className="bg-gradient-to-br from-[#0065FF] to-[#081031] py-24 px-6 overflow-hidden">
-        <div className="max-w-[1600px] mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-5xl md:text-7xl font-[900] italic uppercase text-white leading-none tracking-tighter">
-              Pôle <span className="text-[#FFD500]">Performance</span>
+      {/* 4. PÔLE PERFORMANCE (Dynamique) */}
+      <section className="py-16 lg:py-24 max-w-[1200px] mx-auto px-6 lg:px-8">
+        <div className="mb-10 lg:mb-16 text-center">
+          <h2 className="text-4xl lg:text-5xl font-[900] italic uppercase text-[#081031] dark:text-white">
+            Pôle <span className="text-[#0065FF]">Performance</span>
+          </h2>
+          <p className="mt-4 text-slate-500 dark:text-slate-400 font-bold">Nos pépites qui brillent au niveau régional et national.</p>
+        </div>
+
+        {isLoading ? (
+          <div className="flex justify-center"><div className="w-10 h-10 border-4 border-[#F72585] border-t-transparent rounded-full animate-spin"></div></div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {players.length > 0 ? players.map((player) => (
+              <PlayerCard 
+                key={player._id}
+                name={player.name} 
+                category={player.category} 
+                rank={player.rank} 
+                titles={player.titles} 
+                img={player.image} 
+                accent={player.accentColor || "#0065FF"} // Fallback color
+                badge={player.isFutureChamp ? "Future Championne 🏆" : null}
+              />
+            )) : (
+              <p className="text-center col-span-full text-slate-500">Aucun joueur dans le pôle performance actuellement.</p>
+            )}
+          </div>
+        )}
+      </section>
+
+      {/* 5. ÉVÉNEMENTS JEUNES (Dynamique) */}
+      <section className="py-16 lg:py-24 bg-[#081031] text-white overflow-hidden relative">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[#0EE2E2]/10 blur-[100px] rounded-full" />
+        <div className="max-w-[1600px] mx-auto px-6 lg:px-8 relative z-10">
+          
+          <div className="mb-10 lg:mb-16 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+            <h2 className="text-4xl lg:text-5xl font-[900] italic uppercase text-white">
+              L'Agenda <span className="text-[#0EE2E2]">Jeunes</span>
             </h2>
-            <p className="text-[#FFD500] font-black uppercase text-xs tracking-[0.3em] mt-4">L'élite de l'US Créteil Jeunes</p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="bg-white/10 backdrop-blur-md border border-white/10 rounded-[3rem] p-8 text-white relative group hover:-translate-y-4 transition-all">
-                <div className="absolute -top-6 -right-6 w-20 h-20 bg-[#FFD500] rounded-full flex items-center justify-center text-[#081031] font-black italic shadow-xl">
-                  #{i}
-                </div>
-                <div className="w-32 h-32 bg-white/20 rounded-full mb-6 mx-auto overflow-hidden border-4 border-[#FFD500]">
-                  {/* Photo Joueur placeholder */}
-                  <div className="w-full h-full flex items-center justify-center opacity-30"><User size={48} /></div>
-                </div>
-                <h4 className="text-center font-black uppercase italic text-xl mb-1">Elite Player {i}</h4>
-                <p className="text-center text-[#FFD500] font-black uppercase text-[10px] mb-6">Série N2 / U17</p>
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between text-[10px] font-bold uppercase opacity-60">
-                    <span>Palmarès :</span>
-                  </div>
-                  <div className="text-[10px] font-black uppercase tracking-tighter bg-white/5 p-3 rounded-xl border border-white/5">
-                    Vainqueur CDJ #3 <br /> Top 16 France Jeunes
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-20 flex justify-center">
-            <button className="bg-white text-[#081031] px-12 py-5 rounded-2xl font-[900] uppercase text-sm tracking-widest flex items-center gap-3 hover:scale-105 transition-all shadow-2xl">
-              Rejoindre l'élite <ArrowRight size={18} />
+            <button className="border-2 border-[#0EE2E2] text-[#0EE2E2] px-6 py-2 rounded-full font-bold uppercase text-xs hover:bg-[#0EE2E2] hover:text-[#081031] transition-all">
+              Calendrier complet
             </button>
           </div>
+
+          {isLoading ? (
+            <div className="flex justify-center"><div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin"></div></div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {events.length > 0 ? events.map((evt) => (
+                <EventRow 
+                  key={evt._id}
+                  date={evt.date} 
+                  month={evt.month} 
+                  title={evt.title} 
+                  type={evt.type} 
+                  location={evt.location} 
+                />
+              )) : (
+                <p className="text-center col-span-full text-slate-400">Aucun événement à venir.</p>
+              )}
+            </div>
+          )}
         </div>
       </section>
 
-      {/* --- INFOS PRATIQUES --- */}
-      <section className="max-w-4xl mx-auto px-6 mt-32">
-        <div className="bg-white dark:bg-[#0f172a] rounded-[3rem] p-10 lg:p-16 border border-slate-200 dark:border-white/5 shadow-2xl">
-          <div className="flex items-center gap-4 mb-8">
-            <Info size={32} className="text-[#0065FF]" />
-            <h2 className="text-3xl font-[900] italic uppercase text-[#081031] dark:text-white">Infos <span className="text-[#0065FF]">Pratiques</span></h2>
-          </div>
-          <div className="grid md:grid-cols-2 gap-10">
-            <div>
-              <h5 className="font-black uppercase text-xs mb-4 text-[#0065FF]">Inscriptions</h5>
-              <p className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase leading-relaxed leading-relaxed">
-                Les dossiers d'inscription sont à retirer au club ou à télécharger sur le site. Une séance d'essai est offerte pour tous les nouveaux jeunes (en Septembre).
-              </p>
-            </div>
-            <div>
-              <h5 className="font-black uppercase text-xs mb-4 text-[#0065FF]">Matériel</h5>
-              <p className="text-slate-500 dark:text-slate-400 text-[10px] font-bold uppercase leading-relaxed">
-                Le club prête des raquettes pour les débutants. Chaussures de salle propres (semelles non marquantes) obligatoires.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
-}
+};
+
+/* --- SOUS-COMPOSANTS (inchangés, ils reçoivent les props de la DB) --- */
+
+const ScheduleCard = ({ day, time, level, gym }) => (
+  <div className="bg-slate-50 dark:bg-[#0f172a] p-6 lg:p-8 rounded-[1.5rem] border border-slate-200 dark:border-white/5 hover:border-[#0065FF] dark:hover:border-[#0EE2E2] transition-colors group">
+    <div className="text-2xl font-[900] italic uppercase text-[#081031] dark:text-white mb-4 group-hover:text-[#0065FF] dark:group-hover:text-[#0EE2E2] transition-colors">{day}</div>
+    <div className="flex items-center gap-2 text-[#0065FF] dark:text-[#0EE2E2] font-bold text-sm mb-2">
+      <Clock size={16} /> {time}
+    </div>
+    <div className="text-slate-600 dark:text-slate-300 font-[900] text-sm uppercase tracking-wide mb-4">{level}</div>
+    <div className="flex items-center gap-2 text-slate-400 text-xs font-bold pt-4 border-t border-slate-200 dark:border-white/10">
+      <MapPin size={14} /> {gym}
+    </div>
+  </div>
+);
+
+const CoachCard = ({ name, role, diploma, img }) => (
+  <div className="bg-white dark:bg-[#040817] rounded-[1.5rem] overflow-hidden border border-slate-100 dark:border-white/5 shadow-sm hover:shadow-xl transition-all group">
+    <div className="aspect-square bg-slate-200 dark:bg-slate-800 relative overflow-hidden">
+      <div className="absolute inset-0 bg-[#081031]/10 group-hover:bg-transparent transition-colors z-10" />
+      <img src={img || "https://images.unsplash.com/photo-1594381898411-846e7d193883?q=80&w=800&auto=format&fit=crop"} alt={name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+    </div>
+    <div className="p-6 text-center">
+      <h3 className="text-xl font-[900] uppercase italic text-[#081031] dark:text-white mb-1">{name}</h3>
+      <div className="text-[#0065FF] dark:text-[#0EE2E2] font-bold text-xs uppercase tracking-widest mb-3">{role}</div>
+      <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1 bg-slate-50 dark:bg-white/5 rounded-full text-slate-500 dark:text-slate-400 text-[10px] font-bold">
+        <Award size={12} /> {diploma}
+      </div>
+    </div>
+  </div>
+);
+
+const PlayerCard = ({ name, category, rank, titles, img, accent, badge }) => (
+  <div className="relative bg-white dark:bg-[#0f172a] rounded-[2rem] p-6 border border-slate-100 dark:border-white/5 shadow-sm hover:-translate-y-2 transition-transform duration-300">
+    {badge && (
+      <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#F72585] to-[#ff4d9a] text-white px-4 py-1.5 rounded-full font-[900] uppercase text-[10px] tracking-widest shadow-lg shadow-[#F72585]/30 z-20 whitespace-nowrap animate-bounce">
+        {badge}
+      </div>
+    )}
+    <div className="flex flex-col items-center text-center">
+      <div className="w-24 h-24 rounded-full p-1 mb-4" style={{ background: `linear-gradient(135deg, ${accent}, transparent)` }}>
+        <div className="w-full h-full rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden border-2 border-white dark:border-[#0f172a]">
+          <img src={img || "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?q=80&w=400&auto=format&fit=crop"} alt={name} className="w-full h-full object-cover" />
+        </div>
+      </div>
+      <h3 className="text-2xl font-[900] uppercase italic text-[#081031] dark:text-white mb-1">{name}</h3>
+      <div className="text-sm font-bold text-slate-400 mb-4">{category}</div>
+      <div className="w-full space-y-2">
+        <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-white/5">
+          <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Classement</span>
+          <span className="font-[900] text-sm" style={{ color: accent }}>{rank}</span>
+        </div>
+        <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-white/5">
+          <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider flex items-center gap-1"><Trophy size={12} /> Palmarès</span>
+          <span className="font-bold text-xs text-[#081031] dark:text-white text-right max-w-[120px] truncate">{titles}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+const EventRow = ({ date, month, title, type, location }) => (
+  <div className="group flex items-center gap-4 p-4 rounded-[1.2rem] bg-white/5 border border-white/10 hover:bg-[#0065FF]/20 hover:border-[#0065FF]/50 transition-all cursor-pointer">
+    <div className="flex-shrink-0 w-14 h-14 rounded-xl bg-[#0A266D] flex flex-col justify-center items-center group-hover:bg-[#0EE2E2] transition-colors">
+      <span className="text-xl font-[900] text-white group-hover:text-[#081031] leading-none mb-0.5">{date}</span>
+      <span className="text-[9px] font-bold text-[#0EE2E2] group-hover:text-[#081031] uppercase">{month}</span>
+    </div>
+    <div className="flex-grow min-w-0">
+      <div className="text-[#0EE2E2] font-bold text-[9px] uppercase mb-1 truncate">{type}</div>
+      <h4 className="text-sm font-[900] italic text-white mb-1 truncate">{title}</h4>
+      <div className="flex items-center gap-1.5 text-slate-400 text-[10px] font-bold truncate">
+        <MapPin size={10} className="shrink-0" /> <span className="truncate">{location}</span>
+      </div>
+    </div>
+  </div>
+);
+
+export default EcoleJeunes;

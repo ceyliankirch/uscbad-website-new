@@ -52,11 +52,22 @@ const Navbar = ({ onOpenAuth }) => {
       dropdown: [
         { name: 'Présentation', href: '/presentation' },
         { name: 'Actualités', href: '/actualites' },
-        { name: 'Les Jeunes', href: '/jeunes' },
-        { name: 'nos créneaux', href: '/creneaux' },
-        { name: 'Interclubs', href: '/interclubs' },
+        { name: 'Tarifs & Inscriptions', href: '/inscriptions' },
       ]
     },
+
+    { 
+      name: 'Jouer', 
+      href: '#',
+      dropdown: [
+        { name: 'Nos Créneaux', href: '/creneaux' },
+        { name: 'Interclubs', href: '/interclubs' },
+        { name: 'Les Jeunes', href: '/jeunes' },
+        { name: 'Pôle Féminines', href: '/pole-feminines' },
+        { name: 'Indivs', href: '/indivs' },
+      ]
+    },
+
     { 
       name: 'à venir', 
       href: '#',

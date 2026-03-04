@@ -13,7 +13,8 @@ import {
   Settings, 
   LogOut,
   Menu,
-  X
+  X,
+  Medal
 } from 'lucide-react';
 import { signOut } from 'next-auth/react';
 
@@ -29,7 +30,8 @@ export default function AdminLayout({ children }) {
     { name: 'Événements', icon: <CalendarDays size={20} />, path: '/admin/events' },
     { name: 'Créneaux', icon: <Clock size={20} />, path: '/admin/creneaux' },
     { name: 'Tournois & Promobad', icon: <Trophy size={20} />, path: '/admin/tournois' }, // NOUVEAU
-    { name: 'Entraîneurs & Bénévoles', icon: <Users size={20} />, path: '/admin/equipe' }, // NOUVEAU
+    { name: 'Entraîneurs & Bénévoles', icon: <Users size={20} />, path: '/admin/equipe' },
+    { name: 'Joueurs', icon: <Medal size={20} />, path: '/admin/joueurs' },
     { name: 'Actualités', icon: <Newspaper size={20} />, path: '/admin/actualites' },
     { name: 'Bureau & CRs', icon: <Users size={20} />, path: '/admin/board' }, // Note: Tu as deux fois Users, tu pourrais changer l'icône du Bureau en <Briefcase /> si tu veux !
     { name: 'Paramètres Club', icon: <Settings size={20} />, path: '/admin/settings' },

@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, X, Users, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Users, Image as ImageIcon, Loader2, Check } from 'lucide-react';
 
 export default function AdminEquipePage() {
   const [members, setMembers] = useState([]);
@@ -16,9 +16,13 @@ export default function AdminEquipePage() {
     category: 'performance',
     image: '',
     color: '#0065FF',
-    tags: '', // On gère les tags comme une chaîne séparée par des virgules dans le formulaire
-    order: 0
+    tags: '',
+    order: 0,
+    trainerRoles: [] // <-- NOUVEAU : Tableau pour stocker les rôles d'entraîneur
   });
+
+  // Options pour les entraîneurs
+  const trainerOptions = ['Compétiteurs', 'Loisirs', 'Jeunes', 'Féminin', 'Indivs'];
 
   // Charger les membres depuis l'API
   const fetchMembers = async () => {
@@ -46,6 +50,18 @@ export default function AdminEquipePage() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // Gestion des cases à cocher pour les entraîneurs
+  const handleTrainerRoleToggle = (roleOption) => {
+    setFormData(prev => {
+      const currentRoles = prev.trainerRoles || [];
+      if (currentRoles.includes(roleOption)) {
+        return { ...prev, trainerRoles: currentRoles.filter(r => r !== roleOption) };
+      } else {
+        return { ...prev, trainerRoles: [...currentRoles, roleOption] };
+      }
+    });
+  };
+
   const openModal = (member = null) => {
     if (member) {
       setEditingId(member._id);
@@ -56,12 +72,13 @@ export default function AdminEquipePage() {
         image: member.image || '',
         color: member.color || '#0065FF',
         tags: member.tags ? member.tags.join(', ') : '',
-        order: member.order || 0
+        order: member.order || 0,
+        trainerRoles: member.trainerRoles || [] // On récupère les rôles existants
       });
     } else {
       setEditingId(null);
       setFormData({
-        name: '', role: '', category: 'performance', image: '', color: '#0065FF', tags: '', order: 0
+        name: '', role: '', category: 'performance', image: '', color: '#0065FF', tags: '', order: 0, trainerRoles: []
       });
     }
     setIsModalOpen(true);
@@ -80,8 +97,9 @@ export default function AdminEquipePage() {
     // Formater les données avant l'envoi
     const payload = {
       ...formData,
-      tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== ''), // Convertir la chaîne en tableau
-      order: parseInt(formData.order, 10) || 0
+      tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag !== ''), 
+      order: parseInt(formData.order, 10) || 0,
+      trainerRoles: formData.trainerRoles // On envoie les rôles cochés
     };
 
     try {
@@ -109,18 +127,21 @@ export default function AdminEquipePage() {
     }
   };
 
-  // Supprimer
   const handleDelete = async (id) => {
     if (!window.confirm("Es-tu sûr de vouloir supprimer ce membre ?")) return;
 
     try {
       const res = await fetch(`/api/team/${id}`, { method: 'DELETE' });
       const data = await res.json();
+      
       if (data.success) {
         setMembers(members.filter(m => m._id !== id));
+      } else {
+        // Ajout d'une alerte en cas d'échec pour comprendre pourquoi
+        alert("Impossible de supprimer : " + data.error);
       }
     } catch (error) {
-      console.error("Erreur lors de la suppression :", error);
+      console.error("Erreur réseau lors de la suppression :", error);
     }
   };
 
@@ -160,11 +181,11 @@ export default function AdminEquipePage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {members.map(member => (
-            <div key={member._id} className="bg-white dark:bg-[#0f172a] rounded-[1.5rem] border border-slate-200 dark:border-white/5 p-6 shadow-sm flex items-center gap-4 group transition-colors hover:border-slate-300 dark:hover:border-white/20">
+            <div key={member._id} className="bg-white dark:bg-[#0f172a] rounded-[1.5rem] border border-slate-200 dark:border-white/5 p-6 shadow-sm flex items-start gap-4 group transition-colors hover:border-slate-300 dark:hover:border-white/20">
               
               {/* Avatar ou Initiales */}
               <div 
-                className="w-16 h-16 rounded-full shrink-0 flex items-center justify-center bg-slate-100 dark:bg-slate-800 overflow-hidden border-2"
+                className="w-16 h-16 rounded-full shrink-0 flex items-center justify-center bg-slate-100 dark:bg-slate-800 overflow-hidden border-2 mt-1"
                 style={{ borderColor: member.color || '#0065FF' }}
               >
                 {member.image ? (
@@ -184,14 +205,25 @@ export default function AdminEquipePage() {
                 <h3 className="text-base font-[900] uppercase italic text-[#081031] dark:text-white truncate">
                   {member.name}
                 </h3>
-                <p className="text-sm font-bold text-slate-500 truncate" style={{ color: member.color || '#0065FF' }}>
+                <p className="text-sm font-bold text-slate-500 truncate mb-2" style={{ color: member.color || '#0065FF' }}>
                   {member.role}
                 </p>
+                
+                {/* Affichage des groupes entraînés s'ils existent */}
+                {member.trainerRoles && member.trainerRoles.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {member.trainerRoles.map(tr => (
+                      <span key={tr} className="text-[8px] font-black uppercase tracking-widest px-2 py-1 rounded-md bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/5">
+                        {tr}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Actions */}
               <div className="flex flex-col gap-2 shrink-0">
-                <button onClick={() => openModal(member)} className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-blue-500 hover:text-white flex items-center justify-center text-slate-500 transition-colors">
+                <button onClick={() => openModal(member)} className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-[#9333EA] hover:text-white flex items-center justify-center text-slate-500 transition-colors">
                   <Pencil size={14} />
                 </button>
                 <button onClick={() => handleDelete(member._id)} className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-white/5 hover:bg-red-500 hover:text-white flex items-center justify-center text-slate-500 transition-colors">
@@ -205,7 +237,7 @@ export default function AdminEquipePage() {
 
       {/* MODAL AJOUT / MODIFICATION */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white dark:bg-[#081031] rounded-[2rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-white/10 shadow-2xl">
             
             <div className="sticky top-0 bg-white dark:bg-[#081031] p-6 border-b border-slate-200 dark:border-white/10 flex justify-between items-center z-10">
@@ -230,9 +262,47 @@ export default function AdminEquipePage() {
                 {/* Rôle */}
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Rôle / Poste *</label>
-                  <input type="text" name="role" value={formData.role} onChange={handleChange} required placeholder="Ex: Entraîneur principal"
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-[#081031] dark:text-white focus:outline-none focus:border-[#9333EA] transition-colors"
-                  />
+                  <select 
+                    name="role" 
+                    value={formData.role} 
+                    onChange={handleChange} 
+                    required
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-[#081031] dark:text-white focus:outline-none focus:border-[#9333EA] transition-colors appearance-none cursor-pointer"
+                  >
+                    <option value="" disabled>Sélectionner un rôle</option>
+                    <option value="Entraîneur">Entraîneur</option>
+                    <option value="GEO">GEO</option>
+                    <option value="Arbitre">Arbitre</option>
+                    <option value="Juge Arbitre">Juge Arbitre</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* --- NOUVELLE SECTION : GROUPES ENTRAÎNÉS --- */}
+              <div className="col-span-1 md:col-span-2 space-y-3 bg-slate-50 dark:bg-white/5 p-5 rounded-2xl border border-slate-200 dark:border-white/10">
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
+                  <Users size={14} /> Groupes entraînés (Si c'est un entraîneur)
+                </label>
+                <div className="flex flex-wrap gap-3">
+                  {trainerOptions.map(group => {
+                    const isChecked = formData.trainerRoles.includes(group);
+                    return (
+                      <div 
+                        key={group} 
+                        onClick={() => handleTrainerRoleToggle(group)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl cursor-pointer border-2 transition-all select-none
+                          ${isChecked 
+                            ? 'border-[#9333EA] bg-[#9333EA]/10 text-[#9333EA]' 
+                            : 'border-slate-200 dark:border-white/10 text-slate-500 hover:border-slate-300 dark:hover:border-white/20'
+                          }`}
+                      >
+                        <div className={`w-4 h-4 rounded-[4px] border flex items-center justify-center transition-colors ${isChecked ? 'bg-[#9333EA] border-[#9333EA]' : 'border-slate-300 dark:border-white/20'}`}>
+                          {isChecked && <Check size={12} className="text-white" />}
+                        </div>
+                        <span className="text-xs font-bold uppercase tracking-wider">{group}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -241,7 +311,7 @@ export default function AdminEquipePage() {
                 <div className="space-y-2">
                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Catégorie</label>
                   <select name="category" value={formData.category} onChange={handleChange}
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-[#081031] dark:text-white focus:outline-none focus:border-[#9333EA] transition-colors appearance-none"
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-[#081031] dark:text-white focus:outline-none focus:border-[#9333EA] transition-colors appearance-none cursor-pointer"
                   >
                     <option value="performance">Pôle Performance</option>
                     <option value="developpement">Pôle Développement</option>
@@ -272,20 +342,22 @@ export default function AdminEquipePage() {
                 />
               </div>
 
-              {/* Tags */}
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Tags (Séparés par des virgules)</label>
-                <input type="text" name="tags" value={formData.tags} onChange={handleChange} placeholder="Ex: Équipes 1, N2, Jeunes"
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-[#081031] dark:text-white focus:outline-none focus:border-[#9333EA] transition-colors"
-                />
-              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Tags */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Tags divers (Séparés par des virgules)</label>
+                  <input type="text" name="tags" value={formData.tags} onChange={handleChange} placeholder="Ex: Diplôme d'état, Bureau"
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-[#081031] dark:text-white focus:outline-none focus:border-[#9333EA] transition-colors"
+                  />
+                </div>
 
-              {/* Ordre */}
-              <div className="space-y-2 w-1/3">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Ordre d'affichage</label>
-                <input type="number" name="order" value={formData.order} onChange={handleChange}
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-[#081031] dark:text-white focus:outline-none focus:border-[#9333EA] transition-colors"
-                />
+                {/* Ordre */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2">Ordre d'affichage</label>
+                  <input type="number" name="order" value={formData.order} onChange={handleChange}
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-[#081031] dark:text-white focus:outline-none focus:border-[#9333EA] transition-colors"
+                  />
+                </div>
               </div>
 
               {/* Boutons */}

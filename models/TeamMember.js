@@ -34,7 +34,8 @@ const TeamMemberSchema = new mongoose.Schema({
   order: {
     type: Number,
     default: 0, // Pour trier l'ordre d'affichage
-  }
+  },
+  trainerRoles: { type: [String], default: [] }
 }, {
   timestamps: true,
 });

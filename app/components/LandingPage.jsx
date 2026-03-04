@@ -84,15 +84,15 @@ const LandingPage = () => {
       </style>
 
       {/* 1. HERO SECTION */}
-      <section className="relative w-full h-[110svh] lg:h-[100svh] min-h-[600px] flex items-end lg:items-center pb-36 lg:pb-0 overflow-hidden">
+      <section className="relative w-full h-[110svh] lg:h-[120svh] min-h-[600px] flex items-end lg:items-center pb-36 lg:pb-0 overflow-hidden">
         <div className="absolute inset-0 w-full h-full">
           <picture>
             <source media="(min-aspect-ratio: 21/9)" srcSet="/assets/bannière-uscbad-21-9.jpg" />
-            <source media="(max-aspect-ratio: 1/1), (max-width: 768px)" srcSet="/assets/bannière-uscbad-9-16.jpg" />
+            <source media="(max-aspect-ratio: 1/1), (max-width: 768px)" srcSet="/assets/bannière-uscbad-9-16.jpg" className='object-center' />
             <img 
               src="/assets/bannière-uscbad-16-9.jpg" 
               alt="US Créteil Badminton N1" 
-              className="w-full h-full object-cover object-right"
+              className="w-full h-full object-cover object-center md:object-right"
             />
           </picture>
           <div className="absolute inset-0 bg-gradient-to-t from-[#081031] via-[#081031]/60 to-transparent lg:hidden" />

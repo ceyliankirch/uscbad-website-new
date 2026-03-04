@@ -1,7 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Home, Play, ArrowRight, Trophy, Calendar, ChevronRight, TrendingUp, MapPin, Instagram, Facebook, Mail, Users, Activity, Phone, Star } from 'lucide-react';
+import Link from 'next/link';
+import { Home, Play, ArrowRight, Trophy, Calendar, ChevronRight, TrendingUp, MapPin, Instagram, Facebook, Mail, Users, Activity, Phone, Star, Loader2 } from 'lucide-react';
+
+// LES CATÉGORIES EXACTES DU DASHBOARD
+const categories = ["Tout voir", "Événements", "Compétitions", "Vie du Club", "Interclubs", "Jeunes"];
 
 const LandingPage = () => {
   // --- GESTION DU LIVE SCORE ---
@@ -10,10 +14,10 @@ const LandingPage = () => {
     date: 'CHARGEMENT...',
     homeTeam: 'US CRÉTEIL',
     homeScore: '-',
-    homeTextColor: '#081031', // Couleur par défaut
+    homeTextColor: '#081031',
     awayTeam: 'ADVERSAIRE',
     awayScore: '-',
-    awayTextColor: '#FFFFFF'  // Couleur par défaut
+    awayTextColor: '#FFFFFF'
   });
 
   useEffect(() => {
@@ -26,7 +30,35 @@ const LandingPage = () => {
       })
       .catch(err => console.error("Erreur chargement Live Score:", err));
   }, []);
-  // ----------------------------------------
+
+  // --- GESTION DES ACTUALITÉS ---
+  const [activeCategory, setActiveCategory] = useState("Tout voir");
+  const [articles, setArticles] = useState([]);
+  const [isLoadingNews, setIsLoadingNews] = useState(true);
+
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        const res = await fetch('/api/articles');
+        const data = await res.json();
+        if (data.success) {
+          // Tri par date de publication (du plus récent au plus ancien)
+          const sorted = data.data.sort((a, b) => new Date(b.publishedAt || b.createdAt) - new Date(a.publishedAt || a.createdAt));
+          setArticles(sorted);
+        }
+      } catch (error) {
+        console.error("Erreur actus:", error);
+      } finally {
+        setIsLoadingNews(false);
+      }
+    };
+    fetchArticles();
+  }, []);
+
+  // Filtrage et limitation à 8 articles pour le carrousel
+  const filteredArticles = articles
+    .filter(article => activeCategory === "Tout voir" || article.category === activeCategory)
+    .slice(0, 8);
 
   return (
     <div className="bg-white dark:bg-[#040817] font-['Montserrat'] transition-colors duration-300">
@@ -54,8 +86,6 @@ const LandingPage = () => {
       {/* 1. HERO SECTION */}
       <section className="relative w-full h-[80svh] lg:h-[100svh] min-h-[600px] flex items-end lg:items-center pb-36 lg:pb-0 overflow-hidden">
         <div className="absolute inset-0 w-full h-full">
-          
-          {/* BALISE PICTURE POUR LES IMAGES RESPONSIVES */}
           <picture>
             <source media="(min-aspect-ratio: 21/9)" srcSet="/assets/bannière-uscbad-21-9.jpg" />
             <source media="(max-aspect-ratio: 1/1), (max-width: 768px)" srcSet="/assets/bannière-uscbad-9-16.jpg" />
@@ -65,22 +95,16 @@ const LandingPage = () => {
               className="w-full h-full object-cover object-right"
             />
           </picture>
-
-          {/* Gradient plus prononcé en bas sur mobile pour la lisibilité */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#081031] via-[#081031]/60 to-transparent lg:hidden" />
         </div>
 
-        {/* mt-auto sur mobile pour descendre le contenu, mt-0 sur desktop */}
         <div className="relative z-10 w-full max-w-[2000px] mx-auto px-6 lg:px-20 mt-auto lg:mt-0">
           <div className="max-w-6xl space-y-4 lg:space-y-6">
             
-            {/* EN-TÊTE : BADGE + RÉSEAUX SOCIAUX */}
             <div className="flex flex-wrap items-center gap-3">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0EE2E2]/10 border border-[#0EE2E2]/20 backdrop-blur-md">
                 <span className="text-[10px] lg:text-[14px] font-[900] uppercase text-[#0EE2E2]">Union Sportive de Créteil</span>
               </div>
-              
-              {/* Petits boutons ronds */}
               <div className="flex gap-2">
                 <MiniSocialBtn icon={<Instagram size={14} />} href="#" />
                 <MiniSocialBtn icon={<Facebook size={14} fill="currentColor" />} href="#" />
@@ -88,17 +112,14 @@ const LandingPage = () => {
               </div>
             </div>
             
-            {/* TITRE */}
             <h1 className="text-4xl md:text-5xl lg:text-7xl font-[900] leading-[0.9] tracking-tighter italic uppercase text-white drop-shadow-lg">
               Rejoignez Nous !
             </h1>
             
-            {/* DESCRIPTION */}
             <p className="text-xs md:text-lg lg:text-xl text-[#0EE2E2] font-bold leading-relaxed italic max-w-2xl drop-shadow-md">
               Rejoignez le club dynamique dont l'équipe première évolue en Nationale 1. Rassemblant des joueurs de tous niveaux, du loisir à la compétition, et offrant une école de jeunes labellisée.
             </p>
 
-            {/* BOUTONS D'ACTION */}
             <div className="flex flex-row items-center gap-2 lg:gap-4 pt-4 lg:pt-8 w-full md:w-auto">
               <a 
                 href="#inscriptions" 
@@ -124,14 +145,11 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* 2. SCORE NATIONALE 1 (DYNAMIQUE MONGODB) */}
+      {/* 2. SCORE NATIONALE 1 */}
       <section className="relative z-20 -mt-28 md:-mt-24 lg:-mt-20 max-w-[1800px] mx-auto px-4 md:px-6 lg:px-8">
         <div className="w-full overflow-visible hide-scrollbar pb-8 pt-8">
-          
-          {/* LE SCOREBOARD DYNAMIQUE */}
           <div className="relative font-['Montserrat'] w-full max-w-sm md:max-w-[1100px] lg:max-w-[1400px] mx-auto flex flex-col md:flex-row h-[172px] md:h-[120px] lg:h-[140px] shrink-0 overflow-visible">
             
-            {/* --- BADGES DU HAUT (Version Mobile) --- */}
             <div className="md:hidden flex w-full h-[32px] absolute -top-[32px] left-0 z-40 shadow-lg">
               <div className="flex-1 bg-[#0065FF] text-white px-4 flex items-center justify-center font-[900] uppercase text-[10px] tracking-widest italic text-center">
                 {liveScore.date}
@@ -141,7 +159,6 @@ const LandingPage = () => {
               </div>
             </div>
 
-            {/* --- BADGES DU HAUT (Version Desktop) --- */}
             <div className="hidden md:flex absolute top-[-32px] left-1/2 -translate-x-1/2 items-center z-40 shadow-xl">
               <div className="bg-[#0EE2E2] text-[#081031] px-6 py-2 font-[900] uppercase text-[11px] tracking-tighter italic">
                 {liveScore.division}
@@ -151,12 +168,8 @@ const LandingPage = () => {
               </div>
             </div>
 
-            {/* --- CONTENEUR INTERNE SANS ARRONDIS NI BORDURES --- */}
             <div className="flex flex-col md:flex-row w-full h-full shadow-2xl bg-white dark:bg-slate-900 overflow-hidden">
-              
-              {/* DOMICILE */}
               <div className="flex-[4] flex items-center relative min-w-0 h-[70px] md:h-full shrink-0">
-                {/* Zone Logo */}
                 <div className="w-[70px] md:w-[110px] lg:w-[130px] h-full bg-white dark:bg-slate-900 flex items-center justify-center shrink-0">
                   {liveScore.homeLogo ? (
                     <img src={liveScore.homeLogo} alt="Logo Domicile" className="h-[60%] object-contain p-1" />
@@ -165,16 +178,9 @@ const LandingPage = () => {
                   )}
                 </div>
 
-                <div 
-                  style={{ backgroundColor: liveScore.homeColor || '#0EE2E2' }} 
-                  className="flex-1 h-full flex flex-col justify-center items-end pr-[85px] md:pr-6 transition-colors duration-500 min-w-0 border-none"
-                >
-                  {/* Wrapper pour décaler le texte de 10px vers la gauche */}
+                <div style={{ backgroundColor: liveScore.homeColor || '#0EE2E2' }} className="flex-1 h-full flex flex-col justify-center items-end pr-[85px] md:pr-6 transition-colors duration-500 min-w-0 border-none">
                   <div className="w-full flex flex-col items-end -translate-x-[10px]">
-                    <h3 
-                      style={{ color: liveScore.homeTextColor || '#081031' }}
-                      className="text-xl sm:text-2xl md:text-3xl lg:text-5xl font-[900] uppercase leading-none tracking-tighter italic truncate w-full text-right"
-                    >
+                    <h3 style={{ color: liveScore.homeTextColor || '#081031' }} className="text-xl sm:text-2xl md:text-3xl lg:text-5xl font-[900] uppercase leading-none tracking-tighter italic truncate w-full text-right">
                       {liveScore.homeTeam}
                     </h3>
                     <div className="bg-[#081031] text-white px-2 lg:px-3 py-1 font-[900] uppercase text-[7px] md:text-[8px] lg:text-[10px] tracking-[0.2em] mt-1 lg:mt-2 italic">
@@ -184,33 +190,24 @@ const LandingPage = () => {
                 </div>
               </div>
 
-              {/* SCORE CENTRE */}
               <div className="absolute md:relative right-0 top-[0px] md:top-auto bottom-0 w-[75px] md:w-[140px] lg:w-[180px] h-full md:h-full bg-[#0065FF] flex flex-col md:flex-row items-center justify-center z-20 shadow-[-10px_0_20px_rgba(0,0,0,0.15)] md:shadow-[0_0_40px_rgba(0,101,255,0.3)]">
-                
-                {/* Score Desktop */}
                 <div className="hidden md:flex flex-row items-center justify-center gap-4 lg:gap-5 text-white font-[900]">
                   <span className="text-5xl lg:text-7xl tracking-tighter italic drop-shadow-md">{liveScore.homeScore}</span>
                   <div className="w-0.5 lg:w-1 h-10 lg:h-16 bg-white/30 shrink-0"></div>
                   <span className="text-5xl lg:text-7xl tracking-tighter italic drop-shadow-md">{liveScore.awayScore}</span>
                 </div>
-
-                {/* Score Mobile : Divisé en 2 blocs (flex-1) pour s'aligner parfaitement avec les lignes Domicile/Extérieur */}
                 <div className="flex md:hidden flex-col w-full h-full text-white font-[900] relative">
                   <div className="flex-1 flex items-center justify-center">
                     <span className="text-4xl tracking-tighter italic drop-shadow-md">{liveScore.homeScore}</span>
                   </div>
-                  {/* Trait de séparation centré absolument */}
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-0.5 bg-white/30 shrink-0"></div>
                   <div className="flex-1 flex items-center justify-center">
                     <span className="text-4xl tracking-tighter italic drop-shadow-md">{liveScore.awayScore}</span>
                   </div>
                 </div>
-
               </div>
 
-              {/* EXTÉRIEUR */}
               <div className="flex-[4] flex flex-row md:flex-row-reverse items-center relative min-w-0 h-[70px] md:h-full shrink-0">
-                {/* Zone Logo */}
                 <div className="w-[70px] md:w-[110px] lg:w-[130px] h-full bg-white dark:bg-slate-900 flex items-center justify-center shrink-0">
                   {liveScore.awayLogo ? (
                     <img src={liveScore.awayLogo} alt="Logo Extérieur" className="h-[60%] object-contain p-1" />
@@ -219,16 +216,9 @@ const LandingPage = () => {
                   )}
                 </div>
 
-                <div 
-                  style={{ backgroundColor: liveScore.awayColor || '#081031' }} 
-                  className="flex-1 h-full flex flex-col justify-center items-end md:items-start pr-[85px] md:pr-0 pl-4 md:pl-6 transition-colors duration-500 min-w-0"
-                >
-                  {/* Wrapper pour décaler le texte de 10px vers la gauche */}
+                <div style={{ backgroundColor: liveScore.awayColor || '#081031' }} className="flex-1 h-full flex flex-col justify-center items-end md:items-start pr-[85px] md:pr-0 pl-4 md:pl-6 transition-colors duration-500 min-w-0">
                   <div className="w-full flex flex-col items-end md:items-start -translate-x-[10px]">
-                    <h3 
-                      style={{ color: liveScore.awayTextColor || '#FFFFFF' }}
-                      className="text-xl sm:text-2xl md:text-3xl lg:text-5xl font-[900] uppercase leading-none tracking-tighter italic truncate w-full text-right md:text-left"
-                    >
+                    <h3 style={{ color: liveScore.awayTextColor || '#FFFFFF' }} className="text-xl sm:text-2xl md:text-3xl lg:text-5xl font-[900] uppercase leading-none tracking-tighter italic truncate w-full text-right md:text-left">
                       {liveScore.awayTeam}
                     </h3>
                     <div className="bg-white text-[#081031] px-2 lg:px-3 py-1 font-[900] uppercase text-[7px] md:text-[8px] lg:text-[10px] tracking-[0.2em] mt-1 lg:mt-2 italic">
@@ -246,35 +236,16 @@ const LandingPage = () => {
       {/* 3. SECTION : INTÉGRER LE CLUB */}
       <section className="py-16 lg:py-24 px-6 lg:px-8 bg-slate-50/50 dark:bg-[#0a0f25] transition-colors relative z-10">
         <div className="max-w-[1600px] mx-auto">
-          
           <div className="mb-10 lg:mb-16 text-center lg:text-left">
             <h2 className="text-4xl md:text-5xl lg:text-5xl font-[900] italic uppercase text-[#081031] dark:text-white">
               Intégrer <span className="text-[#0065FF] block sm:inline">l'US Créteil</span>
             </h2>
           </div>
 
-          {/* --- LIGNE 1 : LES 4 OFFRES PRINCIPALES --- */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            <InfoCard 
-              num="01" 
-              title="Jeu Libre & Loisir" 
-              desc="Des créneaux tous les jours pour venir jouer librement avec d'autres passionnés dans une ambiance conviviale." 
-              color="#0065FF" 
-            />
-            <InfoCard 
-              num="02" 
-              title="Compétition & IC" 
-              desc="Entraînements dirigés par des coachs et intégration à nos équipes interclubs, jusqu'en Nationale 1." 
-              color="#0EE2E2" 
-            />
-            <InfoCard 
-              num="03" 
-              title="École des Jeunes" 
-              desc="Une école labellisée pour former les champions de demain dès le plus jeune âge avec des pros." 
-              color="#0A266D" 
-            />
-            
-            {/* CTA d'Inscription */}
+            <InfoCard num="01" title="Jeu Libre & Loisir" desc="Des créneaux tous les jours pour venir jouer librement avec d'autres passionnés dans une ambiance conviviale." color="#0065FF" />
+            <InfoCard num="02" title="Compétition & IC" desc="Entraînements dirigés par des coachs et intégration à nos équipes interclubs, jusqu'en Nationale 1." color="#0EE2E2" />
+            <InfoCard num="03" title="École des Jeunes" desc="Une école labellisée pour former les champions de demain dès le plus jeune âge avec des pros." color="#0A266D" />
             <div className="bg-[#0065FF] rounded-[1.5rem] lg:rounded-[2rem] p-8 flex flex-col justify-center items-center text-center text-white shadow-xl hover:scale-[1.02] transition-transform duration-300">
               <h4 className="text-2xl font-[900] italic uppercase mb-3 leading-tight">Prêt à nous rejoindre ?</h4>
               <p className="text-[11px] font-bold opacity-90 mb-6">Les inscriptions pour la saison sont ouvertes. Rejoignez la famille USC.</p>
@@ -284,10 +255,7 @@ const LandingPage = () => {
             </div>
           </div>
 
-          {/* --- LIGNE 2 : LES 4 BLOCS DATAS / INFOS --- */}
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mt-6">
-            
-            {/* Bloc 1 : Total Licenciés (Animé) */}
             <div className="bg-white dark:bg-[#0f172a] p-6 rounded-[1.5rem] border border-slate-100 dark:border-white/5 flex items-center justify-between group hover:shadow-lg transition-all">
               <div>
                 <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Total Licenciés</div>
@@ -300,15 +268,10 @@ const LandingPage = () => {
               </div>
             </div>
 
-            {/* Bloc 2 : Répartition H/F (Graphique Anneau Animé) */}
             <div className="bg-white dark:bg-[#0f172a] p-6 rounded-[1.5rem] border border-slate-100 dark:border-white/5 flex flex-col justify-center hover:shadow-lg transition-all">
               <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-4">Parité du club</div>
-              
               <div className="flex items-center gap-4">
-                {/* Le Graphique */}
                 <AnimatedDonut men={184} women={132} />
-                
-                {/* La Légende */}
                 <div className="flex flex-col gap-3">
                   <div className="flex flex-col">
                     <span className="text-[#0065FF] text-[9px] font-black uppercase flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#0065FF] shadow-[0_0_8px_#0065FF]"></span> Hommes</span>
@@ -322,7 +285,6 @@ const LandingPage = () => {
               </div>
             </div>
 
-            {/* Bloc 3 : Label 3 Étoiles */}
             <div className="bg-white dark:bg-[#0f172a] p-6 rounded-[1.5rem] border border-slate-100 dark:border-white/5 flex flex-col justify-center items-center text-center group hover:shadow-lg transition-all">
               <div className="flex gap-1 text-[#FFD500] mb-3 group-hover:scale-110 transition-transform">
                 <Star size={28} fill="currentColor" className="drop-shadow-[0_0_10px_rgba(255, 213, 0, 0.5)]" />
@@ -333,10 +295,8 @@ const LandingPage = () => {
               <div className="text-sm font-[900] italic text-[#081031] dark:text-white uppercase mt-1">Labellisée FFBAD</div>
             </div>
 
-            {/* Bloc 4 : En Direct (Prochain créneau) */}
             <div className="bg-[#081031] dark:bg-[#0065FF]/10 p-6 rounded-[1.5rem] border-none dark:border dark:border-[#0065FF]/20 flex flex-col justify-center relative overflow-hidden group hover:shadow-[0_0_30px_rgba(14,226,226,0.15)] transition-all">
               <div className="absolute top-0 right-0 w-32 h-32 bg-[#0EE2E2]/20 blur-[40px] rounded-full group-hover:scale-150 transition-transform duration-700"></div>
-              
               <div className="flex items-center gap-2 mb-3 relative z-10">
                 <span className="relative flex h-3 w-3">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0EE2E2] opacity-75"></span>
@@ -344,7 +304,6 @@ const LandingPage = () => {
                 </span>
                 <span className="text-[10px] font-black uppercase text-[#0EE2E2] tracking-widest">En direct ce soir</span>
               </div>
-              
               <div className="text-2xl font-[900] italic text-white uppercase leading-tight mb-2 relative z-10">
                 Jeu Libre <span className="text-slate-400">| 20h00</span>
               </div>
@@ -357,10 +316,10 @@ const LandingPage = () => {
         </div>
       </section>
 
-
-      {/* 4. SECTION : ACTUALITÉS */}
+      {/* 4. SECTION : ACTUALITÉS (CONNECTÉE À LA BDD) */}
       <section className="py-16 lg:py-24 bg-white dark:bg-[#040817] border-t border-slate-100 dark:border-white/5 overflow-hidden transition-colors">
         <div className="max-w-[1600px] mx-auto">
+          
           <div className="px-6 lg:px-8 flex flex-col md:flex-row justify-between items-start md:items-end mb-8 lg:mb-12 gap-6">
             <div>
               <h2 className="text-4xl md:text-5xl lg:text-5xl font-[900] italic uppercase text-[#081031] dark:text-white">
@@ -369,19 +328,47 @@ const LandingPage = () => {
             </div>
             
             <div className="flex overflow-x-auto hide-scrollbar w-full md:w-auto gap-2 pb-2 -mx-6 px-6 md:mx-0 md:px-0 md:pb-0">
-              <FilterButton label="Tout voir" active />
-              <FilterButton label="Tournois" />
-              <FilterButton label="Vie du club" />
-              <FilterButton label="Jeunes" />
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`px-5 py-2 whitespace-nowrap rounded-full font-bold text-[10px] sm:text-xs uppercase transition-all border shrink-0 ${
+                    activeCategory === cat 
+                      ? 'bg-[#081031] text-white border-[#081031] dark:bg-[#0EE2E2] dark:text-[#081031] dark:border-[#0EE2E2]' 
+                      : 'bg-white text-slate-500 border-slate-200 hover:border-[#0065FF] hover:text-[#0065FF] dark:bg-transparent dark:text-slate-400 dark:border-white/20 dark:hover:text-[#0EE2E2] dark:hover:border-[#0EE2E2]'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
             </div>
           </div>
 
-          <div className="flex overflow-x-auto hide-scrollbar gap-4 lg:gap-6 pb-8 snap-x snap-mandatory px-6 lg:px-8">
-            <NewsCard tag="Vie du club" date="24 Février 2026" title="Retour sur la soirée crêpes du club, un grand succès !" imgSrc="https://images.unsplash.com/photo-1511886929837-354d827aae26?q=80&w=2000&auto=format&fit=crop" tagColor="#0EE2E2" />
-            <NewsCard tag="Tournois" date="18 Février 2026" title="3 médailles d'or pour nos jeunes au tournoi régional" imgSrc="https://images.unsplash.com/photo-1596727362302-b8d891c42ab8?q=80&w=2000&auto=format&fit=crop" tagColor="#0065FF" />
-            <NewsCard tag="Nationale 1" date="12 Février 2026" title="L'équipe première s'impose face à Chambly à domicile" imgSrc="https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?q=80&w=2072&auto=format&fit=crop" tagColor="#081031" />
-            <NewsCard tag="Événements" date="05 Février 2026" title="Inscriptions ouvertes pour le prochain tournoi interne" imgSrc="https://images.unsplash.com/photo-1572680511874-98402c5c991f?q=80&w=2070&auto=format&fit=crop" tagColor="#0EE2E2" />
-          </div>
+          {isLoadingNews ? (
+            <div className="flex justify-center py-20 px-6">
+              <Loader2 className="animate-spin text-[#0EE2E2]" size={40} />
+            </div>
+          ) : filteredArticles.length === 0 ? (
+            <div className="text-center py-20 text-slate-500 font-bold uppercase tracking-widest px-6">
+              Aucune actualité trouvée dans cette catégorie.
+            </div>
+          ) : (
+            <div className="flex overflow-x-auto hide-scrollbar gap-6 lg:gap-8 pb-8 snap-x snap-mandatory px-6 lg:px-8">
+              {filteredArticles.map(article => (
+                <NewsCard key={article._id} article={article} />
+              ))}
+              
+              {/* Carte finale pour inviter à voir tout le blog */}
+              <Link href="/actualites" className="group relative bg-[#0065FF]/5 dark:bg-[#0EE2E2]/5 rounded-[2rem] border-2 border-dashed border-[#0065FF]/20 dark:border-[#0EE2E2]/20 flex flex-col items-center justify-center w-[200px] shrink-0 snap-start hover:bg-[#0065FF] dark:hover:bg-[#0EE2E2] transition-colors">
+                 <div className="text-[#0065FF] dark:text-[#0EE2E2] group-hover:text-white dark:group-hover:text-[#081031] flex flex-col items-center gap-3 transition-colors">
+                    <div className="w-12 h-12 rounded-full bg-[#0065FF]/10 dark:bg-[#0EE2E2]/10 group-hover:bg-white/20 flex items-center justify-center">
+                      <ArrowRight size={24} />
+                    </div>
+                    <span className="font-black uppercase text-[10px] tracking-widest text-center px-4">Toutes les actus</span>
+                 </div>
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 
@@ -538,23 +525,8 @@ const AnimatedDonut = ({ men, women }) => {
   return (
     <div ref={ref} className="relative w-20 h-20 shrink-0">
       <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90 drop-shadow-lg">
-        <circle
-          cx="18" cy="18" r={radius}
-          fill="transparent"
-          stroke="#F72585"
-          strokeWidth="4"
-        />
-        <circle
-          cx="18" cy="18" r={radius}
-          fill="transparent"
-          stroke="#0065FF"
-          strokeWidth="4"
-          strokeDasharray={circumference}
-          strokeDashoffset={hasAnimated ? circumference - menDash : circumference}
-          strokeLinecap="round"
-          className="transition-all ease-out"
-          style={{ transitionDuration: '2000ms' }}
-        />
+        <circle cx="18" cy="18" r={radius} fill="transparent" stroke="#F72585" strokeWidth="4" />
+        <circle cx="18" cy="18" r={radius} fill="transparent" stroke="#0065FF" strokeWidth="4" strokeDasharray={circumference} strokeDashoffset={hasAnimated ? circumference - menDash : circumference} strokeLinecap="round" className="transition-all ease-out" style={{ transitionDuration: '2000ms' }} />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-[#081031] dark:text-white font-[900] text-xs italic">
@@ -565,41 +537,46 @@ const AnimatedDonut = ({ men, women }) => {
   );
 };
 
-const FilterButton = ({ label, active }) => (
-  <button 
-    className={`px-4 lg:px-5 py-2 whitespace-nowrap rounded-full font-bold text-[10px] lg:text-xs uppercase transition-colors border shrink-0 ${
-      active 
-        ? 'bg-[#081031] text-white border-[#081031] dark:bg-[#0EE2E2] dark:text-[#081031] dark:border-[#0EE2E2]' 
-        : 'bg-white text-slate-500 border-slate-200 hover:border-[#0065FF] hover:text-[#0065FF] dark:bg-transparent dark:text-slate-400 dark:border-white/20 dark:hover:text-[#0EE2E2] dark:hover:border-[#0EE2E2]'
-    }`}
-  >
-    {label}
-  </button>
-);
-
-const NewsCard = ({ tag, date, title, imgSrc, tagColor }) => (
-  <div className="group min-w-[280px] lg:min-w-[350px] max-w-[280px] lg:max-w-[350px] cursor-pointer snap-center lg:snap-start shrink-0">
-    <div className="relative aspect-square rounded-[1.5rem] lg:rounded-[2rem] overflow-hidden mb-4 lg:mb-5">
-      <img src={imgSrc} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      
-      <div 
-        className="absolute top-3 left-3 lg:top-4 lg:left-4 text-white px-3 lg:px-4 py-1 lg:py-1.5 rounded-full font-[900] text-[9px] lg:text-[10px] uppercase tracking-widest shadow-md"
-        style={{ backgroundColor: tagColor }}
-      >
-        {tag}
-      </div>
-    </div>
+// COMPOSANT NEWSCARD MIS À JOUR (Dynamique BDD, format validé 16/9)
+const NewsCard = ({ article }) => (
+  <Link href={`/actualites/${article._id}`} className="group relative bg-white dark:bg-[#0f172a] rounded-[2rem] border border-slate-200 dark:border-white/5 overflow-hidden shadow-sm hover:shadow-xl transition-all hover:-translate-y-1.5 flex flex-col w-[280px] lg:w-[350px] shrink-0 snap-center lg:snap-start block">
     
-    <div>
-      <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500 font-bold text-[10px] lg:text-xs mb-1.5 lg:mb-2 transition-colors">
-        <Calendar size={12} className="lg:w-[14px] lg:h-[14px]" /> {date}
+    {/* LISERET BLEU */}
+    <div className="absolute top-0 left-0 w-full h-1.5 bg-[#0065FF] z-20"></div>
+
+    {/* IMAGE */}
+    <div className="aspect-video relative overflow-hidden bg-slate-100 shrink-0 border-b border-slate-100 dark:border-white/5">
+      {article.imageUrl ? (
+        <img src={article.imageUrl} alt={article.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center text-slate-300 font-black uppercase tracking-widest text-xs bg-slate-50 dark:bg-slate-800">US Créteil</div>
+      )}
+      {/* BADGE CATEGORY BLANC ÉPURÉ */}
+      <div className="absolute top-4 right-4 bg-white px-3.5 py-1.5 rounded-xl text-[9px] font-[900] uppercase tracking-widest shadow-md z-10 text-[#081031]">
+        {article.category}
       </div>
-      <h4 className="text-lg lg:text-xl font-[900] italic leading-tight text-[#081031] dark:text-white group-hover:text-[#0065FF] dark:group-hover:text-[#0EE2E2] transition-colors line-clamp-2">
-        {title}
-      </h4>
     </div>
-  </div>
+
+    {/* CONTENU */}
+    <div className="p-5 flex flex-col flex-grow">
+      <h3 className="text-lg font-[900] italic leading-tight text-[#081031] dark:text-white mb-2 group-hover:text-[#0065FF] dark:group-hover:text-[#0EE2E2] transition-colors line-clamp-2">
+        {article.title}
+      </h3>
+      <p className="text-slate-500 dark:text-slate-400 text-[12px] font-medium leading-relaxed line-clamp-2 mb-4 flex-grow">
+        {article.excerpt}
+      </p>
+
+      <div className="mt-auto flex items-center justify-between border-t border-slate-100 dark:border-white/5 pt-4">
+        <div className="flex items-center gap-1.5 text-slate-400 text-[9px] font-black uppercase tracking-wider">
+          <Calendar size={12} className="text-[#0EE2E2]" /> 
+          {new Date(article.publishedAt || article.createdAt).toLocaleDateString('fr-FR')}
+        </div>
+        <div className="w-7 h-7 rounded-full bg-slate-50 dark:bg-white/5 flex items-center justify-center text-[#081031] dark:text-white group-hover:bg-[#0065FF] group-hover:text-white dark:group-hover:bg-[#0EE2E2] dark:group-hover:text-[#081031] transition-colors">
+          <ChevronRight size={12} />
+        </div>
+      </div>
+    </div>
+  </Link>
 );
 
 const TeamCard = ({ team, division, color, ranking }) => (

@@ -1,56 +1,63 @@
 'use client';
-import React, { use } from 'react'; // NOUVEAU : Import du hook 'use'
+import React, { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Calendar, User, Share2, Tag, ChevronRight } from 'lucide-react';
-
-// ==========================================
-// DONNÉES DE DÉMONSTRATION (Avec contenu complet)
-// ==========================================
-const newsData = [
-  {
-    id: "1",
-    title: "L'équipe première s'impose face à Chambly dans un match épique à domicile",
-    date: "02 Mars 2026",
-    category: "Équipes & IC",
-    author: "Service Communication",
-    image: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?q=80&w=2072&auto=format&fit=crop",
-    color: "#0065FF",
-    content: [
-      { type: "intro", text: "Revivez la victoire incroyable de l'US Créteil face au leader du championnat. Une soirée riche en émotions où nos joueurs ont tout donné devant un public en feu au Gymnase Casalis." },
-      { type: "p", text: "La rencontre s'annonçait tendue, et elle a tenu toutes ses promesses. Ce samedi, l'US Créteil Badminton accueillait l'ogre du BC Chambly Oise pour le compte de la 8ème journée de Nationale 1. Portés par plus de 300 supporters, nos Cristoliens ont réalisé un exploit majuscule en s'imposant 5 à 3." },
-      { type: "h2", text: "Un début de rencontre électrique" },
-      { type: "p", text: "Dès les premiers échanges du double mixte 1, le ton était donné. La paire Vincent Espen / Manon Espen a imposé un rythme d'enfer, s'adjugeant le premier point après un match haletant en trois sets (21-18, 19-21, 21-16). Un élan immédiatement suivi par Romain Credou en simple homme, expéditif face à son adversaire direct." },
-      { type: "quote", text: "Nous savions qu'il fallait frapper fort dès le début. Le public nous a poussés à nous surpasser sur chaque volant." },
-      { type: "p", text: "Malgré un retour en force de Chambly sur les simples dames, l'équipe a su faire bloc. Les doubles hommes et doubles dames ont été décisifs en fin de soirée, scellant une victoire historique pour le club." },
-      { type: "h2", text: "Objectif Play-offs" },
-      { type: "p", text: "Avec ces précieux points engrangés, l'US Créteil conforte sa deuxième place au classement général de la Poule 2 et se rapproche un peu plus des play-offs d'accession. Prochain rendez-vous : un déplacement périlleux en terre bretonne face au Flume Ille Badminton." }
-    ]
-  },
-  {
-    id: "2",
-    title: "Retour sur la soirée crêpes du club, un immense succès !",
-    date: "24 Février 2026",
-    category: "Vie du club",
-    author: "Bureau US Créteil",
-    image: "https://images.unsplash.com/photo-1511886929837-354d827aae26?q=80&w=2000&auto=format&fit=crop",
-    color: "#0EE2E2",
-    content: [
-      { type: "intro", text: "Plus de 100 membres se sont réunis ce mardi pour partager un moment convivial autour de notre traditionnelle soirée crêpes de la Chandeleur." },
-      { type: "p", text: "C'est l'un des événements les plus attendus de l'année par nos licenciés loisirs et compétiteurs. Une belle occasion de se retrouver en dehors des terrains pour échanger dans la bonne humeur." }
-    ]
-  }
-];
+import { ArrowLeft, Calendar, User, Share2, Tag, ChevronRight, Loader2 } from 'lucide-react';
 
 export default function ArticlePage({ params }) {
-  // CORRECTION : Déballage de la promesse `params` requise dans Next.js 15+
   const resolvedParams = use(params);
+  
+  const [article, setArticle] = useState(null);
+  const [relatedArticles, setRelatedArticles] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  // On récupère l'article correspondant à l'ID dans l'URL
-  const article = newsData.find(a => a.id === resolvedParams.id);
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        const res = await fetch('/api/articles');
+        const data = await res.json();
+        
+        if (data.success) {
+          const foundArticle = data.data.find(a => a._id === resolvedParams.id);
+          if (foundArticle) {
+            setArticle(foundArticle);
+            // On récupère 3 autres articles au hasard ou les plus récents pour la sidebar
+            setRelatedArticles(data.data.filter(a => a._id !== resolvedParams.id).slice(0, 3));
+          } else {
+            setError(true);
+          }
+        } else {
+          setError(true);
+        }
+      } catch (err) {
+        console.error("Erreur API:", err);
+        setError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  // Si l'article n'existe pas, on redirige vers une page 404
-  if (!article) return notFound();
+    fetchArticles();
+  }, [resolvedParams.id]);
+
+  // Fonction pour les couleurs des badges
+  const getCategoryColor = (category) => {
+    switch(category) {
+      case 'VIE DU CLUB': return '#0EE2E2';
+      case 'ÉVÉNEMENT': return '#0065FF';
+      case 'JEUNES': return '#F72585';
+      default: return '#081031';
+    }
+  };
+
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center bg-[#081031]"><Loader2 className="animate-spin text-[#0EE2E2]" size={48} /></div>;
+  }
+
+  if (error || !article) {
+    return notFound();
+  }
 
   return (
     <div className="bg-white dark:bg-[#040817] min-h-screen font-['Montserrat'] text-[#081031] dark:text-white transition-colors duration-300 pb-24">
@@ -58,16 +65,20 @@ export default function ArticlePage({ params }) {
       {/* =========================================================
           HERO : GRANDE IMAGE D'EN-TÊTE
           ========================================================= */}
-      <section className="relative w-full h-[60svh] lg:h-[75svh] min-h-[500px] flex flex-col justify-end">
+      <section className="relative w-full h-[60svh] lg:h-[75svh] min-h-[500px] flex flex-col justify-end bg-[#081031]">
         {/* Image de fond */}
         <div className="absolute inset-0 w-full h-full">
-          <img 
-            src={article.image} 
-            alt={article.title} 
-            className="w-full h-full object-cover object-center"
-          />
+          {article.imageUrl ? (
+            <img 
+              src={article.imageUrl} 
+              alt={article.title} 
+              className="w-full h-full object-cover object-center"
+            />
+          ) : (
+            <div className="w-full h-full bg-[#0065FF]/20"></div> // Fallback si pas d'image
+          )}
           {/* Overlay dégradé sombre pour la lisibilité du texte et la navbar */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#081031]/80 via-transparent to-[#081031]"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-[#081031]/80 via-[#081031]/40 to-[#081031]"></div>
         </div>
 
         {/* Contenu du Hero */}
@@ -75,7 +86,7 @@ export default function ArticlePage({ params }) {
           
           <Link 
             href="/actualites" 
-            className="inline-flex items-center gap-2 text-white/70 hover:text-white mb-8 lg:mb-12 font-bold text-xs uppercase tracking-widest transition-colors"
+            className="inline-flex items-center gap-2 text-[#0EE2E2] hover:text-white mb-8 lg:mb-12 font-bold text-xs uppercase tracking-widest transition-colors"
           >
             <ArrowLeft size={16} /> Retour aux actualités
           </Link>
@@ -83,12 +94,12 @@ export default function ArticlePage({ params }) {
           <div className="flex flex-wrap items-center gap-3 mb-6">
             <span 
               className="px-4 py-1.5 rounded-full text-white font-black uppercase text-[10px] tracking-widest shadow-lg"
-              style={{ backgroundColor: article.color }}
+              style={{ backgroundColor: getCategoryColor(article.category) }}
             >
               {article.category}
             </span>
-            <span className="flex items-center gap-1.5 text-[#0EE2E2] font-bold text-[10px] uppercase tracking-wider bg-[#081031]/50 backdrop-blur-md px-3 py-1.5 rounded-full">
-              <Calendar size={14} /> {article.date}
+            <span className="flex items-center gap-1.5 text-[#0EE2E2] font-bold text-[10px] uppercase tracking-wider bg-[#081031]/50 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+              <Calendar size={14} /> {new Date(article.createdAt).toLocaleDateString('fr-FR')}
             </span>
           </div>
 
@@ -115,51 +126,31 @@ export default function ArticlePage({ params }) {
                 </div>
                 <div>
                   <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Rédigé par</div>
-                  <div className="text-sm font-bold text-[#081031] dark:text-white">{article.author}</div>
+                  <div className="text-sm font-bold text-[#081031] dark:text-white">{article.author || "Le Bureau"}</div>
                 </div>
               </div>
 
-              {/* Bouton Partager */}
-              <button className="w-10 h-10 rounded-full bg-slate-50 dark:bg-white/5 hover:bg-[#0EE2E2] hover:text-[#081031] flex items-center justify-center text-slate-500 transition-colors">
+              {/* Bouton Partager (Décoratif pour l'instant) */}
+              <button onClick={() => navigator.clipboard.writeText(window.location.href).then(() => alert("Lien copié !"))} className="w-10 h-10 rounded-full bg-slate-50 dark:bg-white/5 hover:bg-[#0EE2E2] hover:text-[#081031] flex items-center justify-center text-slate-500 transition-colors" title="Copier le lien">
                 <Share2 size={18} />
               </button>
             </div>
 
-            {/* Rendu du Contenu dynamiquement */}
-            <article className="space-y-6 lg:space-y-8 text-slate-600 dark:text-slate-300 text-sm lg:text-base leading-relaxed font-medium">
-              {article.content.map((block, index) => {
-                switch (block.type) {
-                  case 'intro':
-                    return (
-                      <p key={index} className="text-lg lg:text-xl font-bold text-[#081031] dark:text-white leading-snug">
-                        {block.text}
-                      </p>
-                    );
-                  case 'h2':
-                    return (
-                      <h2 key={index} className="text-2xl lg:text-3xl font-[900] italic uppercase text-[#081031] dark:text-white pt-6">
-                        {block.text}
-                      </h2>
-                    );
-                  case 'quote':
-                    return (
-                      <blockquote key={index} className="relative p-6 lg:p-8 bg-[#0065FF]/5 dark:bg-[#0EE2E2]/5 rounded-2xl border-l-4 border-[#0065FF] dark:border-[#0EE2E2] my-8">
-                        <span className="absolute top-4 left-4 text-4xl text-[#0065FF]/20 dark:text-[#0EE2E2]/20 font-serif">"</span>
-                        <p className="relative z-10 text-lg lg:text-xl font-bold italic text-[#081031] dark:text-white">
-                          {block.text}
-                        </p>
-                      </blockquote>
-                    );
-                  case 'p':
-                  default:
-                    return (
-                      <p key={index} className="text-justify">
-                        {block.text}
-                      </p>
-                    );
-                }
-              })}
-            </article>
+            {/* LE RÉSUMÉ (Accroche) */}
+            <p className="text-xl lg:text-2xl font-bold italic text-slate-700 dark:text-slate-300 leading-snug mb-10 border-l-4 border-[#0EE2E2] pl-6">
+              {article.excerpt}
+            </p>
+
+            {/* LE CORPS DE L'ARTICLE (HTML TipTap) */}
+            <article 
+              className="prose prose-slate dark:prose-invert prose-lg max-w-none
+                prose-headings:uppercase prose-headings:italic prose-headings:font-[900] prose-headings:text-[#081031] dark:prose-headings:text-white
+                prose-p:leading-relaxed prose-p:text-slate-600 dark:prose-p:text-slate-300 prose-p:font-medium
+                prose-strong:text-[#0065FF] dark:prose-strong:text-[#0EE2E2]
+                prose-blockquote:bg-[#0065FF]/5 dark:prose-blockquote:bg-[#0EE2E2]/5 prose-blockquote:border-l-4 prose-blockquote:border-[#0065FF] dark:prose-blockquote:border-[#0EE2E2] prose-blockquote:p-6 prose-blockquote:rounded-2xl prose-blockquote:not-italic prose-blockquote:font-bold prose-blockquote:text-lg
+                prose-a:text-[#0EE2E2] hover:prose-a:text-[#0065FF]"
+              dangerouslySetInnerHTML={{ __html: article.content }}
+            />
 
             {/* Tags de fin d'article */}
             <div className="mt-12 pt-8 border-t border-slate-100 dark:border-white/10 flex items-center gap-3">
@@ -176,31 +167,35 @@ export default function ArticlePage({ params }) {
           {/* COLONNE DROITE : SIDEBAR (Lire aussi) */}
           <div className="w-full lg:w-[30%] space-y-8">
             
-            <div className="bg-slate-50 dark:bg-[#0f172a] rounded-[2rem] p-8 border border-slate-100 dark:border-white/5">
-              <h3 className="text-xl font-[900] italic uppercase text-[#081031] dark:text-white mb-6 border-b border-slate-200 dark:border-white/10 pb-4">
-                À lire <span className="text-[#0065FF]">également</span>
-              </h3>
-              
-              <div className="space-y-6">
-                {newsData.filter(a => a.id !== article.id).slice(0, 3).map(related => (
-                  <Link href={`/actualites/${related.id}`} key={related.id} className="group block">
-                    <div className="relative aspect-video rounded-xl overflow-hidden mb-3">
-                      <img 
-                        src={related.image} 
-                        alt={related.title} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    </div>
-                    <div className="text-[9px] font-black uppercase text-[#0065FF] dark:text-[#0EE2E2] tracking-widest mb-1">
-                      {related.category}
-                    </div>
-                    <h4 className="text-sm font-[900] italic leading-tight text-[#081031] dark:text-white group-hover:text-[#0065FF] dark:group-hover:text-[#0EE2E2] transition-colors line-clamp-2">
-                      {related.title}
-                    </h4>
-                  </Link>
-                ))}
+            {relatedArticles.length > 0 && (
+              <div className="bg-slate-50 dark:bg-[#0f172a] rounded-[2rem] p-8 border border-slate-100 dark:border-white/5 sticky top-24">
+                <h3 className="text-xl font-[900] italic uppercase text-[#081031] dark:text-white mb-6 border-b border-slate-200 dark:border-white/10 pb-4">
+                  À lire <span className="text-[#0065FF]">également</span>
+                </h3>
+                
+                <div className="space-y-6">
+                  {relatedArticles.map(related => (
+                    <Link href={`/actualites/${related._id}`} key={related._id} className="group block">
+                      <div className="relative aspect-video rounded-xl overflow-hidden mb-3 bg-slate-200 dark:bg-slate-800">
+                        {related.imageUrl && (
+                          <img 
+                            src={related.imageUrl} 
+                            alt={related.title} 
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        )}
+                      </div>
+                      <div className="text-[9px] font-black uppercase tracking-widest mb-1" style={{ color: getCategoryColor(related.category) }}>
+                        {related.category}
+                      </div>
+                      <h4 className="text-sm font-[900] italic leading-tight text-[#081031] dark:text-white group-hover:text-[#0065FF] dark:group-hover:text-[#0EE2E2] transition-colors line-clamp-2">
+                        {related.title}
+                      </h4>
+                    </Link>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Petit encart Promo/Boutique */}
             <div className="bg-gradient-to-br from-[#0065FF] to-[#081031] rounded-[2rem] p-8 text-white text-center relative overflow-hidden group shadow-lg">

@@ -7,6 +7,7 @@ const ArticleSchema = new mongoose.Schema({
   content: { type: String, required: true }, // Le texte complet de l'article
   imageUrl: { type: String, default: '' }, // L'image de couverture
   author: { type: String, default: 'Le Bureau' },
+  publishedAt: { type: Date, default: Date.now },
 }, { timestamps: true });
 
 export default mongoose.models.Article || mongoose.model('Article', ArticleSchema);

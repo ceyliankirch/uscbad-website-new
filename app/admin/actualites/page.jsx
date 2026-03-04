@@ -10,7 +10,7 @@ import {
   Undo, Redo, Save, ArrowLeft, Search, Filter, TrendingUp, Users, Calendar
 } from 'lucide-react';
 
-// --- COMPOSANT BARRE D'OUTILS TIPTAP (Reste inchangé) ---
+// --- COMPOSANT BARRE D'OUTILS TIPTAP ---
 const MenuBar = ({ editor }) => {
   if (!editor) return null;
   const btnClass = (active) => `p-2 rounded-lg transition-colors ${active ? 'bg-[#0EE2E2] text-[#081031]' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/10'}`;
@@ -42,13 +42,20 @@ export default function AdminArticlesPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const defaultForm = { title: '', category: 'ÉVÉNEMENT', excerpt: '', content: '', imageUrl: '', author: 'Le Bureau' };
+  // NOUVEAU : Date du jour par défaut pour le formulaire (format YYYY-MM-DD)
+  const today = new Date().toISOString().split('T')[0];
+  const defaultForm = { title: '', category: 'Événements', excerpt: '', content: '', imageUrl: '', author: 'Le Bureau', publishedAt: today };
   const [formData, setFormData] = useState(defaultForm);
 
   const editor = useEditor({
     extensions: [StarterKit, TextStyle, Color],
     content: '',
     immediatelyRender: false,
+    editorProps: {
+      attributes: {
+        class: 'outline-none min-h-[500px] w-full h-full cursor-text pb-10',
+      },
+    },
     onUpdate: ({ editor }) => {
       setFormData(prev => ({ ...prev, content: editor.getHTML() }));
     },
@@ -59,19 +66,52 @@ export default function AdminArticlesPage() {
     try {
       const res = await fetch('/api/articles');
       const data = await res.json();
-      if (data.success) setArticles(data.data);
+      if (data.success) {
+        // On trie les articles par date de publication (le plus récent en premier)
+        const sorted = data.data.sort((a, b) => new Date(b.publishedAt || b.createdAt) - new Date(a.publishedAt || a.createdAt));
+        setArticles(sorted);
+      }
     } catch (error) { console.error(error); } finally { setIsLoading(false); }
   };
 
   useEffect(() => { fetchArticles(); }, []);
 
+  // BROUILLON LOCAL
+  useEffect(() => {
+    if (isEditorOpen && !editingId) {
+      const timer = setTimeout(() => {
+        if (formData.title || formData.excerpt || formData.content) {
+          localStorage.setItem('usc_article_draft', JSON.stringify(formData));
+        }
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [formData, isEditorOpen, editingId]);
+
   const openEditor = (article = null) => {
     if (article) {
       setEditingId(article._id);
-      setFormData(article);
+      // NOUVEAU : On formate la date pour l'input type="date"
+      const formattedDate = article.publishedAt 
+        ? new Date(article.publishedAt).toISOString().split('T')[0] 
+        : new Date(article.createdAt).toISOString().split('T')[0];
+        
+      setFormData({ ...article, publishedAt: formattedDate });
       editor?.commands.setContent(article.content);
     } else {
       setEditingId(null);
+      const savedDraft = localStorage.getItem('usc_article_draft');
+      if (savedDraft) {
+        if (window.confirm("Vous avez un brouillon non enregistré. Voulez-vous le reprendre ?")) {
+          const parsedDraft = JSON.parse(savedDraft);
+          setFormData(parsedDraft);
+          editor?.commands.setContent(parsedDraft.content || '');
+          setIsEditorOpen(true);
+          return;
+        } else {
+          localStorage.removeItem('usc_article_draft');
+        }
+      }
       setFormData(defaultForm);
       editor?.commands.setContent('');
     }
@@ -85,14 +125,27 @@ export default function AdminArticlesPage() {
       const method = editingId ? 'PUT' : 'POST';
       const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
       const data = await res.json();
-      if (data.success) { fetchArticles(); setIsEditorOpen(false); }
+      if (data.success) { 
+        fetchArticles(); 
+        setIsEditorOpen(false); 
+        localStorage.removeItem('usc_article_draft');
+      }
     } catch (error) { console.error(error); } finally { setIsSaving(false); }
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Supprimer cet article ?')) return;
-    await fetch(`/api/articles/${id}`, { method: 'DELETE' });
-    fetchArticles();
+    if (!window.confirm('Es-tu sûr de vouloir supprimer cet article définitivement ?')) return;
+    try {
+      const res = await fetch(`/api/articles/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        fetchArticles(); // Rafraîchit la liste si succès
+      } else {
+        alert("Erreur lors de la suppression.");
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const filteredArticles = articles.filter(a => a.title.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -102,7 +155,6 @@ export default function AdminArticlesPage() {
     return (
       <div className="animate-in fade-in duration-500 max-w-[1400px] mx-auto pb-20 px-6">
         
-        {/* HEADER STATS (Reste inchangé) */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12 pt-10">
           <div>
             <h1 className="text-5xl font-[900] italic uppercase text-[#081031] dark:text-white mb-2 tracking-tighter leading-none">
@@ -115,7 +167,6 @@ export default function AdminArticlesPage() {
           </button>
         </div>
 
-        {/* DASHBOARD CARDS (Reste inchangé) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           <div className="bg-slate-50 dark:bg-white/5 p-6 rounded-[2rem] border border-slate-200 dark:border-white/5 flex items-center gap-6 shadow-sm">
             <div className="w-14 h-14 rounded-2xl bg-[#0065FF]/10 text-[#0065FF] flex items-center justify-center"><TrendingUp /></div>
@@ -127,12 +178,11 @@ export default function AdminArticlesPage() {
           </div>
           <div className="relative group bg-[#0EE2E2] p-6 rounded-[2rem] text-[#081031] flex items-center gap-6 shadow-lg overflow-hidden">
             <div className="z-10 w-14 h-14 rounded-2xl bg-white/30 flex items-center justify-center"><Newspaper /></div>
-            <div className="z-10"><p className="text-xs font-black uppercase tracking-widest opacity-60">Dernier article le</p><p className="text-2xl font-black">{articles[0] ? new Date(articles[0].createdAt).toLocaleDateString('fr-FR') : '--'}</p></div>
+            <div className="z-10"><p className="text-xs font-black uppercase tracking-widest opacity-60">Dernier article</p><p className="text-2xl font-black">{articles[0] ? new Date(articles[0].publishedAt || articles[0].createdAt).toLocaleDateString('fr-FR') : '--'}</p></div>
             <Newspaper className="absolute -right-8 -bottom-8 w-40 h-40 opacity-10 rotate-12" />
           </div>
         </div>
 
-        {/* FILTRES & RECHERCHE (Reste inchangé) */}
         <div className="flex flex-col md:flex-row gap-4 mb-10">
           <div className="relative flex-1">
             <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
@@ -144,51 +194,40 @@ export default function AdminArticlesPage() {
           </div>
         </div>
 
-        {/* LISTE DES CARDS - LE JUSTE MILIEU (FORMAT COMPACT PRO) */}
         {isLoading ? (
         <div className="flex justify-center py-20"><Loader2 className="animate-spin text-[#0EE2E2]" size={40} /></div>
         ) : (
-        /* Grille de 4 colonnes sur desktop pour des cards bien proportionnées */
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredArticles.map(article => (
             <div key={article._id} className="group relative bg-white dark:bg-[#0f172a] rounded-[2rem] border border-slate-200 dark:border-white/5 overflow-hidden shadow-sm hover:shadow-xl transition-all hover:-translate-y-1.5 flex flex-col">
-                
-                {/* LISERET BLEU USC */}
                 <div className="absolute top-0 left-0 w-full h-1.5 bg-[#0065FF] z-20"></div>
-
-                {/* IMAGE CARD - FORMAT 16/9 (PROPRE ET COMPACT) */}
                 <div className="aspect-video relative overflow-hidden bg-slate-100 shrink-0 border-b border-slate-100 dark:border-white/5">
                 {article.imageUrl ? (
                     <img src={article.imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center text-slate-300 bg-slate-50"><ImageIcon size={28} /></div>
                 )}
-                
-                {/* BADGE CATEGORY - DISCRET */}
                 <div className="absolute top-4 right-4 bg-white/95 dark:bg-black/80 backdrop-blur-md px-3.5 py-1.5 rounded-xl text-[8px] font-[900] uppercase tracking-[0.2em] shadow-sm z-10 border border-white/10 text-[#081031] dark:text-white">
                     {article.category}
                 </div>
                 </div>
 
-                {/* CONTENT CARD - ESPACEMENT ÉQUILIBRÉ */}
                 <div className="p-5 flex flex-col flex-1 bg-white dark:bg-[#0f172a]">
                 <div className="mb-3">
-                    {/* TITRE - TAILLE MOYENNE (text-lg) */}
                     <h3 className="text-lg font-[900] uppercase italic text-[#081031] dark:text-white leading-tight line-clamp-2 group-hover:text-[#0065FF] transition-colors">
                     {article.title}
                     </h3>
-                    {/* RÉSUMÉ - TAILLE FINE (text-[12px]) */}
                     <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400 line-clamp-2 mt-1.5 leading-relaxed">
                     {article.excerpt}
                     </p>
                 </div>
                 
-                {/* FOOTER - COMPACT */}
                 <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-white/5 mt-auto">
                     <div className="flex flex-col">
-                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest italic">Actu USC</span>
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest italic">Date de parution</span>
                     <span className="text-[11px] font-bold text-[#081031] dark:text-white">
-                        {new Date(article.createdAt).toLocaleDateString('fr-FR')}
+                        {/* AFFICHE LA DATE PUBLIÉE CHOISIE */}
+                        {new Date(article.publishedAt || article.createdAt).toLocaleDateString('fr-FR')}
                     </span>
                     </div>
                     
@@ -210,7 +249,7 @@ export default function AdminArticlesPage() {
     );
   }
 
-  // --- VUE ÉDITEUR PLEIN ÉCRAN (Reste inchangée mais rappelée pour code complet) ---
+  // --- VUE ÉDITEUR PLEIN ÉCRAN ---
   return (
     <div className="fixed inset-0 z-[100] bg-white dark:bg-[#081031] flex flex-col animate-in slide-in-from-right duration-500">
       <div className="h-20 border-b border-slate-200 dark:border-white/10 flex items-center justify-between px-8 bg-white dark:bg-[#081031] shrink-0">
@@ -218,6 +257,11 @@ export default function AdminArticlesPage() {
           <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Retour au Dashboard
         </button>
         <div className="flex gap-4">
+          {!editingId && (
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest self-center mr-4 hidden sm:block">
+              {formData.title || formData.content ? "Brouillon sauvegardé localement..." : ""}
+            </span>
+          )}
           <button onClick={handleSubmit} disabled={isSaving} className="bg-[#0EE2E2] text-[#081031] px-10 py-3 rounded-xl font-black uppercase text-xs tracking-widest flex items-center gap-3 shadow-xl hover:scale-105 active:scale-95 transition-all">
             {isSaving ? <Loader2 className="animate-spin" size={16} /> : <Save size={18} />} Publier l'actualité
           </button>
@@ -227,7 +271,6 @@ export default function AdminArticlesPage() {
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-[1200px] mx-auto py-16 px-6 grid grid-cols-1 lg:grid-cols-3 gap-12">
           
-          {/* Colonne Gauche : Contenu */}
           <div className="lg:col-span-2 space-y-10">
             <div className="space-y-4">
               <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#0065FF] ml-2">Titre de l'article *</label>
@@ -249,22 +292,49 @@ export default function AdminArticlesPage() {
 
             <div className="space-y-4">
               <label className="text-[10px] font-black uppercase tracking-[0.2em] text-[#0065FF] ml-2">Corps de l'article (Éditeur complet) *</label>
-              <div className="border border-slate-200 dark:border-white/10 rounded-[2rem] overflow-hidden bg-white dark:bg-black/20 shadow-inner flex flex-col min-h-[600px]">
+              <div 
+                className="border border-slate-200 dark:border-white/10 rounded-[2rem] overflow-hidden bg-white dark:bg-black/20 shadow-inner flex flex-col min-h-[600px] cursor-text"
+                onClick={() => editor?.commands.focus()}
+              >
                 <MenuBar editor={editor} />
-                <div className="p-10 flex-1 prose dark:prose-invert prose-slate max-w-none focus:outline-none min-h-[500px]">
-                  <EditorContent editor={editor} />
+                <div className="p-8 md:p-10 flex-1 prose dark:prose-invert prose-slate max-w-none focus:outline-none">
+                  <EditorContent editor={editor} className="h-full" />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Colonne Droite : Médias & Catégories */}
           <div className="space-y-8">
              <div className="bg-slate-50 dark:bg-white/5 p-8 rounded-[2rem] border border-slate-200 dark:border-white/5 space-y-8 sticky top-10">
                 <h4 className="font-black uppercase italic text-sm border-b border-slate-200 dark:border-white/10 pb-4">Configuration</h4>
                 
+                {/* NOUVEAU : SÉLECTEUR DE DATE */}
                 <div className="space-y-4">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Image de couverture (Max 2Mo)</label>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Date de l'article</label>
+                  <div className="relative">
+                    <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                    <input 
+                      type="date" 
+                      value={formData.publishedAt} 
+                      onChange={e => setFormData({...formData, publishedAt: e.target.value})} 
+                      className="w-full bg-white dark:bg-[#081031] border border-slate-200 dark:border-white/10 rounded-xl pl-12 pr-4 py-4 text-xs font-bold focus:border-[#0EE2E2] outline-none cursor-pointer" 
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Catégorie</label>
+                  <select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full bg-white dark:bg-[#081031] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-4 text-xs font-bold focus:border-[#0EE2E2] outline-none">
+                    <option value="Événements">Événements</option>
+                    <option value="Compétitions">Compétitions</option>
+                    <option value="Vie du Club">Vie du Club</option>
+                    <option value="Interclubs">Interclubs</option>
+                    <option value="Jeunes">Jeunes</option>
+                  </select>
+                </div>
+
+                <div className="space-y-4">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Image de couverture</label>
                   <div className="aspect-[4/3] rounded-2xl bg-slate-200 dark:bg-white/5 overflow-hidden relative group border border-dashed border-slate-400 dark:border-white/20">
                     {formData.imageUrl ? (
                       <img src={formData.imageUrl} className="w-full h-full object-cover" alt="" />
@@ -280,19 +350,9 @@ export default function AdminArticlesPage() {
                         const reader = new FileReader();
                         reader.onloadend = () => setFormData({...formData, imageUrl: reader.result});
                         reader.readAsDataURL(file);
-                      } else { alert("Image trop lourde !"); }
+                      } else { alert("Image trop lourde (Max 2Mo) !"); }
                     }} className="absolute inset-0 opacity-0 cursor-pointer" />
                   </div>
-                </div>
-
-                <div className="space-y-4">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-500">Catégorie</label>
-                  <select value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} className="w-full bg-white dark:bg-[#081031] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-4 text-xs font-bold focus:border-[#0EE2E2] outline-none">
-                    <option value="ÉVÉNEMENT">ÉVÉNEMENT</option>
-                    <option value="COMPÉTITION">COMPÉTITION</option>
-                    <option value="CLUB">VIE DU CLUB</option>
-                    <option value="JEUNES">JEUNES</option>
-                  </select>
                 </div>
 
                 <div className="space-y-4">
@@ -311,7 +371,6 @@ export default function AdminArticlesPage() {
   );
 }
 
-// Composant icône User manquant dans les imports lucide
 const User = ({ className, size }) => (
   <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
 );

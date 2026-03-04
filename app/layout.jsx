@@ -1,37 +1,43 @@
-'use client'; // <-- INDISPENSABLE pour utiliser useState
-import React, { useState } from 'react';
-import './globals.css'; 
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
-import AuthModal from './components/AuthModal';
-import { usePathname } from 'next/navigation';
+import { Montserrat } from 'next/font/google';
+import './globals.css';
+
+// 1. Configuration de la police Montserrat optimisée pour Next.js
+// Cela télécharge la police localement et règle définitivement le problème d'affichage sur iOS/Safari.
+const montserrat = Montserrat({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800', '900'],
+  variable: '--font-montserrat', // Définit une variable CSS pour Tailwind
+  display: 'swap', // Affiche une police système en attendant le chargement (évite le texte invisible)
+});
+
+// 2. Métadonnées du site pour le SEO et l'affichage sur mobile
+export const metadata = {
+  title: 'US Créteil Badminton | Site Officiel',
+  description: 'Découvrez le club de Badminton de Créteil : entraînements, école de jeunes labellisée, compétitions et vie du club.',
+  keywords: ['badminton', 'Créteil', 'club', 'sport', 'jeunes', 'compétition'],
+};
 
 export default function RootLayout({ children }) {
-  const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const pathname = usePathname();
-
-  // On ne veut pas de Navbar/Footer sur les pages admin
-  const isAdminPage = pathname?.startsWith('/admin');
-
   return (
-    <html lang="fr">
-      <body className="antialiased bg-white min-h-screen flex flex-col">
+    <html lang="fr" className="scroll-smooth">
+      {/* 3. Application de la police au body. 
+        - 'montserrat.variable' injecte la variable CSS.
+        - 'font-sans' (configuré dans tailwind.config.js) applique Montserrat par défaut.
+        - 'antialiased' rend le texte plus lisse sur Mac et iOS.
+      */}
+      <body className={`${montserrat.variable} font-sans antialiased bg-white dark:bg-[#040817] text-[#081031] dark:text-white transition-colors duration-300`}>
         
-        {/* On n'affiche la Navbar que si on n'est pas sur une page admin */}
-        {!isAdminPage && (
-          <Navbar onOpenAuth={() => setIsAuthOpen(true)} />
-        )}
+        {/* Vous pouvez insérer ici votre composant <Navbar /> 
+          pour qu'il soit présent sur toutes les pages.
+        */}
         
-        <main className="flex-grow">
+        <main>
           {children}
         </main>
-        
-        {!isAdminPage && <Footer />}
 
-        {/* La modale s'affiche par-dessus tout le site */}
-        {isAuthOpen && (
-          <AuthModal onClose={() => setIsAuthOpen(false)} />
-        )}
+        {/* Vous pouvez insérer ici votre composant <Footer /> 
+        */}
+
       </body>
     </html>
   );

@@ -84,7 +84,7 @@ const LandingPage = () => {
       </style>
 
       {/* 1. HERO SECTION */}
-      <section className="relative w-full h-[80svh] lg:h-[100svh] min-h-[600px] flex items-end lg:items-center pb-36 lg:pb-0 overflow-hidden">
+      <section className="relative w-full h-[110svh] lg:h-[100svh] min-h-[600px] flex items-end lg:items-center pb-36 lg:pb-0 overflow-hidden">
         <div className="absolute inset-0 w-full h-full">
           <picture>
             <source media="(min-aspect-ratio: 21/9)" srcSet="/assets/bannière-uscbad-21-9.jpg" />

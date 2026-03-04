@@ -1,4 +1,3 @@
-// app/admin/layout.jsx
 'use client';
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -7,35 +6,43 @@ import {
   LayoutDashboard, 
   Trophy, 
   CalendarDays, 
-  Clock, // On ajoute l'icône pour le planning
+  Clock, 
   Newspaper, 
   Users, 
   Settings, 
   LogOut,
   Menu,
   X,
-  Medal
+  Medal,
+  Briefcase,
+  Shield,
+  Target
 } from 'lucide-react';
-import { signOut } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 
 export default function AdminLayout({ children }) {
+  const { data: session } = useSession();
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Mise à jour du menu avec l'onglet Planning
-  // Mise à jour du menu avec l'onglet Planning, Tournois et Staff
-  const menuItems = [
-    { name: 'Vue d\'ensemble', icon: <LayoutDashboard size={20} />, path: '/admin' },
-    { name: 'Live Score', icon: <Trophy size={20} />, path: '/admin/score' },
-    { name: 'Événements', icon: <CalendarDays size={20} />, path: '/admin/events' },
-    { name: 'Créneaux', icon: <Clock size={20} />, path: '/admin/creneaux' },
-    { name: 'Tournois & Promobad', icon: <Trophy size={20} />, path: '/admin/tournois' }, // NOUVEAU
-    { name: 'Entraîneurs & Bénévoles', icon: <Users size={20} />, path: '/admin/equipe' },
-    { name: 'Joueurs', icon: <Medal size={20} />, path: '/admin/joueurs' },
-    { name: 'Actualités', icon: <Newspaper size={20} />, path: '/admin/actualites' },
-    { name: 'Bureau & CRs', icon: <Users size={20} />, path: '/admin/board' }, // Note: Tu as deux fois Users, tu pourrais changer l'icône du Bureau en <Briefcase /> si tu veux !
-    { name: 'Paramètres Club', icon: <Settings size={20} />, path: '/admin/settings' },
+  // Configuration de TOUS les onglets avec les rôles autorisés
+  const allNavItems = [
+    { name: "Vue d'ensemble", icon: <LayoutDashboard size={20} />, path: '/admin', roles: ['admin'] },
+    { name: 'Paramètres Club', icon: <Settings size={20} />, path: '/admin/settings', roles: ['admin'] },
+    { name: 'Utilisateurs', icon: <Shield size={20} />, path: '/admin/utilisateurs', roles: ['admin'] },
+    { name: 'Bureau & CRs', icon: <Briefcase size={20} />, path: '/admin/board', roles: ['admin'] },
+    { name: 'Indivs', icon: <Target size={20} />, path: '/mes-indivs', roles: ['admin', 'coach'] }, // Accessible par les coachs
+    { name: 'Live Score', icon: <Trophy size={20} />, path: '/admin/score', roles: ['admin'] },
+    { name: 'Événements', icon: <CalendarDays size={20} />, path: '/admin/events', roles: ['admin'] },
+    { name: 'Créneaux', icon: <Clock size={20} />, path: '/admin/creneaux', roles: ['admin'] },
+    { name: 'Tournois & Promobad', icon: <Trophy size={20} />, path: '/admin/tournois', roles: ['admin'] },
+    { name: 'Entraîneurs & Bénévoles', icon: <Users size={20} />, path: '/admin/equipe', roles: ['admin'] },
+    { name: 'Joueurs', icon: <Medal size={20} />, path: '/admin/joueurs', roles: ['admin'] },
+    { name: 'Actualités', icon: <Newspaper size={20} />, path: '/admin/actualites', roles: ['admin'] },
   ];
+
+  // Filtrage dynamique du menu selon le rôle de l'utilisateur (Admin ou Coach)
+  const menuItems = allNavItems.filter(item => item.roles.includes(session?.user?.role));
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#040817] font-['Montserrat'] flex">
@@ -52,13 +59,15 @@ export default function AdminLayout({ children }) {
               />
             </Link>
             <div>
-              <h1 className="font-[900] italic text-lg text-[#081031] dark:text-white uppercase leading-none">Admin</h1>
+              <h1 className="font-[900] italic text-lg text-[#081031] dark:text-white uppercase leading-none">
+                {session?.user?.role === 'coach' ? 'Coach' : 'Admin'}
+              </h1>
               <span className="text-[10px] font-bold text-[#0EE2E2] uppercase tracking-widest">Dashboard</span>
             </div>
           </div>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
+        <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto hide-scrollbar">
           {menuItems.map((item) => {
             const isActive = pathname === item.path;
             return (
@@ -90,7 +99,7 @@ export default function AdminLayout({ children }) {
       {/* HEADER MOBILE */}
       <div className="lg:hidden fixed top-0 w-full bg-white dark:bg-[#081031] border-b border-slate-200 dark:border-white/10 z-30 flex justify-between items-center p-4">
         <Link href="/" className="font-[900] italic text-lg text-[#081031] dark:text-white uppercase">
-          USC Admin
+          USC {session?.user?.role === 'coach' ? 'Coach' : 'Admin'}
         </Link>
         <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-[#081031] dark:text-white">
           {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
@@ -99,11 +108,13 @@ export default function AdminLayout({ children }) {
 
       {/* MENU MOBILE DÉROULANT */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-40 bg-white dark:bg-[#081031] pt-20 px-4">
-          <nav className="space-y-2">
+        <div className="lg:hidden fixed inset-0 z-40 bg-white dark:bg-[#081031] pt-20 px-4 overflow-y-auto">
+          <nav className="space-y-2 pb-10">
             {menuItems.map((item) => (
               <Link key={item.name} href={item.path} onClick={() => setIsMobileMenuOpen(false)}>
-                <div className="flex items-center gap-4 p-4 rounded-xl font-bold text-lg text-[#081031] dark:text-white hover:bg-slate-100 dark:hover:bg-white/5">
+                <div className={`flex items-center gap-4 p-4 rounded-xl font-bold text-lg ${
+                  pathname === item.path ? 'bg-[#0065FF] text-white' : 'text-[#081031] dark:text-white'
+                }`}>
                   {item.icon} {item.name}
                 </div>
               </Link>

@@ -1,10 +1,11 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { ChevronRight, ChevronDown, Menu, X, Sun, Moon, User, ArrowRight } from 'lucide-react';
+import { ChevronRight, ChevronDown, Menu, X, Sun, Moon, User, ArrowRight, LogOut, Shield, Target } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { useSession, signIn, signOut } from 'next-auth/react';
 
-const Navbar = ({ onOpenAuth }) => {
+const Navbar = () => {
   const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -13,12 +14,15 @@ const Navbar = ({ onOpenAuth }) => {
   const [mounted, setMounted] = useState(false);
   const [isDark, setIsDark] = useState(false);
 
+  // RÉCUPÉRATION DE LA SESSION UTILISATEUR
+  const { data: session, status } = useSession();
+
   // ÉTATS POUR STOCKER LES DONNÉES DYNAMIQUES DE LA BASE DE DONNÉES
   const [dynamicTournaments, setDynamicTournaments] = useState([]);
   const [dynamicPromobads, setDynamicPromobads] = useState([]);
 
   // Définir les pages qui ont un "Hero sombre" en haut de page
-  const hasDarkHero = pathname === '/' || pathname === '/interclubs' || pathname.startsWith('/actualites') || pathname === '/presentation' || pathname === '/communication' || pathname === '/entraineurs' || pathname === '/benevoles' || pathname === '/evenements' || pathname.startsWith('/tournois/') || pathname.startsWith('/promobad/'); 
+  const hasDarkHero = pathname === '/' || pathname === '/interclubs' || pathname.startsWith('/actualites') || pathname === '/presentation' || pathname === '/communication' || pathname === '/entraineurs' || pathname === '/benevoles' || pathname === '/evenements' || pathname.startsWith('/tournois/') || pathname.startsWith('/promobad/') || pathname === '/indivs' || pathname === '/pole-feminines' || pathname === '/mes-indivs'; 
   
   // APPEL API POUR RÉCUPÉRER LES TOURNOIS ET PROMOBADS DYNAMIQUEMENT
   useEffect(() => {
@@ -43,7 +47,7 @@ const Navbar = ({ onOpenAuth }) => {
     fetchEvents();
   }, []);
 
-  // STRUCTURE DES LIENS (Maintenant mixée avec les données dynamiques)
+  // STRUCTURE DES LIENS
   const navLinks = [
     { name: 'Accueil', href: '/' },
     { 
@@ -75,13 +79,11 @@ const Navbar = ({ onOpenAuth }) => {
         { 
           name: 'Tournois', 
           href: '#',
-          // On injecte les tournois trouvés dans la BDD
           subDropdown: dynamicTournaments.length > 0 ? dynamicTournaments : [{ name: 'Chargement...', href: '#' }]
         },
         { 
           name: 'Promobad', 
           href: '#',
-          // On injecte les promobads trouvés dans la BDD
           subDropdown: dynamicPromobads.length > 0 ? dynamicPromobads : [{ name: 'Chargement...', href: '#' }]
         },
         { name: 'Calendrier', href: '/evenements' },
@@ -165,26 +167,26 @@ const Navbar = ({ onOpenAuth }) => {
               </div>
 
               {link.dropdown && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-52 bg-white rounded-2xl shadow-2xl border border-slate-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 py-2">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-52 bg-white rounded-2xl shadow-2xl border border-slate-100 dark:border-white/10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 py-2">
                   {link.dropdown.map((sub) => (
                     <div key={sub.name} className="relative group/sub">
                       
-                      {/* S'il y a un sous-sous-menu (Ex: Tournois / Promobad) */}
+                      {/* S'il y a un sous-sous-menu */}
                       {sub.subDropdown ? (
                         <>
-                          <div className="flex items-center justify-between px-6 py-3 text-[11px] font-bold font-['Montserrat'] uppercase text-black hover:bg-slate-50 hover:text-[#0065FF] transition-colors cursor-pointer">
+                          <div className="flex items-center justify-between pl-6 pr-4 py-3 text-[11px] font-bold font-['Montserrat'] uppercase text-black dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] hover:pl-8 transition-all duration-300 cursor-pointer">
                             <span>{sub.name}</span>
-                            <ChevronRight size={14} className="text-slate-400 group-hover/sub:text-[#0065FF]" />
+                            <ChevronRight size={14} className="text-slate-400 group-hover/sub:text-[#0065FF] dark:group-hover/sub:text-[#0EE2E2]" />
                           </div>
                           
-                          {/* LE SOUS-SOUS-MENU (Flyout droit) */}
-                          <div className="absolute top-0 left-[95%] ml-2 w-56 bg-white rounded-2xl shadow-2xl border border-slate-100 opacity-0 invisible group-hover/sub:opacity-100 group-hover/sub:visible transition-all duration-300 transform -translate-x-2 group-hover/sub:translate-x-0 py-2">
+                          {/* LE SOUS-SOUS-MENU */}
+                          <div className="absolute top-0 left-[95%] ml-2 w-56 bg-white dark:bg-[#0f172a] rounded-2xl shadow-2xl border border-slate-100 dark:border-white/10 opacity-0 invisible group-hover/sub:opacity-100 group-hover/sub:visible transition-all duration-300 transform -translate-x-2 group-hover/sub:translate-x-0 py-2">
                             {sub.subDropdown.length > 0 && sub.subDropdown[0].name !== 'Chargement...' ? (
                               sub.subDropdown.map((nested) => (
                                 <Link 
                                   key={nested.name} 
                                   href={nested.href} 
-                                  className="block px-5 py-3 text-[10px] font-bold font-['Montserrat'] uppercase text-slate-600 hover:bg-slate-50 hover:text-[#0065FF] transition-colors whitespace-nowrap overflow-hidden text-ellipsis"
+                                  className="block pl-5 pr-5 py-3 text-[10px] font-bold font-['Montserrat'] uppercase text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] hover:pl-7 transition-all duration-300 whitespace-nowrap overflow-hidden text-ellipsis"
                                   title={nested.name}
                                 >
                                   {nested.name}
@@ -201,7 +203,7 @@ const Navbar = ({ onOpenAuth }) => {
                         /* Lien classique du dropdown */
                         <Link 
                           href={sub.href} 
-                          className="block px-6 py-3 text-[11px] font-bold font-['Montserrat'] uppercase text-black hover:bg-slate-50 hover:text-[#0065FF] transition-colors"
+                          className="block pl-6 pr-6 py-3 text-[11px] font-bold font-['Montserrat'] uppercase text-black dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] hover:pl-8 transition-all duration-300"
                         >
                           {sub.name}
                         </Link>
@@ -217,22 +219,58 @@ const Navbar = ({ onOpenAuth }) => {
 
         {/* ACTIONS DESKTOP */}
         <div className="hidden lg:flex items-center gap-3 z-10">
-          <button className={`px-7 py-2.5 rounded-full font-[900] text-xs transition-all flex items-center gap-2 uppercase tracking-normal group ${
+          <Link href="/inscriptions" className={`px-7 py-2.5 rounded-full font-[900] text-xs transition-all flex items-center gap-2 uppercase tracking-normal group ${
             shouldBeSolid
               ? 'bg-[#081031] text-white hover:bg-[#0065FF] dark:bg-white dark:text-[#081031] dark:hover:bg-[#0065FF]'
               : 'bg-white text-[#081031] hover:bg-[#0EE2E2]'
           }`}>
             m'inscrire <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
-          </button>
+          </Link>
 
-          <button 
-            onClick={onOpenAuth}
-            className={`p-2.5 rounded-full transition-colors flex items-center justify-center ${
-              shouldBeSolid ? 'bg-slate-100 text-[#081031] dark:bg-white/10 dark:text-white' : 'bg-white/20 text-white hover:bg-white hover:text-[#081031]'
-            }`}
-          >
-            <User size={18} />
-          </button>
+          {/* GESTION DE L'AUTHENTIFICATION DESKTOP */}
+          {status === 'loading' ? (
+            <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse"></div>
+          ) : session ? (
+            <div className="relative group/auth">
+              <button className={`w-10 h-10 rounded-full transition-colors flex items-center justify-center font-bold text-sm shadow-md ${
+                shouldBeSolid ? 'bg-[#0065FF] text-white' : 'bg-white text-[#0065FF]'
+              }`}>
+                {session.user?.name?.charAt(0).toUpperCase() || <User size={18} />}
+              </button>
+              
+              {/* Menu profil */}
+              <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-[#0f172a] rounded-2xl shadow-2xl border border-slate-100 dark:border-white/10 opacity-0 invisible group-hover/auth:opacity-100 group-hover/auth:visible transition-all duration-300 transform translate-y-2 group-hover/auth:translate-y-0 py-2 overflow-hidden">
+                <div className="px-4 py-3 border-b border-slate-100 dark:border-white/5 mb-1">
+                  <p className="text-xs font-bold text-[#081031] dark:text-white truncate">{session.user?.name || 'Utilisateur'}</p>
+                  <p className="text-[10px] text-slate-500 truncate">{session.user?.email}</p>
+                </div>
+                
+                {/* REDIRECTION DYNAMIQUE SELON LE RÔLE */}
+                {session.user?.role === 'admin' || session.user?.role === 'coach' ? (
+                  <Link href="/admin" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] uppercase">
+                    <Shield size={14} /> Espace Admin
+                  </Link>
+                ) : (
+                  <Link href="/mes-indivs" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#F72585] uppercase">
+                    <Target size={14} /> Mes Indivs
+                  </Link>
+                )}
+
+                <button onClick={() => signOut({ callbackUrl: '/' })} className="w-full flex items-center gap-2 text-left px-4 py-2 text-xs font-bold text-red-500 hover:bg-slate-50 dark:hover:bg-white/5 uppercase">
+                  <LogOut size={14} /> Déconnexion
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button 
+              onClick={() => signIn()}
+              className={`p-2.5 rounded-full transition-colors flex items-center justify-center ${
+                shouldBeSolid ? 'bg-slate-100 text-[#081031] dark:bg-white/10 dark:text-white hover:bg-[#0065FF] hover:text-white' : 'bg-white/20 text-white hover:bg-white hover:text-[#081031]'
+              }`}
+            >
+              <User size={18} />
+            </button>
+          )}
 
           {mounted && (
             <button 
@@ -361,11 +399,11 @@ const Navbar = ({ onOpenAuth }) => {
 
           {/* ACTIONS FINALES MOBILE */}
           <div className="flex flex-col gap-4 pt-6 pb-6 mt-4 border-t border-slate-100 dark:border-white/10">
-            <button className="w-full bg-[#0065FF] text-white py-4 rounded-2xl font-[900] uppercase shadow-lg shadow-[#0065FF]/30 hover:scale-[1.02] hover:shadow-xl transition-all flex items-center justify-center gap-2 font-['Montserrat']">
+            <Link href="/inscriptions" onClick={() => setIsMobileMenuOpen(false)} className="w-full bg-[#0065FF] text-white py-4 rounded-2xl font-[900] uppercase shadow-lg shadow-[#0065FF]/30 hover:scale-[1.02] hover:shadow-xl transition-all flex items-center justify-center gap-2 font-['Montserrat']">
               m'inscrire <ArrowRight size={18} />
-            </button>
+            </Link>
 
-            <div className="flex items-center justify-center gap-8 mt-1">
+            <div className="flex items-center justify-center gap-6 mt-1">
               {mounted && (
                 <button 
                   onClick={toggleTheme} 
@@ -375,15 +413,41 @@ const Navbar = ({ onOpenAuth }) => {
                 </button>
               )}
 
-              <button 
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  if (onOpenAuth) onOpenAuth();
-                }}
-                className="p-3 text-[#081031] dark:text-slate-300 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] transition-colors"
-              >
-                <User size={24} />
-              </button>
+              {/* GESTION AUTHENTIFICATION MOBILE (DYNAMIQUE SELON RÔLE) */}
+              {status === 'loading' ? null : session ? (
+                <>
+                  {session.user?.role === 'admin' || session.user?.role === 'coach' ? (
+                    <Link 
+                      href="/admin"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="p-3 text-[#081031] dark:text-slate-300 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] transition-colors flex items-center gap-2 font-bold text-sm uppercase"
+                    >
+                      <Shield size={20} /> Admin
+                    </Link>
+                  ) : (
+                    <Link 
+                      href="/mes-indivs"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="p-3 text-[#081031] dark:text-slate-300 hover:text-[#F72585] transition-colors flex items-center gap-2 font-bold text-sm uppercase"
+                    >
+                      <Target size={20} /> Mes Indivs
+                    </Link>
+                  )}
+                  <button 
+                    onClick={() => { setIsMobileMenuOpen(false); signOut({ callbackUrl: '/' }); }}
+                    className="p-3 text-red-500 hover:text-red-600 transition-colors flex items-center gap-2 font-bold text-sm uppercase"
+                  >
+                    <LogOut size={20} /> Sortir
+                  </button>
+                </>
+              ) : (
+                <button 
+                  onClick={() => { setIsMobileMenuOpen(false); signIn(); }}
+                  className="p-3 text-[#081031] dark:text-slate-300 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] transition-colors"
+                >
+                  <User size={24} />
+                </button>
+              )}
             </div>
           </div>
         </div>

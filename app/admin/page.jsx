@@ -1,26 +1,47 @@
-// app/admin/page.jsx
 'use client';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { 
   TrendingUp, 
   Users, 
-  Calendar, 
   AlertCircle, 
   Trophy, 
   Newspaper,
   Heart,
   CalendarDays,
-  PlusCircle,
   Clock,
   ChevronRight
 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminDashboard() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Si l'utilisateur est un coach, il n'a rien à faire sur le dashboard général
+    // On le redirige immédiatement vers son outil de travail : les Indivs
+    if (status === 'authenticated' && session?.user?.role === 'coach') {
+      router.replace('/mes-indivs');
+    }
+  }, [session, status, router]);
+
   // Petite fonction pour avoir la date du jour en français
   const today = new Date().toLocaleDateString('fr-FR', { 
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
   });
+
+  if (status === 'loading' || (session?.user?.role === 'coach')) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-[#0EE2E2] border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-slate-500 font-bold animate-pulse text-sm uppercase tracking-widest">Chargement de votre espace...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -39,7 +60,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Cartes de statistiques rapides (Mises à jour avec Tournois & Staff) */}
+      {/* Cartes de statistiques rapides */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6">
         <StatCard title="Licenciés Actifs" value="307" desc="+12 ce mois-ci" icon={<Users size={24} />} color="bg-blue-500" />
         <StatCard title="Tournois & Promobad" value="3" desc="En préparation" icon={<Trophy size={24} />} color="bg-[#F72585]" />
@@ -50,10 +71,10 @@ export default function AdminDashboard() {
       {/* Disposition en 2 colonnes : Actions Rapides + Activité */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-10">
         
-        {/* COLONNE GAUCHE : Actions Rapides (Prend 2/3 de l'espace) */}
+        {/* COLONNE GAUCHE : Actions Rapides */}
         <div className="lg:col-span-2">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-[900] uppercase text-[#081031] dark:text-white">Actions Rapides</h2>
+            <h2 className="text-xl font-[900] uppercase text-[#081031] dark:text-white italic">Actions Rapides</h2>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -92,17 +113,17 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* COLONNE DROITE : Rappels / Activité (Prend 1/3 de l'espace) */}
+        {/* COLONNE DROITE : Rappels / Activité */}
         <div className="bg-white dark:bg-[#081031] rounded-[2rem] p-6 border border-slate-200 dark:border-white/10 shadow-sm flex flex-col h-full">
-          <h2 className="text-lg font-[900] uppercase text-[#081031] dark:text-white mb-6 flex items-center gap-2">
+          <h2 className="text-lg font-[900] uppercase text-[#081031] dark:text-white mb-6 flex items-center gap-2 italic">
             <AlertCircle className="text-orange-500" size={20} /> À ne pas oublier
           </h2>
           
           <div className="space-y-4 flex-1">
             <div className="p-4 rounded-xl bg-orange-50 dark:bg-orange-500/10 border border-orange-100 dark:border-orange-500/20">
               <h3 className="text-sm font-bold text-[#081031] dark:text-white mb-1">CR Assemblée Générale</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">Le document PDF de la dernière AG doit être uploadé.</p>
-              <Link href="/admin/board" className="text-xs font-bold text-orange-600 hover:text-orange-700 uppercase tracking-wider flex items-center gap-1">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 font-medium">Le document PDF de la dernière AG doit être uploadé.</p>
+              <Link href="/admin/board" className="text-xs font-black text-orange-600 hover:text-orange-700 uppercase tracking-wider flex items-center gap-1">
                 Uploader le fichier <ChevronRight size={14} />
               </Link>
             </div>
@@ -112,12 +133,12 @@ export default function AdminDashboard() {
               <h3 className="text-sm font-bold text-[#081031] dark:text-white mb-1 flex items-center gap-2">
                 <Clock size={14} className="text-[#0065FF] dark:text-[#0EE2E2]" /> Prochain Événement
               </h3>
-              <p className="text-xs font-bold text-[#0065FF] dark:text-[#0EE2E2] mb-1">Rencontre N1 vs Chambly</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Samedi prochain à 16h00. N'oubliez pas de mettre à jour le Live Score le jour J.</p>
+              <p className="text-xs font-black text-[#0065FF] dark:text-[#0EE2E2] mb-1 uppercase tracking-tight">Rencontre N1 vs Chambly</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Samedi prochain à 16h00. N'oubliez pas de mettre à jour le Live Score le jour J.</p>
             </div>
           </div>
           
-          <Link href="/admin/planning" className="mt-6 w-full py-3 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2">
+          <Link href="/admin/planning" className="mt-6 w-full py-3 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2">
             Voir le planning complet
           </Link>
         </div>
@@ -138,7 +159,7 @@ const QuickActionCard = ({ href, icon, title, desc, color, bgHover }) => (
       <h3 className="font-[900] text-sm lg:text-base text-[#081031] dark:text-white uppercase mb-1 leading-tight pt-1">
         {title}
       </h3>
-      <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-auto">
+      <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mt-auto leading-relaxed">
         {desc}
       </p>
     </div>
@@ -151,12 +172,12 @@ const StatCard = ({ title, value, desc, icon, color, textColor = "text-white" })
     {/* Petit halo lumineux au survol */}
     <div className={`absolute top-0 right-0 w-24 h-24 ${color} rounded-full blur-[40px] opacity-0 group-hover:opacity-10 transition-opacity pointer-events-none`}></div>
     
-    <div className={`w-12 h-12 ${color} ${textColor} rounded-xl flex items-center justify-center shrink-0 shadow-md relative z-10`}>
+    <div className={`w-12 h-12 ${color} ${textColor} rounded-xl flex items-center justify-center shrink-0 shadow-md relative z-10 transition-transform group-hover:scale-105`}>
       {icon}
     </div>
     <div className="relative z-10">
       <div className="text-3xl font-[900] italic text-[#081031] dark:text-white leading-none mb-1 pt-1">{value}</div>
-      <div className="text-[10px] font-bold uppercase tracking-widest text-[#0065FF] dark:text-[#0EE2E2] mb-1">{title}</div>
+      <div className="text-[10px] font-black uppercase tracking-widest text-[#0065FF] dark:text-[#0EE2E2] mb-1">{title}</div>
       {desc && <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 truncate">{desc}</div>}
     </div>
   </div>

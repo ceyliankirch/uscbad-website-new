@@ -1,57 +1,58 @@
 'use client';
-import React, { useState } from 'react';
-import { Instagram, Facebook, Mail, MessageCircle, Palette, ArrowRight, ExternalLink, Smartphone, ChevronLeft, ChevronRight, X, Calendar, Tag, Sparkles } from 'lucide-react';
-
-// ==========================================
-// DONNÉES DE DÉMONSTRATION : LE MUSÉE (Format 4:5)
-// ==========================================
-const galleryItems = [
-  { 
-    id: 1, 
-    img: "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?q=80&w=1080&h=1350&auto=format&fit=crop", 
-    title: "N1 vs Chambly", 
-    category: "Interclubs", 
-    date: "Mars 2026",
-    description: "Affiche officielle pour la rencontre au sommet de la Poule 2 de Nationale 1. L'objectif était de retranscrire la tension et l'enjeu du match en mettant en avant nos joueurs phares dans une atmosphère électrique."
-  },
-  { 
-    id: 2, 
-    img: "https://images.unsplash.com/photo-1596727362302-b8d891c42ab8?q=80&w=1080&h=1350&auto=format&fit=crop", 
-    title: "Tournoi Jeunes", 
-    category: "Tournoi", 
-    date: "Février 2026",
-    description: "Visuel promotionnel pour le tournoi régional jeunes organisé par l'US Créteil. Une direction artistique plus colorée et dynamique pour cibler directement les jeunes compétiteurs d'Île-de-France."
-  },
-  { 
-    id: 3, 
-    img: "https://images.unsplash.com/photo-1511886929837-354d827aae26?q=80&w=1080&h=1350&auto=format&fit=crop", 
-    title: "La Nuit du Bad", 
-    category: "Événement", 
-    date: "Février 2026",
-    description: "Création graphique pour notre grand tournoi nocturne interne fluo. L'utilisation du néon et des contrastes forts rappelle immédiatement l'ambiance festive de l'événement."
-  },
-  { 
-    id: 4, 
-    img: "https://images.unsplash.com/photo-1521537634581-0dced2fee2ef?q=80&w=1080&h=1350&auto=format&fit=crop", 
-    title: "Recrutement N1", 
-    category: "Club", 
-    date: "Janvier 2026",
-    description: "Campagne de communication pour attirer de nouveaux talents dans notre équipe première. Un design épuré, très axé sur le sport de haut niveau et la performance."
-  },
-  { 
-    id: 5, 
-    img: "https://images.unsplash.com/photo-1572680511874-98402c5c991f?q=80&w=1080&h=1350&auto=format&fit=crop", 
-    title: "Stage Performance", 
-    category: "Stage", 
-    date: "Juillet 2025",
-    description: "Affiche pour les stages d'été intensifs. Le visuel met l'accent sur l'effort physique et le dépassement de soi, valeurs fondamentales de l'USC."
-  },
-];
+import React, { useState, useEffect } from 'react';
+import { Instagram, Facebook, Mail, MessageCircle, Palette, ArrowRight, ExternalLink, Smartphone, ChevronLeft, ChevronRight, X, Calendar, Tag, Sparkles, Loader2, Star } from 'lucide-react';
 
 export default function CommunicationPage() {
-  const [activeIndex, setActiveIndex] = useState(2);
+  const [galleryItems, setGalleryItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // État pour la configuration textuelle
+  const [pageConfig, setPageConfig] = useState({
+    instagramText: 'Résultats en direct, coulisses, stories et photos exclusives.',
+    facebookText: 'Toutes les annonces officielles, événements et albums photos complets.',
+    emailText: "Pour toute demande d'interview, sponsoring ou utilisation de nos visuels.",
+    emailAddress: 'com@uscbad.fr',
+    whatsappLink: '#'
+  });
+
+  const [activeIndex, setActiveIndex] = useState(0);
   const [selectedVisual, setSelectedVisual] = useState(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
+
+  // --- CHARGEMENT DYNAMIQUE DES DONNÉES ET DE LA CONFIG ---
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [galleryRes, configRes] = await Promise.all([
+          fetch('/api/gallery'),
+          fetch('/api/admin/com-config')
+        ]);
+        
+        const galleryJson = await galleryRes.json();
+        const configJson = await configRes.json();
+
+        if (galleryJson.success && galleryJson.data.length > 0) {
+          setGalleryItems(galleryJson.data);
+          setActiveIndex(Math.floor(galleryJson.data.length / 2));
+        }
+
+        if (configJson.success && configJson.data) {
+          setPageConfig({
+            instagramText: configJson.data.instagramText || pageConfig.instagramText,
+            facebookText: configJson.data.facebookText || pageConfig.facebookText,
+            emailText: configJson.data.emailText || pageConfig.emailText,
+            emailAddress: configJson.data.emailAddress || pageConfig.emailAddress,
+            whatsappLink: configJson.data.whatsappLink || pageConfig.whatsappLink
+          });
+        }
+      } catch (error) {
+        console.error("Erreur de chargement des données:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   // --- GESTION DU SWIPE MOBILE ---
   const [touchStart, setTouchStart] = useState(null);
@@ -66,18 +67,20 @@ export default function CommunicationPage() {
   const onTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX);
 
   const onTouchEnd = () => {
-    if (!touchStart || !touchEnd || selectedVisual) return;
+    if (!touchStart || !touchEnd || selectedVisual || galleryItems.length === 0) return;
     const distance = touchStart - touchEnd;
     if (distance > minSwipeDistance) handleNext();
     else if (distance < -minSwipeDistance) handlePrev();
   };
 
   const handleNext = () => {
+    if (galleryItems.length === 0) return;
     setActiveIndex((prev) => (prev === galleryItems.length - 1 ? 0 : prev + 1));
     setTilt({ x: 0, y: 0 });
   };
   
   const handlePrev = () => {
+    if (galleryItems.length === 0) return;
     setActiveIndex((prev) => (prev === 0 ? galleryItems.length - 1 : prev - 1));
     setTilt({ x: 0, y: 0 });
   };
@@ -99,19 +102,19 @@ export default function CommunicationPage() {
 
   const handleMouseLeaveCard = () => setTilt({ x: 0, y: 0 });
 
-  // --- CALCUL DES STYLES DU CARROUSEL CIRCULAIRE (ARC AÉRÉ) ---
+  // --- CALCUL DES STYLES DU CARROUSEL ---
   const getCardStyle = (index) => {
     const total = galleryItems.length;
+    if (total === 0) return {};
+    
     let diff = index - activeIndex;
 
-    // Boucle infinie
     if (diff > total / 2) diff -= total;
     if (diff < -total / 2) diff += total;
 
     const isCenter = diff === 0;
     const absDiff = Math.abs(diff);
     
-    // Paramètres mathématiques pour l'arc de cercle (Aérés)
     const translateX = diff * 150; 
     const translateY = absDiff * 40; 
     const translateZ = -absDiff * 150; 
@@ -132,21 +135,15 @@ export default function CommunicationPage() {
   };
 
   return (
-    // RETOUR AU FOND BLANC CLASSIQUE (SUPPORT DARK MODE)
     <div className="bg-white dark:bg-[#040817] min-h-screen font-['Montserrat'] text-[#081031] dark:text-white transition-colors duration-300 pb-20 overflow-hidden">
       
-      {/* =========================================================
-          HERO : GALERIE NFT 3D INTÉGRÉE (FOND SOMBRE FORCÉ)
-          ========================================================= */}
-      <section className="relative w-full min-h-screen flex flex-col justify-center pt-32 pb-20 overflow-hidden bg-[#081031]">
-        
-        {/* Fonds et lumières */}
+      {/* SECTION 1 : LE MUSÉE */}
+      <section className="relative w-full min-h-[900px] flex flex-col justify-center pt-32 pb-20 overflow-hidden bg-[#081031]">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay z-0"></div>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] lg:w-[1000px] h-[600px] lg:h-[1000px] bg-[#0065FF]/20 rounded-full blur-[150px] pointer-events-none z-0"></div>
 
         <div className="relative z-10 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center">
           
-          {/* Header textuel (Disparaît si on ouvre une image) */}
           {!selectedVisual && (
             <div className="text-center mb-10 lg:mb-16 animate-in fade-in duration-500 max-w-3xl">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/5 border border-white/10 text-white rounded-full font-[900] uppercase text-[10px] tracking-widest italic mb-6 shadow-lg backdrop-blur-md">
@@ -161,178 +158,109 @@ export default function CommunicationPage() {
             </div>
           )}
 
-          {/* VUE DÉTAIL OU CARROUSEL */}
-          {selectedVisual ? (
-            /* --- VUE DÉTAIL --- */
+          {isLoading ? (
+            <div className="flex justify-center items-center h-[400px]">
+              <Loader2 className="animate-spin text-[#0065FF]" size={48} />
+            </div>
+          ) : galleryItems.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-[400px] text-white/50">
+              <Palette size={48} className="mb-4 opacity-50" />
+              <p className="font-bold uppercase tracking-widest text-xs">Le musée est en cours d'installation...</p>
+            </div>
+          ) : selectedVisual ? (
             <div className="w-full flex flex-col lg:flex-row items-center justify-between animate-in fade-in zoom-in duration-500 relative max-w-[1200px] mx-auto mt-4 text-white">
-              
-              <button 
-                onClick={() => setSelectedVisual(null)} 
-                className="absolute -top-12 right-0 lg:-top-16 lg:right-0 z-50 text-white/50 hover:text-white flex items-center gap-2 font-bold uppercase tracking-widest text-xs transition-colors cursor-pointer bg-white/5 lg:bg-transparent px-4 py-2 rounded-full lg:p-0"
-              >
+              <button onClick={() => setSelectedVisual(null)} className="absolute -top-12 right-0 lg:-top-16 lg:right-0 z-50 text-white/50 hover:text-white flex items-center gap-2 font-bold uppercase tracking-widest text-xs transition-colors cursor-pointer bg-white/5 lg:bg-transparent px-4 py-2 rounded-full lg:p-0">
                 <X size={20} /> Fermer
               </button>
-
+              
+              {/* IMAGE DÉTAIL */}
               <div className="w-full lg:w-[45%] flex justify-center relative z-10 order-1 lg:order-2 mb-8 lg:mb-0">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] h-[90%] rounded-[2rem] bg-[#0065FF] blur-[80px] lg:blur-[100px] opacity-40 pointer-events-none"></div>
-                <img 
-                  src={selectedVisual.img} 
-                  alt={selectedVisual.title} 
-                  className="relative z-20 w-full max-w-[320px] lg:max-w-[360px] aspect-[4/5] object-cover rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.6)] border border-white/10"
-                />
+                {/* Lueur dynamique si c'est un Banger */}
+                <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] h-[90%] rounded-[2rem] blur-[80px] lg:blur-[100px] opacity-40 pointer-events-none ${selectedVisual.isBanger ? 'bg-[#F72585]' : 'bg-[#0065FF]'}`}></div>
+                <img src={selectedVisual.img} alt={selectedVisual.title} className={`relative z-20 w-full max-w-[320px] lg:max-w-[360px] aspect-[4/5] object-cover rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.6)] border ${selectedVisual.isBanger ? 'border-[#F72585] ring-4 ring-[#F72585]/30' : 'border-white/10'}`} />
+                {selectedVisual.isBanger && (
+                  <div className="absolute -top-6 -right-6 lg:-top-8 lg:-right-8 z-30 bg-[#F72585] text-white px-6 py-3 rounded-2xl text-sm lg:text-base font-[900] uppercase tracking-widest shadow-[0_15px_30px_rgba(247,37,133,0.6)] flex items-center gap-3 animate-bounce-slow">
+                    <Star size={20} fill="currentColor" /> BANGER
+                  </div>
+                )}
               </div>
-
+              
+              {/* INFOS DÉTAIL */}
               <div className="w-full lg:w-[50%] flex flex-col justify-center z-20 order-2 lg:order-1 text-center lg:text-left">
                 <div className="flex items-center justify-center lg:justify-start gap-3 mb-6">
-                  <span className="bg-[#0065FF] text-white px-4 py-1.5 font-black uppercase text-[10px] md:text-xs tracking-widest rounded-sm flex items-center gap-2">
-                    <Tag size={14} /> {selectedVisual.category}
-                  </span>
-                  <span className="border border-white/20 bg-white/5 backdrop-blur-sm text-white px-4 py-1.5 font-black uppercase text-[10px] md:text-xs tracking-widest rounded-sm flex items-center gap-2">
-                    <Calendar size={14} className="text-[#0EE2E2]" /> {selectedVisual.date}
-                  </span>
+                  <span className={`text-white px-4 py-1.5 font-black uppercase text-[10px] md:text-xs tracking-widest rounded-sm flex items-center gap-2 ${selectedVisual.isBanger ? 'bg-[#F72585]' : 'bg-[#0065FF]'}`}><Tag size={14} /> {selectedVisual.category}</span>
+                  <span className="border border-white/20 bg-white/5 backdrop-blur-sm text-white px-4 py-1.5 font-black uppercase text-[10px] md:text-xs tracking-widest rounded-sm flex items-center gap-2"><Calendar size={14} className={selectedVisual.isBanger ? 'text-[#F72585]' : 'text-[#0EE2E2]'} /> {selectedVisual.date}</span>
                 </div>
-
-                <h2 className="text-4xl sm:text-5xl lg:text-7xl font-[900] uppercase italic tracking-tighter leading-[0.9] text-white drop-shadow-lg mb-8">
-                  {selectedVisual.title}
-                </h2>
-
+                <h2 className="text-4xl sm:text-5xl lg:text-7xl font-[900] uppercase italic tracking-tighter leading-[0.9] text-white drop-shadow-lg mb-8">{selectedVisual.title}</h2>
                 <div className="border-t border-white/10 pt-6 lg:pt-8 mb-8">
-                  <h4 className="text-[#0065FF] font-bold uppercase text-[10px] tracking-widest mb-3">Le concept créatif</h4>
-                  <p className="text-white/80 font-medium text-sm lg:text-base leading-relaxed max-w-lg mx-auto lg:mx-0">
-                    {selectedVisual.description}
-                  </p>
+                  <h4 className={`${selectedVisual.isBanger ? 'text-[#F72585]' : 'text-[#0065FF]'} font-bold uppercase text-[10px] tracking-widest mb-3`}>Le concept créatif</h4>
+                  <p className="text-white/80 font-medium text-sm lg:text-base leading-relaxed max-w-lg mx-auto lg:mx-0 whitespace-pre-wrap">{selectedVisual.description || "Aucune description fournie pour ce visuel."}</p>
                 </div>
               </div>
             </div>
-
           ) : (
-            /* --- VUE CARROUSEL --- */
             <div className="w-full flex flex-col items-center animate-in fade-in duration-500">
-              
-              {/* Le conteneur 3D */}
-              <div 
-                className="relative w-full max-w-[1200px] h-[350px] sm:h-[450px] lg:h-[550px] flex justify-center items-center perspective-[2000px]"
-                onTouchStart={onTouchStart}
-                onTouchMove={onTouchMove}
-                onTouchEnd={onTouchEnd}
-              >
+              <div className="relative w-full max-w-[1200px] h-[350px] sm:h-[450px] lg:h-[550px] flex justify-center items-center perspective-[2000px]" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
                 {galleryItems.map((item, index) => {
                   const isActive = index === activeIndex;
-
                   return (
-                    <div
-                      key={item.id}
-                      className="absolute w-[210px] sm:w-[250px] lg:w-[320px] cursor-pointer"
-                      style={getCardStyle(index)}
-                      onMouseEnter={() => { if (!touchStart) setTilt({ x: 0, y: 0 }) }}
-                      onMouseLeave={handleMouseLeaveCard}
-                      onClick={() => {
-                        if (isActive) setSelectedVisual(item);
-                        else setActiveIndex(index);
-                      }}
-                    >
-                      {/* Wrapper Tilt 3D */}
-                      <div 
-                        className="w-full h-full relative transition-transform duration-150 ease-out group"
-                        style={{
-                          transform: isActive ? `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)` : 'rotateX(0deg) rotateY(0deg)'
-                        }}
-                      >
-                        {/* Lueur Bleue (Visible au survol de la carte active) */}
-                        <div className={`absolute inset-0 -m-2 rounded-[2.5rem] bg-[#0065FF] blur-[40px] opacity-0 transition-opacity duration-700 pointer-events-none ${isActive ? 'group-hover:opacity-60' : ''}`}></div>
-
-                        {/* Carte Glassmorphism Bleu Nuit */}
-                        <div className="w-full bg-[#081031]/80 backdrop-blur-xl border border-white/10 rounded-[2rem] p-3 shadow-2xl flex flex-col relative overflow-hidden">
-                          
-                          {/* Image 4:5 */}
-                          <div className="relative w-full aspect-[4/5] rounded-[1.5rem] overflow-hidden mb-4 border border-white/5 bg-[#040817]">
-                            <img 
-                              src={item.img} 
-                              alt={item.title} 
-                              className={`w-full h-full object-cover transition-transform duration-1000 ${isActive ? 'scale-105 group-hover:scale-110' : 'scale-100'}`}
-                            />
+                    <div key={item._id || index} className="absolute w-[210px] sm:w-[250px] lg:w-[320px] cursor-pointer" style={getCardStyle(index)} onMouseEnter={() => { if (!touchStart) setTilt({ x: 0, y: 0 }) }} onMouseLeave={handleMouseLeaveCard} onClick={() => { if (isActive) setSelectedVisual(item); else setActiveIndex(index); }}>
+                      <div className="w-full h-full relative transition-transform duration-150 ease-out group" style={{ transform: isActive ? `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)` : 'rotateX(0deg) rotateY(0deg)' }}>
+                        
+                        {/* Lueur dynamique (bleu classique ou rose si banger) */}
+                        <div className={`absolute inset-0 -m-2 rounded-[2.5rem] blur-[40px] opacity-0 transition-opacity duration-700 pointer-events-none ${isActive ? 'group-hover:opacity-60' : ''} ${item.isBanger ? 'bg-[#F72585]' : 'bg-[#0065FF]'}`}></div>
+                        
+                        {/* Carte principale */}
+                        <div className={`w-full bg-[#081031]/80 backdrop-blur-xl border rounded-[2rem] p-3 shadow-2xl flex flex-col relative overflow-visible ${item.isBanger ? 'border-[#F72585]/30' : 'border-white/10'}`}>
+                          <div className={`relative w-full aspect-[4/5] rounded-[1.5rem] overflow-hidden mb-4 bg-[#040817] ${item.isBanger ? 'border-2 border-[#F72585]/50 shadow-inner' : 'border border-white/5'}`}>
+                            <img src={item.img} alt={item.title} className={`w-full h-full object-cover transition-transform duration-1000 ${isActive ? 'scale-105 group-hover:scale-110' : 'scale-100'}`} />
                             
-                            {/* Badges */}
                             <div className="absolute top-3 left-3 bg-[#081031]/80 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-full flex items-center gap-2 shadow-lg">
-                              <span className="w-1.5 h-1.5 rounded-full bg-[#0065FF] animate-pulse shadow-[0_0_8px_#0065FF]"></span>
+                              <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${item.isBanger ? 'bg-[#F72585] shadow-[0_0_8px_#F72585]' : 'bg-[#0065FF] shadow-[0_0_8px_#0065FF]'}`}></span>
                               <span className="text-[8px] font-black uppercase tracking-widest text-white">{item.category}</span>
                             </div>
                           </div>
-
-                          {/* Footer de la carte */}
+                          
+                          {/* Insigne BANGER sur la carte du carrousel (qui dépasse, sans rotation) */}
+                          {item.isBanger && (
+                            <div className="absolute -top-4 -right-4 bg-[#F72585] text-white px-4 py-2 rounded-2xl text-xs font-[900] uppercase tracking-widest shadow-[0_10px_25px_rgba(247,37,133,0.7)] flex items-center gap-2 z-50">
+                              <Star size={16} fill="currentColor" /> BANGER
+                            </div>
+                          )}
+                          
                           <div className="px-2 pb-2 flex items-center justify-between">
                             <div className="flex flex-col text-white">
-                              <h3 className="text-sm lg:text-base font-[900] uppercase italic leading-tight mb-0.5 truncate max-w-[140px] lg:max-w-[180px]">
-                                {item.title}
-                              </h3>
-                              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
-                                {item.date}
-                              </p>
+                              <h3 className={`text-sm lg:text-base font-[900] uppercase italic leading-tight mb-0.5 truncate max-w-[140px] lg:max-w-[180px] ${item.isBanger ? 'text-[#F72585]' : ''}`}>{item.title}</h3>
+                              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{item.date}</p>
                             </div>
-                            
-                            {/* Avatar Créateur */}
-                            <div className="w-8 h-8 rounded-full border border-white/20 overflow-hidden shrink-0">
-                              <img src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?q=80&w=200&auto=format&fit=crop" alt="Ceylian" className="w-full h-full object-cover" />
-                            </div>
+                            <div className="w-8 h-8 rounded-full border border-white/20 overflow-hidden shrink-0 bg-slate-800 flex items-center justify-center"><Palette size={14} className="text-slate-400" /></div>
                           </div>
                         </div>
-
-                        {/* Zone de capture pour le Tilt */}
-                        {isActive && (
-                          <div 
-                            className="absolute inset-0 z-30"
-                            onMouseMove={(e) => handleMouseMove(e, index)}
-                          ></div>
-                        )}
+                        {isActive && <div className="absolute inset-0 z-30 rounded-[2rem]" onMouseMove={(e) => handleMouseMove(e, index)}></div>}
                       </div>
-
-                      {/* Bouton cliquable en dessous */}
                       <div className={`absolute -bottom-14 left-1/2 -translate-x-1/2 z-20 transition-all duration-500 pointer-events-none ${isActive ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                        <div className="bg-white text-[#081031] px-6 py-3 rounded-full font-[900] uppercase text-[9px] sm:text-[10px] tracking-widest shadow-[0_10px_20px_rgba(0,0,0,0.4)] whitespace-nowrap flex items-center gap-2">
-                          Découvrir l'œuvre
-                        </div>
+                        <div className="bg-white text-[#081031] px-6 py-3 rounded-full font-[900] uppercase text-[9px] sm:text-[10px] tracking-widest shadow-[0_10px_20px_rgba(0,0,0,0.4)] whitespace-nowrap flex items-center gap-2">Découvrir l'œuvre</div>
                       </div>
-
                     </div>
                   );
                 })}
               </div>
-
-              {/* Contrôles de Navigation */}
               <div className="flex items-center gap-8 lg:gap-16 mt-16 relative z-20 w-full max-w-md justify-center">
-                <button onClick={handlePrev} className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#0065FF] hover:border-transparent transition-all backdrop-blur-md">
-                  <ChevronLeft size={24} />
-                </button>
-                
+                <button onClick={handlePrev} className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#0065FF] hover:border-transparent transition-all backdrop-blur-md"><ChevronLeft size={24} /></button>
                 <div className="flex items-center gap-6">
                   <div className="flex flex-col items-center">
                     <span className="text-[10px] font-black uppercase text-[#0065FF] tracking-widest mb-1">Ceylian K.</span>
-                    <div className="flex gap-1.5">
-                      {galleryItems.map((_, idx) => (
-                        <div 
-                          key={idx} 
-                          onClick={() => { setActiveIndex(idx); setTilt({x: 0, y:0}); }}
-                          className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${activeIndex === idx ? 'w-6 bg-white' : 'w-1.5 bg-white/20 hover:bg-white/50'}`} 
-                        />
-                      ))}
-                    </div>
+                    <div className="flex gap-1.5">{galleryItems.map((_, idx) => (<div key={idx} onClick={() => { setActiveIndex(idx); setTilt({x: 0, y:0}); }} className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${activeIndex === idx ? 'w-6 bg-white' : 'w-1.5 bg-white/20 hover:bg-white/50'}`} />))}</div>
                   </div>
                 </div>
-
-                <button onClick={handleNext} className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#0065FF] hover:border-transparent transition-all backdrop-blur-md">
-                  <ChevronRight size={24} />
-                </button>
+                <button onClick={handleNext} className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#0065FF] hover:border-transparent transition-all backdrop-blur-md"><ChevronRight size={24} /></button>
               </div>
-
             </div>
           )}
-
         </div>
       </section>
 
-      {/* =========================================================
-          SECTION 2 : RÉSEAUX SOCIAUX & CONTACT (IDENTIQUE V1)
-          ========================================================= */}
+      {/* SECTION 2 : RÉSEAUX SOCIAUX & CONTACT (DYNAMIQUE) */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-[1400px] mx-auto mt-10">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-5xl font-[900] uppercase italic tracking-tighter text-[#081031] dark:text-white">
@@ -348,7 +276,7 @@ export default function CommunicationPage() {
                 <Instagram size={32} />
               </div>
               <h3 className="text-2xl font-[900] italic uppercase text-[#081031] dark:text-white mb-2">Instagram</h3>
-              <p className="text-slate-500 font-bold text-xs mb-6">Résultats en direct, coulisses, stories et photos exclusives.</p>
+              <p className="text-slate-500 font-bold text-xs mb-6 whitespace-pre-wrap">{pageConfig.instagramText}</p>
               <span className="text-[#F72585] font-[900] uppercase text-[10px] tracking-widest flex items-center gap-2 mt-auto">
                 @us_creteil_badminton <ExternalLink size={14} />
               </span>
@@ -362,7 +290,7 @@ export default function CommunicationPage() {
                 <Facebook size={32} fill="currentColor" />
               </div>
               <h3 className="text-2xl font-[900] italic uppercase text-[#081031] dark:text-white mb-2">Facebook</h3>
-              <p className="text-slate-500 font-bold text-xs mb-6">Toutes les annonces officielles, événements et albums photos complets.</p>
+              <p className="text-slate-500 font-bold text-xs mb-6 whitespace-pre-wrap">{pageConfig.facebookText}</p>
               <span className="text-[#1877F2] font-[900] uppercase text-[10px] tracking-widest flex items-center gap-2 mt-auto">
                 US Créteil Badminton <ExternalLink size={14} />
               </span>
@@ -370,15 +298,15 @@ export default function CommunicationPage() {
           </a>
 
           {/* EMAIL */}
-          <a href="mailto:com@uscbad.fr" className="group bg-gradient-to-br from-slate-400 to-slate-600 dark:from-slate-600 dark:to-slate-800 p-1 rounded-[2rem] hover:scale-105 transition-transform duration-300 shadow-lg">
+          <a href={`mailto:${pageConfig.emailAddress}`} className="group bg-gradient-to-br from-slate-400 to-slate-600 dark:from-slate-600 dark:to-slate-800 p-1 rounded-[2rem] hover:scale-105 transition-transform duration-300 shadow-lg">
             <div className="bg-white dark:bg-[#0f172a] h-full rounded-[1.85rem] p-8 flex flex-col items-center text-center">
               <div className="w-16 h-16 rounded-full bg-slate-200 dark:bg-white/10 text-[#081031] dark:text-white flex items-center justify-center mb-6 shadow-md group-hover:rotate-12 transition-transform">
                 <Mail size={32} />
               </div>
               <h3 className="text-2xl font-[900] italic uppercase text-[#081031] dark:text-white mb-2">Service Presse</h3>
-              <p className="text-slate-500 font-bold text-xs mb-6">Pour toute demande d'interview, sponsoring ou utilisation de nos visuels.</p>
+              <p className="text-slate-500 font-bold text-xs mb-6 whitespace-pre-wrap">{pageConfig.emailText}</p>
               <span className="text-slate-600 dark:text-slate-300 font-[900] uppercase text-[10px] tracking-widest flex items-center gap-2 mt-auto">
-                com@uscbad.fr <ArrowRight size={14} />
+                {pageConfig.emailAddress} <ArrowRight size={14} />
               </span>
             </div>
           </a>
@@ -386,9 +314,7 @@ export default function CommunicationPage() {
         </div>
       </section>
 
-      {/* =========================================================
-          SECTION 3 : LA COMMUNAUTÉ WHATSAPP (IDENTIQUE V1)
-          ========================================================= */}
+      {/* SECTION 3 : LA COMMUNAUTÉ WHATSAPP (DYNAMIQUE) */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 max-w-[1400px] mx-auto">
         <div className="bg-[#25D366] rounded-[2rem] lg:rounded-[3rem] overflow-hidden relative shadow-2xl flex flex-col lg:flex-row items-center">
           
@@ -416,9 +342,9 @@ export default function CommunicationPage() {
               <li className="flex items-center gap-3"><span className="w-2 h-2 rounded-full bg-white"></span> Des groupes par équipes d'Interclubs</li>
             </ul>
 
-            <button className="bg-white text-[#25D366] px-8 py-4 rounded-full font-[900] uppercase italic text-xs tracking-widest shadow-xl hover:scale-105 hover:bg-[#081031] hover:text-white transition-all flex items-center justify-center gap-3">
+            <a href={pageConfig.whatsappLink} target="_blank" rel="noopener noreferrer" className="inline-flex bg-white text-[#25D366] px-8 py-4 rounded-full font-[900] uppercase italic text-xs tracking-widest shadow-xl hover:scale-105 hover:bg-[#081031] hover:text-white transition-all items-center justify-center gap-3">
               <MessageCircle size={18} /> Intégrer la communauté
-            </button>
+            </a>
           </div>
 
           <div className="w-full lg:w-2/5 h-[300px] lg:h-auto relative z-10 flex items-center justify-center p-8 hidden lg:flex">

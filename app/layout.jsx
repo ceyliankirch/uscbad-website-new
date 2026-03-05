@@ -21,7 +21,7 @@ export const metadata = {
   icons: {
     icon: '/logo-uscbadminton.png',
     shortcut: '/logo-uscbadminton.png',
-    apple: '/logo-uscbadminton.png',
+    apple: '/assets/ios-logo-uscbad.png',
   },
 };
 

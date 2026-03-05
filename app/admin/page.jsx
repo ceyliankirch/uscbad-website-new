@@ -16,7 +16,8 @@ import {
   Briefcase,
   Medal,
   Target,
-  Activity
+  Activity,
+  ChartArea
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -67,6 +68,8 @@ export default function AdminDashboard() {
 
   const pagesMenu = [
     { name: 'Interclubs', path: '/admin/interclubs', icon: <Trophy size={20} /> },
+    { name: 'Tournois', path: '/admin/tournois', icon: <Medal size={20} /> },
+    { name: 'Communication', path: '/admin/communication', icon: <ChartArea size={20} /> },
   ]
 
   return (

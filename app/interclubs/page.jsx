@@ -166,7 +166,7 @@ export default function App() {
       {/* =========================================================
           SECTION 1 : HERO (HAUTEUR HARMONISÉE & ESPACEMENT HAUT)
           ========================================================= */}
-      <section className="relative w-full overflow-hidden bg-[#081031] min-h-[900px] lg:min-h-[1050px] flex items-center justify-center pt-32 lg:pt-48 pb-20">
+      <section className="relative w-full overflow-hidden bg-[#081031] min-h-[900px] lg:min-h-[1050px] flex items-center justify-center lg:pt-30 pb-20">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay pointer-events-none"></div>
 
         <div className={`relative z-10 w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12 transition-all duration-500 ease-in-out h-full ${isTransitioning ? 'opacity-0 scale-95 blur-sm' : 'opacity-100 scale-100 blur-0'}`}>
@@ -176,9 +176,9 @@ export default function App() {
             <div className="w-full min-h-[600px] lg:min-h-[750px] flex flex-col lg:flex-row items-center justify-between relative">
               <button 
                 onClick={handleCloseProfile} 
-                className="absolute -top-12 lg:top-0 right-0 z-50 text-white/50 hover:text-white flex items-center gap-2 font-black uppercase tracking-widest text-[10px] transition-all cursor-pointer bg-white/5 lg:bg-white/10 px-5 py-2.5 rounded-full hover:scale-105 border border-white/10"
+                className="fixed bottom-6 right-6 lg:absolute lg:top-0 lg:bottom-auto lg:right-0 z-[100] lg:z-50 text-white flex items-center gap-2 font-black uppercase tracking-widest text-[10px] transition-all cursor-pointer bg-[#081031]/90 backdrop-blur-md lg:bg-white/10 px-5 py-4 lg:py-2.5 rounded-full hover:scale-105 border border-white/20 lg:border-white/10 shadow-[0_10px_40px_rgba(0,0,0,0.6)] lg:shadow-none"
               >
-                <X size={18} /> Fermer le profil
+                <X size={18} /> <span className="hidden lg:inline">Fermer le profil</span><span className="lg:hidden">Fermer</span>
               </button>
 
               <div className="w-full lg:w-[50%] aspect-square max-h-[500px] lg:max-h-[700px] relative z-10 flex items-center justify-center order-1 lg:order-2 shrink-0">
@@ -189,7 +189,7 @@ export default function App() {
                 {selectedPlayer.image ? (
                   <img src={selectedPlayer.image} alt={selectedPlayer.name} className="relative z-20 w-full h-full object-contain object-bottom drop-shadow-[0_20px_50px_rgba(0,0,0,0.6)] animate-in slide-in-from-bottom-12 duration-700" />
                 ) : (
-                  <div className="relative z-20 w-full h-full flex items-end justify-center"><User size={300} className="text-white/10 mb-10" /></div>
+                  <div className="relative z-20 w-full h-full flex items-end justify-center pb-20 opacity-20"><User size={300} /></div>
                 )}
               </div>
 
@@ -211,7 +211,7 @@ export default function App() {
                   <div className="flex flex-col justify-center"><span className="text-sm lg:text-lg font-[900] text-white italic uppercase leading-none">Nationale 1</span><span className="text-[9px] lg:text-[10px] text-white/50 uppercase tracking-widest font-bold mt-2">Championnat</span></div>
                 </div>
                 
-                <div className="p-6 bg-white/5 rounded-[2rem] border-l-4 border-[#0EE2E2] italic text-white/80 relative overflow-hidden group animate-in fade-in slide-in-from-left-8 duration-500 delay-400">
+                <div className="p-6 bg-white/5 rounded-[2rem] border-l-4 border-[#0EE2E2] italic text-white/80 relative overflow-hidden group animate-in fade-in slide-in-from-left-8 duration-500 delay-400 mb-10 lg:mb-0">
                    <div className="absolute top-0 right-0 w-24 h-24 bg-[#0EE2E2]/5 blur-2xl rounded-full"></div>
                    <div className="flex items-center gap-2 mb-3 relative z-10">
                      <Info size={14} className="text-[#0EE2E2]" />
@@ -322,15 +322,17 @@ export default function App() {
           
           {/* CLASSEMENT DYNAMIQUE */}
           <div>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl lg:text-3xl font-[900] uppercase italic tracking-tighter flex items-center gap-3">
-                <Activity className="text-[#0065FF]" size={24} /> Classement <span className="text-[#0065FF]">Nationale 1</span>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+              <h2 className="text-2xl lg:text-3xl font-[900] uppercase italic tracking-tighter flex flex-wrap items-center gap-x-3 gap-y-1">
+                <Activity className="text-[#0065FF] shrink-0" size={24} /> 
+                <span className="text-[#081031] dark:text-white">Classement</span> 
+                <span className="text-[#0065FF]">Nationale 1</span>
               </h2>
               {isScraping ? (
-                <Loader2 size={16} className="animate-spin text-[#0065FF]" />
+                <Loader2 size={16} className="animate-spin text-[#0065FF] shrink-0" />
               ) : (
-                <span className="text-[8px] sm:text-[9px] bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2.5 py-1 rounded-full uppercase tracking-widest font-black flex items-center gap-1.5 border border-green-200 dark:border-green-500/30 shadow-sm">
-                  Live ICBAD <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                <span className="text-[8px] sm:text-[9px] bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2.5 py-1.5 rounded-full uppercase tracking-widest font-black flex items-center gap-1.5 border border-green-200 dark:border-green-500/30 shadow-sm shrink-0 whitespace-nowrap">
+                  Live ICBAD <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse shrink-0"></span>
                 </span>
               )}
             </div>
@@ -366,11 +368,13 @@ export default function App() {
 
           {/* RENCONTRES À VENIR */}
           <div>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl lg:text-3xl font-[900] uppercase italic tracking-tighter flex items-center gap-3 text-[#081031] dark:text-white">
-                <Calendar className="text-[#0EE2E2]" size={24} /> Rencontres <span className="text-[#0EE2E2]">à venir</span>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+              <h2 className="text-2xl lg:text-3xl font-[900] uppercase italic tracking-tighter flex flex-wrap items-center gap-x-3 gap-y-1 text-[#081031] dark:text-white">
+                <Calendar className="text-[#0EE2E2] shrink-0" size={24} /> 
+                <span className="flex flex-wrap gap-1.5">Rencontres <span className="text-[#0EE2E2]">à venir</span></span>
               </h2>
             </div>
+            
             <div className="flex flex-col gap-3">
               {liveMatches.length > 0 ? liveMatches.slice(0, 3).map((match, idx) => (
                 <div key={idx} className="bg-white dark:bg-[#0f172a] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm flex flex-col sm:flex-row overflow-hidden group hover:border-[#0EE2E2] transition-colors">
@@ -379,24 +383,28 @@ export default function App() {
                     <span className="text-2xl font-[900] italic leading-tight text-center">{match.date.split(' ')[0]}</span>
                     <span className="text-xs font-bold uppercase">{match.date.split(' ').slice(1).join(' ')}</span>
                   </div>
-                  <div className="p-4 flex-1 flex flex-col justify-center">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="text-[8px] font-black uppercase tracking-[0.2em] bg-slate-100 dark:bg-white/10 px-2 py-0.5 rounded-full text-slate-500 dark:text-slate-300">
+                  
+                  <div className="p-5 sm:p-4 flex-1 flex flex-col justify-center">
+                    <div className="flex items-center justify-center sm:justify-between mb-4 sm:mb-2">
+                      <div className="text-[9px] font-black uppercase tracking-[0.2em] bg-slate-100 dark:bg-white/10 px-3 py-1.5 sm:px-2 sm:py-0.5 rounded-full text-slate-500 dark:text-slate-300">
                         {match.isHome ? 'DOMICILE' : 'EXTÉRIEUR'}
                       </div>
                     </div>
                     
-                    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-3 mb-3 w-full">
-                      <div className={`text-right text-lg sm:text-xl font-[900] italic uppercase leading-tight break-words ${match.isHome ? 'text-[#0065FF] dark:text-[#0EE2E2]' : 'text-[#081031] dark:text-white'}`}>
+                    {/* DISPOSITION VERTICALE SUR MOBILE, HORIZONTALE SUR PC */}
+                    <div className="flex flex-col sm:grid sm:grid-cols-[1fr_auto_1fr] items-center sm:items-start gap-1.5 sm:gap-3 mb-4 sm:mb-3 w-full">
+                      <div className={`text-center sm:text-right text-base sm:text-lg lg:text-xl font-[900] italic uppercase leading-tight w-full ${match.isHome ? 'text-[#0065FF] dark:text-[#0EE2E2]' : 'text-[#081031] dark:text-white'}`}>
                         {formatTeamName(match.home)}
                       </div>
-                      <div className="text-slate-300 dark:text-slate-600 font-black italic text-sm shrink-0 flex justify-center px-1">VS</div>
-                      <div className={`text-left text-lg sm:text-xl font-[900] italic uppercase leading-tight break-words ${!match.isHome ? 'text-[#0065FF] dark:text-[#0EE2E2]' : 'text-[#081031] dark:text-white'}`}>
+                      <div className="text-slate-300 dark:text-slate-600 font-black italic text-xs sm:text-sm shrink-0 flex justify-center px-2 py-0.5 bg-slate-50 dark:bg-white/5 rounded-full sm:bg-transparent sm:px-1 sm:py-0 sm:rounded-none">
+                        VS
+                      </div>
+                      <div className={`text-center sm:text-left text-base sm:text-lg lg:text-xl font-[900] italic uppercase leading-tight w-full ${!match.isHome ? 'text-[#0065FF] dark:text-[#0EE2E2]' : 'text-[#081031] dark:text-white'}`}>
                         {formatTeamName(match.away)}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 uppercase mt-auto">
+                    <div className="flex items-center justify-center sm:justify-start gap-1.5 text-[10px] font-bold text-slate-500 uppercase mt-auto border-t sm:border-t-0 border-slate-100 dark:border-white/5 pt-3 sm:pt-0">
                       <MapPin size={12} className={match.isHome ? "text-[#0EE2E2]" : ""} /> {match.location}
                     </div>
                   </div>

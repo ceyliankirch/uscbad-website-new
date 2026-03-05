@@ -26,10 +26,10 @@ export default function Footer() {
               L'US Créteil Badminton est un club dynamique labellisé par la FFBaD, dédié à la pratique du badminton en loisir comme en compétition, pour tous les âges.
             </p>
             <div className="flex items-center gap-4 mt-2">
-              <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-[#0065FF] hover:text-white transition-all">
+              <a href="https://www.facebook.com/USCRETEIL.Bad" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-[#0065FF] hover:text-white transition-all">
                 <Facebook size={18} />
               </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-[#F72585] hover:text-white transition-all">
+              <a href="https://www.instagram.com/uscbad/" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-[#F72585] hover:text-white transition-all">
                 <Instagram size={18} />
               </a>
             </div>
@@ -89,23 +89,13 @@ export default function Footer() {
             <h4 className="text-lg font-[900] uppercase italic text-white mb-2 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#0065FF]"></span> Contact
             </h4>
-            
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-[#0EE2E2] shrink-0">
-                <MapPin size={16} />
-              </div>
-              <p className="text-sm font-bold text-slate-300 mt-1.5">
-                Gymnase Casalis<br/>
-                <span className="font-medium text-slate-400">2 Rue du Général Koenig<br/>94000 Créteil</span>
-              </p>
-            </div>
 
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-[#0EE2E2] shrink-0">
                 <Mail size={16} />
               </div>
-              <a href="mailto:contact@uscreteilbadminton.com" className="text-sm font-bold text-slate-300 hover:text-[#0EE2E2] transition-colors break-all">
-                contact@uscreteilbadminton.com
+              <a href="mailto:contact@uscbad.fr" className="text-sm font-bold text-slate-300 hover:text-[#0EE2E2] transition-colors break-all">
+                contact@uscbad.fr
               </a>
             </div>
 

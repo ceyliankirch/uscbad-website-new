@@ -31,13 +31,13 @@ export default function InscriptionsPage() {
         <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[300px] h-[300px] bg-[#0065FF] rounded-full blur-[150px] opacity-20 pointer-events-none z-0"></div>
         <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[300px] h-[300px] bg-[#0EE2E2] rounded-full blur-[150px] opacity-10 pointer-events-none z-0"></div>
         
-        <div className="relative z-20 px-6 max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#0065FF]/10 border border-[#0065FF]/30 text-[#0EE2E2] rounded-full font-[900] uppercase text-[10px] tracking-widest italic mb-6 backdrop-blur-md">
-            <Euro size={14} /> Saison 2024 - 2025
-          </div>
+        <div className="relative z-20 px-6 max-w-6xl mx-auto">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-[900] uppercase italic tracking-tighter leading-[0.9] text-white drop-shadow-xl mb-6">
             TARIFS & <span className="text-[#0065FF]">INSCRIPTIONS</span>
           </h1>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#0065FF]/10 border border-[#0065FF]/30 text-[#0EE2E2] rounded-full font-[900] uppercase text-[10px] tracking-widest italic mb-6 backdrop-blur-md">
+            <Euro size={14} /> Saison 2024 - 2025
+          </div>          
           <p className="text-sm lg:text-lg font-bold text-slate-300 leading-relaxed max-w-2xl mx-auto">
             Rejoignez l'US Créteil Badminton ! Retrouvez ci-dessous toutes les informations concernant les cotisations, les réductions et la procédure d'inscription en ligne.
           </p>

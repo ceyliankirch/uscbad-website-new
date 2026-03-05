@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Home, Play, ArrowRight, Trophy, Calendar, ChevronRight, TrendingUp, MapPin, Instagram, Facebook, Mail, Users, Activity, Phone, Star, Loader2 } from 'lucide-react';
+import { Home, ArrowRight, Trophy, Calendar, ChevronRight, TrendingUp, MapPin, Instagram, Facebook, Mail, Users, Star, Loader2, X, Clock, CalendarDays, Share2, PartyPopper, Dumbbell } from 'lucide-react';
 
 // LES CATÉGORIES EXACTES DU DASHBOARD
 const categories = ["Tout voir", "Événements", "Compétitions", "Vie du Club", "Interclubs", "Jeunes"];
 
-const LandingPage = () => {
+export default function HomePage() {
   // --- GESTION DU LIVE SCORE ---
   const [liveScore, setLiveScore] = useState({
     division: 'NATIONALE 1 | J05',
@@ -60,8 +60,60 @@ const LandingPage = () => {
     .filter(article => activeCategory === "Tout voir" || article.category === activeCategory)
     .slice(0, 8);
 
+  // --- GESTION DES ÉVÉNEMENTS & MODALE ---
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [isLoadingEvents, setIsLoadingEvents] = useState(true);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchUpcoming = async () => {
+      try {
+        const res = await fetch('/api/events');
+        const json = await res.json();
+        
+        if (json.success) {
+          const today = new Date().toISOString().split('T')[0];
+          
+          // On filtre pour ne garder que le futur et on prend les 4 premiers
+          const future = json.data
+            .filter(event => event.isoDate >= today)
+            .slice(0, 4)
+            .map(e => {
+              const d = new Date(e.isoDate);
+              return {
+                ...e,
+                day: String(d.getDate()).padStart(2, '0'),
+                month: d.toLocaleString('fr-FR', { month: 'short' }).toUpperCase().replace('.', ''),
+                fullMonth: d.toLocaleString('fr-FR', { month: 'long' }),
+                year: d.getFullYear()
+              };
+            });
+          
+          setUpcomingEvents(future);
+        }
+      } catch (error) {
+        console.error("Erreur home events:", error);
+      } finally {
+        setIsLoadingEvents(false);
+      }
+    };
+    fetchUpcoming();
+  }, []);
+
+  const handleOpenModal = (event) => {
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    document.body.style.overflow = 'unset';
+  };
+
   return (
-    <div className="bg-white dark:bg-[#040817] font-['Montserrat'] transition-colors duration-300">
+    <main className="bg-white dark:bg-[#040817] font-['Montserrat'] transition-colors duration-300 min-h-screen">
       
       <style>
         {`
@@ -121,14 +173,14 @@ const LandingPage = () => {
             </p>
 
             <div className="flex flex-row items-center gap-2 lg:gap-4 pt-4 lg:pt-8 w-full md:w-auto">
-              <a 
-                href="#inscriptions" 
+              <Link 
+                href="/inscriptions" 
                 className="flex-1 md:flex-none flex items-center justify-center bg-[#0065FF] text-white px-4 py-3 lg:px-8 lg:py-4 rounded-xl lg:rounded-2xl font-[900] italic text-xs lg:text-lg shadow-2xl hover:scale-[1.02] transition-transform uppercase tracking-normal hover:bg-[#0EE2E2] hover:text-[#081031]"
               >
                 M'INSCRIRE
-              </a>
+              </Link>
               
-              <a 
+              <Link 
                 href="/presentation" 
                 className="flex-1 md:flex-none flex items-center justify-center gap-2 lg:gap-4 bg-white/10 lg:bg-white/60 dark:bg-white/10 backdrop-blur-md p-1 lg:p-1.5 pr-4 lg:pr-6 rounded-xl lg:rounded-2xl border border-white/20 lg:border-slate-200 dark:border-white/10 hover:bg-white dark:hover:bg-white/20 transition-all shadow-sm group"
               >
@@ -138,7 +190,7 @@ const LandingPage = () => {
                 <span className="font-bold text-[10px] lg:text-[12px] uppercase tracking-normal text-white lg:text-[#081031] dark:lg:text-white group-hover:text-[#081031] dark:group-hover:text-white">
                   Le Club
                 </span>
-              </a>
+              </Link>
             </div>
 
           </div>
@@ -246,12 +298,13 @@ const LandingPage = () => {
             <InfoCard num="01" title="Jeu Libre & Loisir" desc="Des créneaux tous les jours pour venir jouer librement avec d'autres passionnés dans une ambiance conviviale." color="#0065FF" />
             <InfoCard num="02" title="Compétition & IC" desc="Entraînements dirigés par des coachs et intégration à nos équipes interclubs, jusqu'en Nationale 1." color="#0EE2E2" />
             <InfoCard num="03" title="École des Jeunes" desc="Une école labellisée pour former les champions de demain dès le plus jeune âge avec des pros." color="#0A266D" />
+            
             <div className="bg-[#0065FF] rounded-[1.5rem] lg:rounded-[2rem] p-8 flex flex-col justify-center items-center text-center text-white shadow-xl hover:scale-[1.02] transition-transform duration-300">
               <h4 className="text-2xl font-[900] italic uppercase mb-3 leading-tight">Prêt à nous rejoindre ?</h4>
               <p className="text-[11px] font-bold opacity-90 mb-6">Les inscriptions pour la saison sont ouvertes. Rejoignez la famille USC.</p>
-              <button className="bg-[#081031] text-white px-6 py-4 w-full rounded-xl font-[900] uppercase text-xs tracking-widest flex items-center justify-center gap-3 hover:bg-[#0EE2E2] hover:text-[#081031] transition-colors shadow-lg">
+              <Link href="/inscriptions" className="bg-[#081031] text-white px-6 py-4 w-full rounded-xl font-[900] uppercase text-xs tracking-widest flex items-center justify-center gap-3 hover:bg-[#0EE2E2] hover:text-[#081031] transition-colors shadow-lg">
                 M'inscrire <ArrowRight size={18} />
-              </button>
+              </Link>
             </div>
           </div>
 
@@ -358,7 +411,6 @@ const LandingPage = () => {
                 <NewsCard key={article._id} article={article} />
               ))}
               
-              {/* Carte finale pour inviter à voir tout le blog */}
               <Link href="/actualites" className="group relative bg-[#0065FF]/5 dark:bg-[#0EE2E2]/5 rounded-[2rem] border-2 border-dashed border-[#0065FF]/20 dark:border-[#0EE2E2]/20 flex flex-col items-center justify-center w-[200px] shrink-0 snap-start hover:bg-[#0065FF] dark:hover:bg-[#0EE2E2] transition-colors">
                  <div className="text-[#0065FF] dark:text-[#0EE2E2] group-hover:text-white dark:group-hover:text-[#081031] flex flex-col items-center gap-3 transition-colors">
                     <div className="w-12 h-12 rounded-full bg-[#0065FF]/10 dark:bg-[#0EE2E2]/10 group-hover:bg-white/20 flex items-center justify-center">
@@ -384,9 +436,9 @@ const LandingPage = () => {
                 RÉSULTATS <span className="text-[#0065FF] block sm:inline">INTERCLUBS</span>
               </h2>
             </div>
-            <button className="w-full md:w-auto text-[#0A266D] dark:text-[#0EE2E2] bg-[#0A266D]/5 dark:bg-white/5 md:bg-transparent py-3 md:py-0 rounded-xl md:rounded-none hover:text-[#0065FF] dark:hover:text-white font-bold text-xs uppercase transition-colors text-center">
+            <Link href="/interclubs" className="w-full md:w-auto text-[#0A266D] dark:text-[#0EE2E2] bg-[#0A266D]/5 dark:bg-white/5 md:bg-transparent py-3 md:py-0 rounded-xl md:rounded-none hover:text-[#0065FF] dark:hover:text-white font-bold text-xs uppercase transition-colors text-center">
               Voir tous les résultats détaillés +
-            </button>
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
@@ -397,30 +449,156 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* 6. SECTION ÉVÉNEMENTS */}
-      <section className="py-16 px-6 lg:px-8 bg-[#081031] text-white relative overflow-hidden">
+      {/* 6. SECTION ÉVÉNEMENTS DYNAMIQUE */}
+      <section className="py-16 lg:py-24 px-6 lg:px-8 bg-[#081031] text-white relative overflow-hidden">
         <div className="absolute right-[-10%] bottom-[-20%] w-[300px] lg:w-[600px] h-[300px] lg:h-[600px] bg-[#0065FF]/20 lg:bg-[#0065FF]/10 rounded-full blur-[80px] lg:blur-[120px]" />
         
         <div className="max-w-[1600px] mx-auto relative z-10">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 lg:mb-10 gap-6">
-            <h2 className="text-4xl lg:text-4xl font-[900] italic uppercase text-white">
-              ÉVÉNEMENTS <span className="text-[#0EE2E2] block sm:inline">À VENIR</span>
-            </h2>
-            <button className="w-full md:w-auto border-2 border-[#0EE2E2] text-[#0EE2E2] px-6 py-3 lg:py-2 rounded-xl lg:rounded-full font-bold uppercase text-xs hover:bg-[#0EE2E2] hover:text-[#081031] transition-all text-center">
-              Calendrier complet
-            </button>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 lg:mb-16 gap-6">
+            <div>
+              <h2 className="text-4xl lg:text-5xl font-[900] italic uppercase text-white leading-none">
+                ÉVÉNEMENTS <span className="text-[#0EE2E2] block sm:inline">À VENIR</span>
+              </h2>
+              <p className="text-slate-400 font-bold mt-4 max-w-xl">
+                Ne manquez rien de la vie du club : compétitions, tournois internes et moments de convivialité.
+              </p>
+            </div>
+            <Link href="/evenements" className="group w-full md:w-auto border-2 border-[#0EE2E2] text-[#0EE2E2] px-8 py-3 lg:py-4 rounded-xl lg:rounded-full font-black uppercase text-xs hover:bg-[#0EE2E2] hover:text-[#081031] transition-all text-center flex items-center justify-center gap-2">
+              Calendrier complet <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            </Link>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
-            <EventRow date="24" month="MAI" title="Tournoi International (TIC)" type="Compétition Officielle" location="Gymnase Nelson Mandela" />
-            <EventRow date="12" month="JUIN" title="La Nuit du Bad 2026" type="Tournoi Interne" location="Palais des Sports" />
-            <EventRow date="28" month="JUIN" title="Assemblée Générale" type="Vie du Club" location="Club House" />
-            <EventRow date="05" month="SEPT" title="Forum des Associations" type="Inscriptions" location="Bords de Marne" />
-          </div>
+          {isLoadingEvents ? (
+            <div className="flex justify-center py-20 opacity-50">
+              <Loader2 size={40} className="animate-spin text-[#0EE2E2]" />
+            </div>
+          ) : upcomingEvents.length > 0 ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+              {upcomingEvents.map((event) => (
+                <EventRow 
+                  key={event._id} 
+                  event={event}
+                  onClick={() => handleOpenModal(event)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white/5 border border-white/10 rounded-[2rem] p-12 text-center">
+              <Calendar size={48} className="mx-auto text-slate-600 mb-4" />
+              <p className="text-slate-400 font-bold">Aucun événement prévu pour le moment. Revenez bientôt !</p>
+            </div>
+          )}
         </div>
       </section>
 
-      {/* 7. SECTION PARTENAIRES */}
+      {/* 7. MODALE DE DÉTAILS DE L'ÉVÉNEMENT */}
+      {isModalOpen && selectedEvent && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 lg:p-8 bg-[#040817]/90 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-[#081031] w-full max-w-4xl max-h-[90vh] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col relative border border-white/10 animate-in zoom-in-95 duration-300">
+            
+            <button 
+              onClick={handleCloseModal}
+              className="absolute top-6 right-6 z-50 p-3 bg-black/20 hover:bg-[#F72585] text-white rounded-full transition-all backdrop-blur-md"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="overflow-y-auto hide-scrollbar">
+              <div className="relative h-64 lg:h-80 w-full bg-slate-800">
+                {selectedEvent.image ? (
+                  <img src={selectedEvent.image} alt={selectedEvent.title} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#081031] to-[#0065FF]/30">
+                    <CalendarDays size={80} className="text-white/10" />
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#081031] via-transparent to-transparent"></div>
+                <div className="absolute bottom-8 left-8 right-8">
+                  <span 
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-widest text-white mb-4 shadow-lg"
+                    style={{ backgroundColor: selectedEvent.color || '#0065FF' }}
+                  >
+                    {selectedEvent.category}
+                  </span>
+                  <h2 className="text-3xl lg:text-5xl font-[900] italic uppercase text-white leading-tight drop-shadow-lg">
+                    {selectedEvent.title}
+                  </h2>
+                </div>
+              </div>
+
+              <div className="p-8 lg:p-12">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                  <div className="lg:col-span-2 space-y-8">
+                    <div>
+                      <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#0EE2E2] mb-4">À propos de l'événement</h4>
+                      <p className="text-slate-600 dark:text-slate-300 font-medium leading-relaxed text-lg">
+                        {selectedEvent.description || "Aucune description détaillée n'a été renseignée pour cet événement. Contactez le club pour plus d'informations."}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-4 pt-4">
+                      <button className="flex items-center gap-2 bg-[#0065FF] text-white px-6 py-3 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-[#0052cc] transition-all shadow-lg shadow-[#0065FF]/20">
+                        S'inscrire / Participer
+                      </button>
+                      <button className="flex items-center gap-2 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 px-6 py-3 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                        <Share2 size={16} /> Partager
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-1 space-y-6">
+                    <div className="bg-slate-50 dark:bg-white/5 rounded-3xl p-6 border border-slate-100 dark:border-white/10">
+                      <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6">Informations</h4>
+                      
+                      <div className="space-y-6">
+                        <div className="flex items-start gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-white dark:bg-[#081031] flex items-center justify-center text-[#0EE2E2] shadow-sm shrink-0">
+                            <Calendar size={20} />
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-black uppercase text-slate-400 leading-none mb-1">Date</p>
+                            <p className="text-sm font-bold text-[#081031] dark:text-white capitalize">
+                              {selectedEvent.dateDisplay || `${selectedEvent.day} ${selectedEvent.fullMonth} ${selectedEvent.year}`}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-white dark:bg-[#081031] flex items-center justify-center text-[#F72585] shadow-sm shrink-0">
+                            <Clock size={20} />
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-black uppercase text-slate-400 leading-none mb-1">Horaires</p>
+                            <p className="text-sm font-bold text-[#081031] dark:text-white">
+                              {selectedEvent.time || "À confirmer"}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-white dark:bg-[#081031] flex items-center justify-center text-[#0065FF] shadow-sm shrink-0">
+                            <MapPin size={20} />
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-black uppercase text-slate-400 leading-none mb-1">Lieu</p>
+                            <p className="text-sm font-bold text-[#081031] dark:text-white">
+                              {selectedEvent.location || "Lieu non défini"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* 8. SECTION PARTENAIRES */}
       <section className="py-8 lg:py-12 bg-slate-50 dark:bg-white overflow-hidden relative flex items-center border-t border-slate-200 transition-colors">
         <div className="absolute left-0 top-0 bottom-0 w-16 lg:w-24 bg-gradient-to-r from-slate-50 dark:from-white to-transparent z-10" />
         <div className="absolute right-0 top-0 bottom-0 w-16 lg:w-24 bg-gradient-to-l from-slate-50 dark:from-white to-transparent z-10" />
@@ -438,9 +616,9 @@ const LandingPage = () => {
         </div>
       </section>
 
-    </div>
+    </main>
   );
-};
+}
 
 /* --- SOUS-COMPOSANTS --- */
 
@@ -537,27 +715,19 @@ const AnimatedDonut = ({ men, women }) => {
   );
 };
 
-// COMPOSANT NEWSCARD MIS À JOUR (Dynamique BDD, format validé 16/9)
 const NewsCard = ({ article }) => (
   <Link href={`/actualites/${article._id}`} className="group relative bg-white dark:bg-[#0f172a] rounded-[2rem] border border-slate-200 dark:border-white/5 overflow-hidden shadow-sm hover:shadow-xl transition-all hover:-translate-y-1.5 flex flex-col w-[280px] lg:w-[350px] shrink-0 snap-center lg:snap-start block">
-    
-    {/* LISERET BLEU */}
     <div className="absolute top-0 left-0 w-full h-1.5 bg-[#0065FF] z-20"></div>
-
-    {/* IMAGE */}
     <div className="aspect-video relative overflow-hidden bg-slate-100 shrink-0 border-b border-slate-100 dark:border-white/5">
       {article.imageUrl ? (
         <img src={article.imageUrl} alt={article.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out" />
       ) : (
         <div className="w-full h-full flex items-center justify-center text-slate-300 font-black uppercase tracking-widest text-xs bg-slate-50 dark:bg-slate-800">US Créteil</div>
       )}
-      {/* BADGE CATEGORY BLANC ÉPURÉ */}
       <div className="absolute top-4 right-4 bg-white px-3.5 py-1.5 rounded-xl text-[9px] font-[900] uppercase tracking-widest shadow-md z-10 text-[#081031]">
         {article.category}
       </div>
     </div>
-
-    {/* CONTENU */}
     <div className="p-5 flex flex-col flex-grow">
       <h3 className="text-lg font-[900] italic leading-tight text-[#081031] dark:text-white mb-2 group-hover:text-[#0065FF] dark:group-hover:text-[#0EE2E2] transition-colors line-clamp-2">
         {article.title}
@@ -565,7 +735,6 @@ const NewsCard = ({ article }) => (
       <p className="text-slate-500 dark:text-slate-400 text-[12px] font-medium leading-relaxed line-clamp-2 mb-4 flex-grow">
         {article.excerpt}
       </p>
-
       <div className="mt-auto flex items-center justify-between border-t border-slate-100 dark:border-white/5 pt-4">
         <div className="flex items-center gap-1.5 text-slate-400 text-[9px] font-black uppercase tracking-wider">
           <Calendar size={12} className="text-[#0EE2E2]" /> 
@@ -583,7 +752,6 @@ const TeamCard = ({ team, division, color, ranking }) => (
   <div className="bg-white dark:bg-[#0f172a] p-6 lg:p-8 rounded-[1.5rem] lg:rounded-[2rem] border border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/20 transition-all flex flex-col shadow-sm">
     <div className="text-xs lg:text-sm font-bold text-slate-500 dark:text-slate-400 mb-1 transition-colors">{division}</div>
     <h3 className="text-2xl lg:text-3xl font-[900] italic text-[#081031] dark:text-white uppercase mb-4 lg:mb-6 transition-colors">{team}</h3>
-    
     <div className="flex-grow">
       <ul className="space-y-2 text-xs lg:text-sm font-bold">
         {ranking.map((item, idx) => (
@@ -606,25 +774,30 @@ const TeamCard = ({ team, division, color, ranking }) => (
   </div>
 );
 
-const EventRow = ({ date, month, title, type, location }) => (
-  <div className="group flex flex-row items-center gap-3 lg:gap-5 p-3 lg:p-5 rounded-[1.2rem] lg:rounded-[1.5rem] bg-white/5 border border-white/10 hover:bg-[#0065FF]/20 hover:border-[#0065FF]/50 transition-all cursor-pointer">
-    <div className="flex-shrink-0 w-14 h-14 lg:w-16 lg:h-16 rounded-[0.8rem] lg:rounded-xl bg-[#0A266D] flex flex-col justify-center items-center group-hover:bg-[#0EE2E2] transition-colors">
-      <span className="text-xl lg:text-2xl font-[900] text-white group-hover:text-[#081031] leading-none mb-0.5">{date}</span>
-      <span className="text-[8px] lg:text-[10px] font-bold text-[#0EE2E2] group-hover:text-[#081031] uppercase tracking-normal">{month}</span>
-    </div>
-    
-    <div className="flex-grow min-w-0">
-      <div className="text-[#0EE2E2] font-bold text-[8px] lg:text-[9px] uppercase mb-0.5 lg:mb-1 truncate">{type}</div>
-      <h4 className="text-base lg:text-lg font-[900] italic text-white mb-0.5 lg:mb-1 truncate">{title}</h4>
-      <div className="flex items-center gap-1.5 text-slate-400 text-[10px] lg:text-xs font-bold truncate">
-        <MapPin size={10} className="lg:w-[12px] lg:h-[12px] shrink-0" /> <span className="truncate">{location}</span>
+const EventRow = ({ event, onClick }) => {
+  const { day, month, title, category, location } = event;
+
+  return (
+    <div 
+      onClick={onClick}
+      className="group flex flex-row items-center gap-3 lg:gap-5 p-3 lg:p-5 rounded-[1.2rem] lg:rounded-[1.5rem] bg-white/5 border border-white/10 hover:bg-[#0065FF]/20 hover:border-[#0065FF]/50 transition-all cursor-pointer"
+    >
+      <div className="flex-shrink-0 w-14 h-14 lg:w-16 lg:h-16 rounded-[0.8rem] lg:rounded-xl bg-[#0A266D] flex flex-col justify-center items-center group-hover:bg-[#0EE2E2] transition-colors">
+        <span className="text-xl lg:text-2xl font-[900] text-white group-hover:text-[#081031] leading-none mb-0.5">{day}</span>
+        <span className="text-[8px] lg:text-[10px] font-bold text-[#0EE2E2] group-hover:text-[#081031] uppercase tracking-normal">{month}</span>
+      </div>
+      
+      <div className="flex-grow min-w-0">
+        <div className="text-[#0EE2E2] font-bold text-[8px] lg:text-[9px] uppercase mb-0.5 lg:mb-1 truncate">{category}</div>
+        <h4 className="text-base lg:text-lg font-[900] italic text-white mb-0.5 lg:mb-1 truncate">{title}</h4>
+        <div className="flex items-center gap-1.5 text-slate-400 text-[10px] lg:text-xs font-bold truncate">
+          <MapPin size={10} className="lg:w-[12px] lg:h-[12px] shrink-0" /> <span className="truncate">{location || "Lieu à confirmer"}</span>
+        </div>
+      </div>
+      
+      <div className="hidden sm:flex flex-shrink-0 w-8 h-8 lg:w-10 lg:h-10 rounded-full border border-white/20 items-center justify-center text-white group-hover:bg-white group-hover:text-[#0065FF] transition-all">
+        <ChevronRight size={16} />
       </div>
     </div>
-    
-    <div className="hidden sm:flex flex-shrink-0 w-8 h-8 lg:w-10 lg:h-10 rounded-full border border-white/20 items-center justify-center text-white group-hover:bg-white group-hover:text-[#0065FF] transition-all">
-      <ChevronRight size={16} />
-    </div>
-  </div>
-);
-
-export default LandingPage;
+  );
+};

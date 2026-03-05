@@ -5,7 +5,7 @@ const EventSchema = new mongoose.Schema({
   category: { 
     type: String, 
     required: true, 
-    enum: ['Compétition', 'Vie du Club', 'Stages'] 
+    enum: ['Compétition', 'Vie du Club', 'Jeunes'] 
   },
   isoDate: { type: String, required: true }, // Format YYYY-MM-DD pour permettre un tri chronologique facile
   dateDisplay: { type: String }, // Texte libre (ex: "06 & 07 Juin 2026")

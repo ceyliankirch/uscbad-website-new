@@ -6,12 +6,15 @@ import Event from '@/models/Event';
 export async function PUT(req, { params }) {
   try {
     await dbConnect();
+    // 1. On "await" les params avant d'extraire l'id (Correction Next.js)
+    const { id } = await params; 
     const body = await req.json();
     
     const updated = await Event.findByIdAndUpdate(
-      params.id, 
+      id, 
       { $set: body }, 
-      { new: true }
+      // 2. On utilise returnDocument: 'after' (Correction Mongoose)
+      { returnDocument: 'after' } 
     );
     
     return NextResponse.json({ success: true, data: updated });
@@ -24,7 +27,10 @@ export async function PUT(req, { params }) {
 export async function DELETE(req, { params }) {
   try {
     await dbConnect();
-    await Event.findByIdAndDelete(params.id);
+    // 1. On "await" les params avant d'extraire l'id
+    const { id } = await params;
+    
+    await Event.findByIdAndDelete(id);
     
     return NextResponse.json({ success: true });
   } catch (error) {

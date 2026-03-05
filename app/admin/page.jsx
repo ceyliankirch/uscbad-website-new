@@ -15,7 +15,8 @@ import {
   Shield,
   Briefcase,
   Medal,
-  Target
+  Target,
+  Activity
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -57,29 +58,49 @@ export default function AdminDashboard() {
     { name: 'Joueurs', path: '/admin/joueurs', icon: <Medal size={20} /> },
     { name: 'Créneaux', path: '/admin/creneaux', icon: <Clock size={20} /> },
     { name: 'Indivs', path: '/admin/indivs', icon: <Target size={20} /> },
-    { name: 'Live Score', path: '/admin/score', icon: <Trophy size={20} /> },
-    { name: 'Tournois', path: '/admin/tournois', icon: <Trophy size={20} /> },
+    { name: 'Live Score', path: '/admin/score', icon: <Activity size={20} /> },
+    { name: 'Tournois', path: '/admin/tournois', icon: <Medal size={20} /> },
     { name: 'Bureau & CRs', path: '/admin/board', icon: <Briefcase size={20} /> },
     { name: 'Staff & Équipe', path: '/admin/equipe', icon: <Users size={20} /> },
     { name: 'Paramètres', path: '/admin/settings', icon: <Settings size={20} /> },
   ];
 
+  const pagesMenu = [
+    { name: 'Interclubs', path: '/admin/interclubs', icon: <Trophy size={20} /> },
+  ]
+
   return (
     <div className="flex flex-col lg:flex-row pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500 gap-8">
       
       {/* 1. CONTENEUR NAVIGATION GAUCHE (Desktop UNIQUEMENT, positionnement normal) */}
-      <div className="hidden lg:flex flex-col w-[260px] xl:w-[280px] shrink-0 bg-white dark:bg-[#081031] rounded-[2rem] p-6 border border-slate-200 dark:border-white/10 shadow-sm h-fit">
-        <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6 pl-2">Navigation</h2>
-        <nav className="space-y-1">
-          {adminMenu.map(item => (
-            <Link key={item.name} href={item.path} className="flex items-center gap-4 px-4 py-4 rounded-2xl font-bold text-sm text-[#081031] dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] transition-all group">
-              <span className="text-slate-400 group-hover:text-[#0065FF] dark:group-hover:text-[#0EE2E2] group-hover:scale-110 transition-all">
-                {item.icon}
-              </span>
-              {item.name}
-            </Link>
-          ))}
-        </nav>
+      <div className='flex-col lg:flex gap-6'>
+        <div className="hidden lg:flex flex-col w-[260px] xl:w-[280px] shrink-0 bg-white dark:bg-[#081031] rounded-[2rem] p-6 border border-slate-200 dark:border-white/10 shadow-sm h-fit">
+          <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6 pl-2">Navigation</h2>
+          <nav className="space-y-1">
+            {adminMenu.map(item => (
+              <Link key={item.name} href={item.path} className="flex items-center gap-4 px-4 py-4 rounded-2xl font-bold text-sm text-[#081031] dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] transition-all group">
+                <span className="text-slate-400 group-hover:text-[#0065FF] dark:group-hover:text-[#0EE2E2] group-hover:scale-110 transition-all">
+                  {item.icon}
+                </span>
+                {item.name}
+              </Link>
+            ))}
+          </nav>
+        </div>
+
+        <div className="hidden lg:flex flex-col w-[260px] xl:w-[280px] shrink-0 bg-white dark:bg-[#081031] rounded-[2rem] p-6 border border-slate-200 dark:border-white/10 shadow-sm h-fit">
+          <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6 pl-2">Pages & Contenu</h2>
+          <nav className="space-y-1">
+            {pagesMenu.map(item => (
+              <Link key={item.name} href={item.path} className="flex items-center gap-4 px-4 py-4 rounded-2xl font-bold text-sm text-[#081031] dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] transition-all group">
+                <span className="text-slate-400 group-hover:text-[#0065FF] dark:group-hover:text-[#0EE2E2] group-hover:scale-110 transition-all">
+                  {item.icon}
+                </span>
+                {item.name}
+              </Link>
+            ))}
+          </nav>
+        </div>
       </div>
 
       {/* 2. CONTENU CENTRAL */}

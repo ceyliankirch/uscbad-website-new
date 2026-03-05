@@ -1,12 +1,16 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Calendar as CalendarIcon, MapPin, Clock, Trophy, PartyPopper, Dumbbell, Filter, ChevronRight, PlusCircle, LayoutList, ChevronLeft, Loader2, CalendarPlus } from 'lucide-react';
+import { Calendar as CalendarIcon, MapPin, Clock, Trophy, PartyPopper, Dumbbell, Filter, ChevronRight, PlusCircle, LayoutList, ChevronLeft, Loader2, CalendarPlus, X, CalendarDays, Share2 } from 'lucide-react';
 
 export default function EvenementsPage() {
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState('Tous');
   const [viewMode, setViewMode] = useState('list');
+
+  // GESTION DE LA MODALE
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // FONCTION POUR CALCULER LA SAISON DYNAMIQUE (SEPTEMBRE À AOÛT)
   const getSeason = () => {
@@ -37,6 +41,8 @@ export default function EvenementsPage() {
               id: e._id,
               day: String(dateObj.getDate()).padStart(2, '0'),
               month: dateObj.toLocaleString('fr-FR', { month: 'long' }).toUpperCase(),
+              fullMonth: dateObj.toLocaleString('fr-FR', { month: 'long' }),
+              year: dateObj.getFullYear()
             };
           });
           setEvents(formattedEvents);
@@ -50,6 +56,17 @@ export default function EvenementsPage() {
     
     fetchEvents();
   }, []);
+
+  const handleOpenModal = (event) => {
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    document.body.style.overflow = 'unset';
+  };
 
   const filteredEvents = activeFilter === 'Tous' 
     ? events 
@@ -99,7 +116,7 @@ export default function EvenementsPage() {
         </div>
       </section>
 
-      {/* SECTION FILTRES & CALENDRIER (Plus de chevauchement avec le hero) */}
+      {/* SECTION FILTRES & CALENDRIER */}
       <section className="relative z-30 max-w-[1400px] mx-auto px-6 md:px-12 lg:px-16 xl:px-20 py-12 lg:py-16 mb-20">
         
         {/* BARRE DE FILTRES */}
@@ -109,7 +126,7 @@ export default function EvenementsPage() {
               <Filter size={20} />
             </div>
             <div className="flex flex-wrap justify-center gap-2 w-full">
-              {['Tous', 'Compétition', 'Vie du Club', 'Stages'].map((category) => (
+              {['Tous', 'Compétition', 'Vie du Club', 'Jeunes'].map((category) => (
                 <button
                   key={category}
                   onClick={() => setActiveFilter(category)}
@@ -169,14 +186,16 @@ export default function EvenementsPage() {
                     className="absolute left-[-9px] top-1/2 -translate-y-1/2 w-4 h-4 rounded-full border-4 border-white dark:border-[#040817] shadow-sm transition-transform duration-300 group-hover:scale-150 z-10"
                     style={{ backgroundColor: event.color }}
                   ></div>
-                  <EventTicket event={event} />
+                  {/* Passage de la fonction d'ouverture de modale ici */}
+                  <EventTicket event={event} onClick={() => handleOpenModal(event)} />
                 </div>
               ))
             )}
           </div>
         ) : (
           <div className="animate-in fade-in zoom-in-95 duration-500">
-            <MonthlyCalendar events={filteredEvents} />
+            {/* Passage de la fonction pour la vue calendrier */}
+            <MonthlyCalendar events={filteredEvents} onEventClick={handleOpenModal} />
           </div>
         )}
 
@@ -207,11 +226,118 @@ export default function EvenementsPage() {
         </div>
       </section>
 
+      {/* MODALE DE DÉTAILS DE L'ÉVÉNEMENT */}
+      {isModalOpen && selectedEvent && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 lg:p-8 bg-[#040817]/90 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-[#081031] w-full max-w-4xl max-h-[90vh] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col relative border border-white/10 animate-in zoom-in-95 duration-300">
+            
+            <button 
+              onClick={handleCloseModal}
+              className="absolute top-6 right-6 z-50 p-3 bg-black/20 hover:bg-[#F72585] text-white rounded-full transition-all backdrop-blur-md"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="overflow-y-auto hide-scrollbar">
+              <div className="relative h-64 lg:h-80 w-full bg-slate-800">
+                {selectedEvent.image ? (
+                  <img src={selectedEvent.image} alt={selectedEvent.title} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#081031] to-[#0065FF]/30">
+                    <CalendarDays size={80} className="text-white/10" />
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#081031] via-transparent to-transparent"></div>
+                <div className="absolute bottom-8 left-8 right-8">
+                  <span 
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[10px] font-black uppercase tracking-widest text-white mb-4 shadow-lg"
+                    style={{ backgroundColor: selectedEvent.color || '#0065FF' }}
+                  >
+                    {selectedEvent.category}
+                  </span>
+                  <h2 className="text-3xl lg:text-5xl font-[900] italic uppercase text-white leading-tight drop-shadow-lg">
+                    {selectedEvent.title}
+                  </h2>
+                </div>
+              </div>
+
+              <div className="p-8 lg:p-12">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+                  <div className="lg:col-span-2 space-y-8">
+                    <div>
+                      <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#0EE2E2] mb-4">À propos de l'événement</h4>
+                      <p className="text-slate-600 dark:text-slate-300 font-medium leading-relaxed text-lg whitespace-pre-wrap">
+                        {selectedEvent.description || "Aucune description détaillée n'a été renseignée pour cet événement. Contactez le club pour plus d'informations."}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-4 pt-4">
+                      <button className="flex items-center gap-2 bg-[#0065FF] text-white px-6 py-3 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-[#0052cc] transition-all shadow-lg shadow-[#0065FF]/20">
+                        S'inscrire / Participer
+                      </button>
+                      <button className="flex items-center gap-2 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 px-6 py-3 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                        <Share2 size={16} /> Partager
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-1 space-y-6">
+                    <div className="bg-slate-50 dark:bg-white/5 rounded-3xl p-6 border border-slate-100 dark:border-white/10">
+                      <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6">Informations</h4>
+                      
+                      <div className="space-y-6">
+                        <div className="flex items-start gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-white dark:bg-[#081031] flex items-center justify-center text-[#0EE2E2] shadow-sm shrink-0">
+                            <CalendarIcon size={20} />
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-black uppercase text-slate-400 leading-none mb-1">Date</p>
+                            <p className="text-sm font-bold text-[#081031] dark:text-white capitalize">
+                              {selectedEvent.dateDisplay || `${selectedEvent.day} ${selectedEvent.fullMonth} ${selectedEvent.year}`}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-white dark:bg-[#081031] flex items-center justify-center text-[#F72585] shadow-sm shrink-0">
+                            <Clock size={20} />
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-black uppercase text-slate-400 leading-none mb-1">Horaires</p>
+                            <p className="text-sm font-bold text-[#081031] dark:text-white">
+                              {selectedEvent.time || "À confirmer"}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-white dark:bg-[#081031] flex items-center justify-center text-[#0065FF] shadow-sm shrink-0">
+                            <MapPin size={20} />
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-black uppercase text-slate-400 leading-none mb-1">Lieu</p>
+                            <p className="text-sm font-bold text-[#081031] dark:text-white">
+                              {selectedEvent.location || "Lieu non défini"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
 
-const EventTicket = ({ event }) => {
+const EventTicket = ({ event, onClick }) => {
   const exportSingleICS = () => {
     if (!event.isoDate) return;
     const dateClean = event.isoDate.replace(/-/g, '');
@@ -237,13 +363,16 @@ const EventTicket = ({ event }) => {
     switch (category) {
       case 'Compétition': return <Trophy size={14} />;
       case 'Vie du Club': return <PartyPopper size={14} />;
-      case 'Stages': return <Dumbbell size={14} />;
+      case 'Jeunes': return <Dumbbell size={14} />;
       default: return <CalendarIcon size={14} />;
     }
   };
 
   return (
-    <div className="flex flex-col lg:flex-row bg-white dark:bg-[#0f172a] rounded-[2rem] border border-slate-200 dark:border-white/5 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden relative group/ticket">
+    <div 
+      onClick={onClick}
+      className="flex flex-col lg:flex-row bg-white dark:bg-[#0f172a] rounded-[2rem] border border-slate-200 dark:border-white/5 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden relative group/ticket cursor-pointer"
+    >
       
       {/* BLOC DATE */}
       <div className="lg:w-[160px] shrink-0 flex flex-col items-center justify-center p-6 lg:p-8 bg-blue-50 dark:bg-blue-500/5 relative">
@@ -285,7 +414,10 @@ const EventTicket = ({ event }) => {
           </div>
           
           <button 
-            onClick={exportSingleICS}
+            onClick={(e) => { 
+              e.stopPropagation(); // Évite d'ouvrir la modale si on clique juste sur "Agenda"
+              exportSingleICS(); 
+            }}
             className="text-[10px] font-black uppercase tracking-widest bg-[#081031] dark:bg-white text-white dark:text-[#081031] px-6 py-3 rounded-full hover:scale-105 transition-transform flex items-center gap-2 shadow-lg"
           >
             <CalendarPlus size={16} /> Agenda
@@ -297,7 +429,7 @@ const EventTicket = ({ event }) => {
   );
 };
 
-const MonthlyCalendar = ({ events }) => {
+const MonthlyCalendar = ({ events, onEventClick }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const handlePrevMonth = () => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
@@ -361,6 +493,7 @@ const MonthlyCalendar = ({ events }) => {
                   <div 
                     key={evt.id} 
                     title={evt.title}
+                    onClick={() => onEventClick(evt)}
                     className="px-2 py-1.5 rounded text-[9px] lg:text-[10px] font-bold text-white truncate cursor-pointer shadow-sm hover:opacity-80 transition-opacity"
                     style={{ backgroundColor: evt.color }}
                   >

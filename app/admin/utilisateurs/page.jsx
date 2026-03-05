@@ -22,7 +22,7 @@ export default function AdminUsersPage() {
   // Liste des options de rôles pour le custom select
   const roleOptions = [
     { value: 'user', label: 'Membre (Accès site basique)', icon: <User size={16}/> },
-    { value: 'coach', label: 'Entraîneur (Accès Indivs & Tournois)', icon: <Shield size={16}/> },
+    { value: 'coach', label: 'Entraîneur (Accès Indivs)', icon: <Shield size={16}/> },
     { value: 'buvette', label: 'Buvette (Accès gestion buvette)', icon: <Coffee size={16}/> },
     { value: 'geo', label: 'GEO Tournois (Accès gestion tournois)', icon: <MapPin size={16}/> },
     { value: 'secretaire', label: 'Secrétaire (Accès gestion secrétariat)', icon: <FileText size={16}/> },
@@ -126,7 +126,7 @@ export default function AdminUsersPage() {
       case 'admin':
         return <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400 border border-red-200 dark:border-red-500/20 flex items-center gap-1 w-fit"><ShieldAlert size={12}/> Administrateur</span>;
       case 'coach':
-        return <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-[#0065FF]/10 text-[#0065FF] border border-[#0065FF]/20 flex items-center gap-1 w-fit"><Shield size={12}/> Entraîneur</span>;
+        return <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-[#0065FF]/10 text-[#0065FF] border border-[#0065FF]/20 flex items-center gap-1 w-fit"><Shield size={12}/> Coach - Indivs</span>;
       case 'buvette':
         return <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-[#F72585]/10 text-[#F72585] border border-[#F72585]/20 flex items-center gap-1 w-fit"><Coffee size={12}/> Buvette</span>;
       case 'geo':

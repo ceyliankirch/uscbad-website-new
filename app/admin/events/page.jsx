@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, Calendar, Download, Upload, Loader2, X, Save, Clock, MapPin, CalendarDays, Trophy, PartyPopper, Dumbbell, ChevronDown, CheckCircle } from 'lucide-react';
+import { Plus, Pencil, Trash2, Calendar, Download, Upload, Loader2, X, Save, Clock, MapPin, CalendarDays, Trophy, PartyPopper, Dumbbell, ChevronDown, CheckCircle, Baby } from 'lucide-react';
 
 export default function AdminEventsPage() {
   const [events, setEvents] = useState([]);
@@ -26,7 +26,7 @@ export default function AdminEventsPage() {
   const categoryOptions = [
     { value: 'Compétition', label: 'Compétition', icon: <Trophy size={16}/>, defaultColor: '#0065FF' },
     { value: 'Vie du Club', label: 'Vie du Club', icon: <PartyPopper size={16}/>, defaultColor: '#FFD500' },
-    { value: 'Stages', label: 'Stages', icon: <Dumbbell size={16}/>, defaultColor: '#0EE2E2' },
+    { value: 'Jeunes', label: 'Jeunes', icon: <Baby size={16}/>, defaultColor: '#0EE2E2' },
   ];
 
   useEffect(() => { 

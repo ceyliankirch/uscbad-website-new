@@ -1,6 +1,6 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, X, Users, Image as ImageIcon, Loader2, Check } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Plus, Pencil, Trash2, X, Users, Image as ImageIcon, Loader2, Check, Camera, User } from 'lucide-react';
 
 export default function AdminEquipePage() {
   const [members, setMembers] = useState([]);
@@ -8,6 +8,8 @@ export default function AdminEquipePage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  
+  const fileInputRef = useRef(null);
 
   // État du formulaire
   const [formData, setFormData] = useState({
@@ -18,7 +20,7 @@ export default function AdminEquipePage() {
     color: '#0065FF',
     tags: '',
     order: 0,
-    trainerRoles: [] // <-- NOUVEAU : Tableau pour stocker les rôles d'entraîneur
+    trainerRoles: [] // Tableau pour stocker les rôles d'entraîneur
   });
 
   // Options pour les entraîneurs
@@ -48,6 +50,22 @@ export default function AdminEquipePage() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // NOUVEAU : Gestion de l'upload d'image
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert("L'image est trop lourde (Max 2Mo)");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({ ...prev, image: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   // Gestion des cases à cocher pour les entraîneurs
@@ -137,7 +155,6 @@ export default function AdminEquipePage() {
       if (data.success) {
         setMembers(members.filter(m => m._id !== id));
       } else {
-        // Ajout d'une alerte en cas d'échec pour comprendre pourquoi
         alert("Impossible de supprimer : " + data.error);
       }
     } catch (error) {
@@ -147,7 +164,7 @@ export default function AdminEquipePage() {
 
   // Affichage du composant
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 font-['Montserrat']">
       
       {/* HEADER */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 border-b border-slate-200 dark:border-white/10 pb-6">
@@ -189,7 +206,7 @@ export default function AdminEquipePage() {
                 style={{ borderColor: member.color || '#0065FF' }}
               >
                 {member.image ? (
-                  <img src={member.image} alt={member.name} className="w-full h-full object-cover" />
+                  <img src={member.image} alt={member.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                 ) : (
                   <span className="font-[900] text-xl italic text-slate-400">
                     {member.name.substring(0, 2).toUpperCase()}
@@ -251,6 +268,33 @@ export default function AdminEquipePage() {
 
             <form onSubmit={handleSubmit} className="p-6 space-y-6">
               
+              {/* UPLOAD PHOTO DYNAMIQUE */}
+              <div className="flex flex-col sm:flex-row items-center gap-8 bg-slate-50 dark:bg-[#0f172a] p-6 rounded-[2rem] border border-slate-100 dark:border-white/5">
+                <div className="relative group shrink-0">
+                  <div className="w-24 h-24 rounded-full border-4 border-white dark:border-[#081031] overflow-hidden bg-slate-200 dark:bg-[#081031] flex items-center justify-center shadow-xl">
+                    {formData.image ? (
+                      <img src={formData.image} className="w-full h-full object-cover" alt="Aperçu" />
+                    ) : (
+                      <User size={32} className="text-slate-400" />
+                    )}
+                  </div>
+                  <button 
+                    type="button" 
+                    onClick={() => fileInputRef.current?.click()} 
+                    className="absolute -bottom-1 -right-1 w-9 h-9 bg-[#9333EA] text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform border-4 border-white dark:border-[#0f172a]"
+                  >
+                    <Camera size={14} />
+                  </button>
+                  <input type="file" ref={fileInputRef} className="hidden" accept="image/png, image/jpeg, image/webp" onChange={handleImageUpload} />
+                </div>
+                <div className="space-y-2 text-center sm:text-left">
+                  <h4 className="font-black uppercase text-sm text-[#081031] dark:text-white italic">Photo Officielle</h4>
+                  <p className="text-xs text-slate-500 font-bold leading-relaxed max-w-xs">
+                    Portrait recommandé. Format <span className="text-[#9333EA]">JPG ou PNG</span>. Poids max : 2Mo.
+                  </p>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Nom */}
                 <div className="space-y-2">
@@ -278,8 +322,8 @@ export default function AdminEquipePage() {
                 </div>
               </div>
 
-              {/* --- NOUVELLE SECTION : GROUPES ENTRAÎNÉS --- */}
-              <div className="col-span-1 md:col-span-2 space-y-3 bg-slate-50 dark:bg-white/5 p-5 rounded-2xl border border-slate-200 dark:border-white/10">
+              {/* SECTION : GROUPES ENTRAÎNÉS */}
+              <div className="space-y-3 bg-slate-50 dark:bg-white/5 p-5 rounded-2xl border border-slate-200 dark:border-white/10">
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
                   <Users size={14} /> Groupes entraînés (Si c'est un entraîneur)
                 </label>
@@ -332,14 +376,6 @@ export default function AdminEquipePage() {
                     />
                   </div>
                 </div>
-              </div>
-
-              {/* Image URL */}
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-2 flex items-center gap-2"><ImageIcon size={14}/> URL de la photo</label>
-                <input type="url" name="image" value={formData.image} onChange={handleChange} placeholder="https://..."
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm font-bold text-[#081031] dark:text-white focus:outline-none focus:border-[#9333EA] transition-colors"
-                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

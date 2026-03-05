@@ -1,16 +1,43 @@
 'use client';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Users, User, Star, Trophy, ArrowRight, Heart, CalendarDays, Shield, ChevronRight, Zap } from 'lucide-react';
+import { Users, User, Star, Trophy, ArrowRight, Heart, CalendarDays, Shield, ChevronRight, Zap, Loader2 } from 'lucide-react';
 
 export default function PoleFemininesPage() {
+  const [coach, setCoach] = useState(null);
+  const [isLoadingCoach, setIsLoadingCoach] = useState(true);
+
+  // RÉCUPÉRATION DU COACH RÉFÉRENT DEPUIS LA BDD
+  useEffect(() => {
+    const fetchCoach = async () => {
+      try {
+        const res = await fetch('/api/team');
+        const json = await res.json();
+        
+        if (json.success && json.data) {
+          // Cherche un entraîneur avec le rôle 'Féminin' ou dont le nom contient 'Romain'
+          const foundCoach = json.data.find(m => 
+            (m.trainerRoles && m.trainerRoles.includes('Féminin')) || 
+            m.name.toLowerCase().includes('romain')
+          );
+          if (foundCoach) setCoach(foundCoach);
+        }
+      } catch (err) {
+        console.error("Erreur lors de la récupération du coach :", err);
+      } finally {
+        setIsLoadingCoach(false);
+      }
+    };
+    fetchCoach();
+  }, []);
+
   return (
-    <div className="bg-white dark:bg-[#040817] min-h-screen font-sans text-[#081031] dark:text-white transition-colors duration-300 pb-20">
+    <div className="bg-white dark:bg-[#040817] min-h-screen font-['Montserrat'] text-[#081031] dark:text-white transition-colors duration-300 pb-20">
       
       {/* =========================================================
-          SECTION 1 : HERO SOMBRE & FÉMININ (Accent Rose)
+          SECTION 1 : HERO SOMBRE & FÉMININ (Avec Box Coach)
           ========================================================= */}
-      <section className="relative w-full pt-32 pb-20 lg:pt-40 lg:pb-28 flex flex-col justify-center items-center text-center overflow-hidden bg-[#081031]">
+      <section className="relative w-full pt-32 pb-20 lg:pt-40 lg:pb-28 flex flex-col justify-center overflow-hidden bg-[#081031]">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay z-0"></div>
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-[#F72585]/20 to-transparent z-0"></div>
         
@@ -18,16 +45,65 @@ export default function PoleFemininesPage() {
         <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[300px] h-[300px] bg-[#F72585] rounded-full blur-[150px] opacity-20 pointer-events-none z-0"></div>
         <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[300px] h-[300px] bg-[#0EE2E2] rounded-full blur-[150px] opacity-10 pointer-events-none z-0"></div>
         
-        <div className="relative z-20 px-6 max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#F72585]/10 border border-[#F72585]/30 text-[#F72585] rounded-full font-[900] uppercase text-[10px] tracking-widest italic mb-6 backdrop-blur-md">
-            <Star size={14} /> Un projet club fort
+        <div className="relative z-20 px-6 max-w-7xl mx-auto w-full flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+          
+          {/* TEXTE (GAUCHE) */}
+          <div className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#F72585]/10 border border-[#F72585]/30 text-[#F72585] rounded-full font-[900] uppercase text-[10px] tracking-widest italic mb-6 backdrop-blur-md">
+              <Star size={14} /> Un projet club fort
+            </div>
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-[900] uppercase italic tracking-tighter leading-[0.9] text-white drop-shadow-xl mb-6">
+              PÔLE <span className="text-[#F72585] block sm:inline">FÉMININ</span>
+            </h1>
+            <p className="text-sm lg:text-lg font-bold text-slate-300 leading-relaxed max-w-xl">
+              L'US Créteil Badminton s'engage pour le développement de la pratique féminine. Un accompagnement dédié pour encourager, rassembler et faire briller nos joueuses.
+            </p>
           </div>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-[900] uppercase italic tracking-tighter leading-[0.9] text-white drop-shadow-xl mb-6">
-            PÔLE <span className="text-[#F72585]">FÉMININ</span>
-          </h1>
-          <p className="text-sm lg:text-lg font-bold text-slate-300 leading-relaxed max-w-2xl mx-auto">
-            L'US Créteil Badminton s'engage pour le développement de la pratique féminine. Un accompagnement dédié pour encourager, rassembler et faire briller nos joueuses.
-          </p>
+
+          {/* BOX COACH (DROITE) */}
+          <div className="flex-1 w-full flex justify-center lg:justify-end relative">
+            {/* Lueur arrière de la carte */}
+            <div className="absolute inset-0 bg-[#F72585]/20 blur-[60px] rounded-full pointer-events-none"></div>
+            
+            <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 p-8 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] max-w-sm w-full transform hover:scale-[1.02] transition-transform duration-500">
+              
+              {/* Badge flottant "COACH" */}
+              <div className="absolute -top-5 -right-5 lg:-top-6 lg:-right-6 bg-[#F72585] text-white w-14 h-14 lg:w-16 lg:h-16 rounded-full flex items-center justify-center font-black text-[10px] lg:text-xs uppercase tracking-widest shadow-[0_0_20px_rgba(247,37,133,0.5)] rotate-12 z-20">
+                Coach
+              </div>
+              
+              {isLoadingCoach ? (
+                <div className="h-64 flex flex-col items-center justify-center gap-4">
+                  <Loader2 className="animate-spin text-[#F72585]" size={32}/>
+                  <span className="text-slate-400 font-bold text-xs uppercase tracking-widest">Recherche...</span>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center text-center">
+                  <div className="w-28 h-28 lg:w-32 lg:h-32 rounded-full overflow-hidden border-[3px] border-[#F72585] mb-5 shadow-inner">
+                    {coach?.image ? (
+                      <img src={coach.image} alt={coach?.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full bg-slate-800 flex items-center justify-center text-slate-400">
+                        <User size={40} />
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="text-2xl font-[900] italic uppercase text-white mb-1">
+                    {coach?.name || "Romain Credou"}
+                  </h3>
+                  <p className="text-[#F72585] font-black uppercase text-[10px] tracking-widest mb-5">
+                    Entraîneur Référent
+                  </p>
+                  <div className="border-t border-white/10 pt-5 w-full">
+                    <p className="text-slate-300 text-sm font-medium leading-relaxed italic">
+                      "Mon objectif : vous donner les clés techniques et tactiques pour vous épanouir sur le terrain et performer en compétition."
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -152,7 +228,7 @@ export default function PoleFemininesPage() {
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
           
           <div className="relative z-10 flex flex-col items-center">
-            <div className="text-white/30 font-serif text-8xl leading-none h-12 -mt-8 mb-4">"</div>
+            <div className="text-white/30 font-[900] italic text-8xl leading-none h-12 -mt-8 mb-4">"</div>
             <p className="text-xl lg:text-3xl font-[900] italic text-white mb-8 leading-tight">
               Le pôle féminin m'a permis de prendre confiance en moi sur le terrain. L'ambiance y est exceptionnelle, on s'encourage et on progresse toutes ensemble, de la joueuse loisir à la compétitrice N.
             </p>

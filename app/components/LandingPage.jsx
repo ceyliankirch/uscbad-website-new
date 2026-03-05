@@ -8,7 +8,7 @@ import { Home, ArrowRight, Trophy, Calendar, ChevronRight, TrendingUp, MapPin, I
 const categories = ["Tout voir", "Événements", "Compétitions", "Vie du Club", "Interclubs", "Jeunes"];
 
 export default function HomePage() {
-  // --- GESTION DU LIVE SCORE ---
+  // --- GESTION DU LIVE SCORE ET CLASSEMENTS ICBAD ---
   const [liveScore, setLiveScore] = useState({
     division: 'NATIONALE 1 | J05',
     date: 'CHARGEMENT...',
@@ -20,6 +20,15 @@ export default function HomePage() {
     awayTextColor: '#FFFFFF'
   });
 
+  const [rankings, setRankings] = useState({
+    n1: [],
+    eq2: [],
+    eq3: []
+  });
+
+  const [isLoadingRankings, setIsLoadingRankings] = useState(true);
+
+  // 1er useEffect : Récupération du score manuel
   useEffect(() => {
     fetch('/api/score', { cache: 'no-store' })
       .then(res => res.json())
@@ -31,10 +40,35 @@ export default function HomePage() {
       .catch(err => console.error("Erreur chargement Live Score:", err));
   }, []);
 
-  // --- GESTION DES ACTUALITÉS ---
+  // 2ème useEffect : Récupération des classements dynamiques via ICBAD
+  useEffect(() => {
+    const fetchRankings = async () => {
+      try {
+        const res = await fetch('/api/icbad', { cache: 'no-store' });
+        const json = await res.json();
+        
+        if (json.success && json.data) {
+          setRankings({
+            n1: json.data.rankingN1 || [],
+            eq2: json.data.rankingEq2 || [],
+            eq3: json.data.rankingEq3 || []
+          });
+        }
+      } catch (err) {
+        console.error("Erreur chargement Classements ICBAD:", err);
+      } finally {
+        setIsLoadingRankings(false);
+      }
+    };
+    fetchRankings();
+  }, []);
+
+  // --- GESTION DES ACTUALITÉS & MODALE ---
   const [activeCategory, setActiveCategory] = useState("Tout voir");
   const [articles, setArticles] = useState([]);
   const [isLoadingNews, setIsLoadingNews] = useState(true);
+  const [selectedArticle, setSelectedArticle] = useState(null);
+  const [isArticleModalOpen, setIsArticleModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchArticles = async () => {
@@ -42,7 +76,6 @@ export default function HomePage() {
         const res = await fetch('/api/articles');
         const data = await res.json();
         if (data.success) {
-          // Tri par date de publication (du plus récent au plus ancien)
           const sorted = data.data.sort((a, b) => new Date(b.publishedAt || b.createdAt) - new Date(a.publishedAt || a.createdAt));
           setArticles(sorted);
         }
@@ -55,10 +88,20 @@ export default function HomePage() {
     fetchArticles();
   }, []);
 
-  // Filtrage et limitation à 8 articles pour le carrousel
   const filteredArticles = articles
     .filter(article => activeCategory === "Tout voir" || article.category === activeCategory)
     .slice(0, 8);
+
+  const handleOpenArticleModal = (article) => {
+    setSelectedArticle(article);
+    setIsArticleModalOpen(true);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const handleCloseArticleModal = () => {
+    setIsArticleModalOpen(false);
+    document.body.style.overflow = 'unset';
+  };
 
   // --- GESTION DES ÉVÉNEMENTS & MODALE ---
   const [upcomingEvents, setUpcomingEvents] = useState([]);
@@ -75,7 +118,6 @@ export default function HomePage() {
         if (json.success) {
           const today = new Date().toISOString().split('T')[0];
           
-          // On filtre pour ne garder que le futur et on prend les 4 premiers
           const future = json.data
             .filter(event => event.isoDate >= today)
             .slice(0, 4)
@@ -111,6 +153,62 @@ export default function HomePage() {
     setIsModalOpen(false);
     document.body.style.overflow = 'unset';
   };
+
+  // --- GESTION DU PROCHAIN CRÉNEAU DE JEU LIBRE ---
+  const [nextSession, setNextSession] = useState(null);
+  const [isLoadingSession, setIsLoadingSession] = useState(true);
+
+  useEffect(() => {
+    const fetchNextSession = async () => {
+      try {
+        const res = await fetch('/api/creneaux');
+        const json = await res.json();
+        
+        if (json.success && json.data.length > 0) {
+          const daysMap = { 'Dimanche': 0, 'Lundi': 1, 'Mardi': 2, 'Mercredi': 3, 'Jeudi': 4, 'Vendredi': 5, 'Samedi': 6 };
+          const today = new Date();
+          const currentDayIndex = today.getDay();
+          const currentTime = `${String(today.getHours()).padStart(2, '0')}:${String(today.getMinutes()).padStart(2, '0')}`;
+
+          let closest = null;
+          let minDiff = Infinity;
+
+          // On ne garde que les créneaux dont le type contient "Jeu Libre" (insensible à la casse)
+          const freePlaySessions = json.data.filter(session => 
+            session.type && session.type.toLowerCase().includes('jeu libre')
+          );
+
+          freePlaySessions.forEach(session => {
+            const sessionDayIndex = daysMap[session.day];
+            let diffDays = sessionDayIndex - currentDayIndex;
+            
+            if (diffDays < 0) diffDays += 7;
+            
+            // Si c'est aujourd'hui mais que l'heure de fin est passée, c'est pour la semaine prochaine
+            if (diffDays === 0 && currentTime > session.endTime) diffDays += 7;
+
+            const score = diffDays * 1000 + parseInt(session.startTime.replace(':', ''));
+
+            if (score < minDiff) {
+              minDiff = score;
+              closest = {
+                ...session,
+                isToday: diffDays === 0
+              };
+            }
+          });
+
+          setNextSession(closest);
+        }
+      } catch (error) {
+        console.error("Erreur chargement prochain créneau:", error);
+      } finally {
+        setIsLoadingSession(false);
+      }
+    };
+    
+    fetchNextSession();
+  }, []);
 
   return (
     <main className="bg-white dark:bg-[#040817] font-['Montserrat'] transition-colors duration-300 min-h-screen">
@@ -158,9 +256,9 @@ export default function HomePage() {
                 <span className="text-[10px] lg:text-[14px] font-[900] uppercase text-[#0EE2E2]">Union Sportive de Créteil</span>
               </div>
               <div className="flex gap-2">
-                <MiniSocialBtn icon={<Instagram size={14} />} href="https://www.instagram.com/uscbad/" />
-                <MiniSocialBtn icon={<Facebook size={14} fill="currentColor" />} href="https://www.facebook.com/USCRETEIL.Bad" />
-                <MiniSocialBtn icon={<Mail size={14} />} href="mailto:contact@uscbad.fr" />
+                <MiniSocialBtn icon={<Instagram size={14} />} href="#" />
+                <MiniSocialBtn icon={<Facebook size={14} fill="currentColor" />} href="#" />
+                <MiniSocialBtn icon={<Mail size={14} />} href="#" />
               </div>
             </div>
             
@@ -290,14 +388,32 @@ export default function HomePage() {
         <div className="max-w-[1600px] mx-auto">
           <div className="mb-10 lg:mb-16 text-center lg:text-left">
             <h2 className="text-4xl md:text-5xl lg:text-5xl font-[900] italic uppercase text-[#081031] dark:text-white">
-              Intégrer <span className="text-[#0065FF] block sm:inline">l'US Créteil</span>
+              Intégrer <span className="text-[#0065FF] block sm:inline">le club</span>
             </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            <InfoCard num="01" title="Jeu Libre & Loisir" desc="Des créneaux tous les jours pour venir jouer librement avec d'autres passionnés dans une ambiance conviviale." color="#0065FF" />
-            <InfoCard num="02" title="Compétition & IC" desc="Entraînements dirigés par des coachs et intégration à nos équipes interclubs, jusqu'en Nationale 1." color="#0EE2E2" />
-            <InfoCard num="03" title="École des Jeunes" desc="Une école labellisée pour former les champions de demain dès le plus jeune âge avec des pros." color="#0A266D" />
+            <InfoCard 
+              num="01" 
+              title="Jeu Libre & Loisir" 
+              desc="Des créneaux tous les jours pour venir jouer librement avec d'autres passionnés dans une ambiance conviviale." 
+              color="#0065FF" 
+              link="/creneaux" 
+            />
+            <InfoCard 
+              num="02" 
+              title="Compétition & IC" 
+              desc="Entraînements dirigés par des coachs et intégration à nos équipes interclubs, jusqu'en Nationale 1." 
+              color="#0EE2E2" 
+              link="/interclubs" 
+            />
+            <InfoCard 
+              num="03" 
+              title="École des Jeunes" 
+              desc="Une école labellisée pour former les champions de demain dès le plus jeune âge avec des pros." 
+              color="#0A266D" 
+              link="/jeunes" 
+            />
             
             <div className="bg-[#0065FF] rounded-[1.5rem] lg:rounded-[2rem] p-8 flex flex-col justify-center items-center text-center text-white shadow-xl hover:scale-[1.02] transition-transform duration-300">
               <h4 className="text-2xl font-[900] italic uppercase mb-3 leading-tight">Prêt à nous rejoindre ?</h4>
@@ -351,18 +467,36 @@ export default function HomePage() {
             <div className="bg-[#081031] dark:bg-[#0065FF]/10 p-6 rounded-[1.5rem] border-none dark:border dark:border-[#0065FF]/20 flex flex-col justify-center relative overflow-hidden group hover:shadow-[0_0_30px_rgba(14,226,226,0.15)] transition-all">
               <div className="absolute top-0 right-0 w-32 h-32 bg-[#0EE2E2]/20 blur-[40px] rounded-full group-hover:scale-150 transition-transform duration-700"></div>
               <div className="flex items-center gap-2 mb-3 relative z-10">
-                <span className="relative flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0EE2E2] opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-[#0EE2E2] shadow-[0_0_8px_#0EE2E2]"></span>
+                {nextSession && nextSession.isToday ? (
+                  <span className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0EE2E2] opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-[#0EE2E2] shadow-[0_0_8px_#0EE2E2]"></span>
+                  </span>
+                ) : (
+                  <CalendarDays size={14} className="text-[#0EE2E2]" />
+                )}
+                <span className="text-[10px] font-black uppercase text-[#0EE2E2] tracking-widest">
+                  Prochain créneau (Jeu Libre)
                 </span>
-                <span className="text-[10px] font-black uppercase text-[#0EE2E2] tracking-widest">En direct ce soir</span>
               </div>
-              <div className="text-2xl font-[900] italic text-white uppercase leading-tight mb-2 relative z-10">
-                Jeu Libre <span className="text-slate-400">| 20h00</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase relative z-10">
-                <MapPin size={12} className="text-[#0EE2E2]" /> Gymnase Casalis
-              </div>
+              
+              {isLoadingSession ? (
+                <div className="flex items-center gap-2 text-white font-bold"><Loader2 size={16} className="animate-spin"/> Recherche...</div>
+              ) : nextSession ? (
+                <>
+                  <div className="text-2xl font-[900] italic text-white uppercase leading-tight mb-2 relative z-10">
+                    {nextSession.type} <span className="text-slate-400">| {nextSession.startTime}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase relative z-10">
+                    <MapPin size={12} className="text-[#0EE2E2] shrink-0" /> 
+                    <span className="truncate">
+                      {nextSession.isToday ? 'Ce soir' : nextSession.day} - {nextSession.gymnasium}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <div className="text-sm font-bold text-slate-400 italic">Aucun créneau programmé</div>
+              )}
             </div>
 
           </div>
@@ -408,7 +542,11 @@ export default function HomePage() {
           ) : (
             <div className="flex overflow-x-auto hide-scrollbar gap-6 lg:gap-8 pb-8 snap-x snap-mandatory px-6 lg:px-8">
               {filteredArticles.map(article => (
-                <NewsCard key={article._id} article={article} />
+                <NewsCard 
+                  key={article._id} 
+                  article={article} 
+                  onClick={handleOpenArticleModal}
+                />
               ))}
               
               <Link href="/actualites" className="group relative bg-[#0065FF]/5 dark:bg-[#0EE2E2]/5 rounded-[2rem] border-2 border-dashed border-[#0065FF]/20 dark:border-[#0EE2E2]/20 flex flex-col items-center justify-center w-[200px] shrink-0 snap-start hover:bg-[#0065FF] dark:hover:bg-[#0EE2E2] transition-colors">
@@ -424,7 +562,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 5. SECTION INTERCLUBS */}
+      {/* 5. SECTION INTERCLUBS CONNECTÉE À LA BDD (ICBAD) */}
       <section className="py-16 lg:py-24 px-6 lg:px-8 bg-slate-50/50 dark:bg-[#0a0f25] border-t border-slate-100 dark:border-white/5 transition-colors">
         <div className="max-w-[1600px] mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 lg:mb-16 gap-6">
@@ -441,11 +579,17 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-            <TeamCard team="Équipe 1" division="Nationale 1 (Poule 2)" color="#0065FF" ranking={[ { rank: 1, name: "BC Chambly", pts: 41 }, { rank: 2, name: "US Créteil", pts: 38, isUs: true }, { rank: 3, name: "Racing Club", pts: 35 }, { rank: 4, name: "VGA Stella", pts: 22 } ]} />
-            <TeamCard team="Équipe 2" division="Régionale 1" color="#0EE2E2" ranking={[ { rank: 1, name: "US Créteil 2", pts: 42, isUs: true }, { rank: 2, name: "Sénart Bad", pts: 39 }, { rank: 3, name: "Noisiel", pts: 31 }, { rank: 4, name: "Ermont", pts: 18 } ]} />
-            <TeamCard team="Équipe 3" division="Pré-Régionale" color="#0A266D" ranking={[ { rank: 1, name: "Vincennes", pts: 30 }, { rank: 2, name: "Choisy", pts: 28 }, { rank: 3, name: "US Créteil 3", pts: 21, isUs: true }, { rank: 4, name: "Thiais", pts: 12 } ]} />
-          </div>
+          {isLoadingRankings ? (
+            <div className="flex justify-center py-20 opacity-50">
+              <Loader2 size={40} className="animate-spin text-[#0065FF]" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+              <TeamCard team="Équipe 1" division="Nationale 1" color="#0065FF" ranking={rankings.n1.slice(0, 4)} />
+              <TeamCard team="Équipe 2" division="Régionale" color="#0EE2E2" ranking={rankings.eq2.slice(0, 4)} />
+              <TeamCard team="Équipe 3" division="Régionale" color="#0A266D" ranking={rankings.eq3.slice(0, 4)} />
+            </div>
+          )}
         </div>
       </section>
 
@@ -531,7 +675,7 @@ export default function HomePage() {
                   <div className="lg:col-span-2 space-y-8">
                     <div>
                       <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-[#0EE2E2] mb-4">À propos de l'événement</h4>
-                      <p className="text-slate-600 dark:text-slate-300 font-medium leading-relaxed text-lg">
+                      <p className="text-slate-600 dark:text-slate-300 font-medium leading-relaxed text-lg whitespace-pre-wrap">
                         {selectedEvent.description || "Aucune description détaillée n'a été renseignée pour cet événement. Contactez le club pour plus d'informations."}
                       </p>
                     </div>
@@ -598,7 +742,65 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* 8. SECTION PARTENAIRES */}
+      {/* 8. MODALE DE DÉTAILS DE L'ACTUALITÉ */}
+      {isArticleModalOpen && selectedArticle && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 lg:p-8 bg-[#040817]/90 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-[#081031] w-full max-w-4xl max-h-[90vh] rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col relative border border-white/10 animate-in zoom-in-95 duration-300">
+
+            <button
+              onClick={handleCloseArticleModal}
+              className="absolute top-6 right-6 z-50 p-3 bg-black/20 hover:bg-[#F72585] text-white rounded-full transition-all backdrop-blur-md"
+            >
+              <X size={20} />
+            </button>
+
+            <div className="overflow-y-auto hide-scrollbar flex flex-col">
+              <div className="relative h-64 lg:h-96 w-full bg-slate-800 shrink-0">
+                {selectedArticle.imageUrl ? (
+                  <img src={selectedArticle.imageUrl} alt={selectedArticle.title} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-slate-800 text-slate-500 font-black text-4xl uppercase tracking-widest">US Créteil</div>
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#081031] via-[#081031]/60 to-transparent"></div>
+                <div className="absolute bottom-8 left-8 right-8">
+                  <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest bg-white text-[#081031] mb-4 shadow-lg">
+                    {selectedArticle.category}
+                  </span>
+                  <h2 className="text-3xl lg:text-5xl font-[900] italic uppercase text-white leading-tight drop-shadow-lg">
+                    {selectedArticle.title}
+                  </h2>
+                </div>
+              </div>
+
+              <div className="p-8 lg:p-12 space-y-8 bg-white dark:bg-[#081031] flex-1">
+                <div className="flex items-center gap-2 text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+                  <Calendar size={16} className="text-[#0065FF]" />
+                  Publié le {new Date(selectedArticle.publishedAt || selectedArticle.createdAt).toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                </div>
+
+                <div className="text-slate-600 dark:text-slate-300 font-medium leading-relaxed text-lg whitespace-pre-wrap">
+                  {selectedArticle.content || selectedArticle.excerpt || "Aucun contenu détaillé disponible."}
+                </div>
+
+                <div className="pt-8 flex flex-wrap gap-4 border-t border-slate-100 dark:border-white/10">
+                  <Link
+                    href={`/actualites/${selectedArticle._id}`}
+                    className="bg-[#0065FF] hover:bg-[#0052cc] text-white px-8 py-4 rounded-xl font-black uppercase text-xs tracking-widest transition-all shadow-lg shadow-[#0065FF]/20 flex items-center gap-2"
+                  >
+                    Page de l'article <ArrowRight size={16} />
+                  </Link>
+                  <button className="flex items-center gap-2 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 px-6 py-4 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-slate-200 dark:hover:bg-white/10 transition-all">
+                    <Share2 size={16} /> Partager
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* 9. SECTION PARTENAIRES */}
       <section className="py-8 lg:py-12 bg-slate-50 dark:bg-white overflow-hidden relative flex items-center border-t border-slate-200 transition-colors">
         <div className="absolute left-0 top-0 bottom-0 w-16 lg:w-24 bg-gradient-to-r from-slate-50 dark:from-white to-transparent z-10" />
         <div className="absolute right-0 top-0 bottom-0 w-16 lg:w-24 bg-gradient-to-l from-slate-50 dark:from-white to-transparent z-10" />
@@ -631,14 +833,30 @@ const MiniSocialBtn = ({ icon, href }) => (
   </a>
 );
 
-const InfoCard = ({ num, title, desc, color }) => (
+const InfoCard = ({ num, title, desc, color, link }) => (
   <div className="group bg-white dark:bg-[#0f172a] p-8 lg:p-10 rounded-[1.5rem] lg:rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-sm hover:shadow-xl dark:hover:shadow-black/50 transition-all duration-300 flex flex-col h-full">
     <div className="text-4xl lg:text-5xl font-[900] italic mb-4 lg:mb-6 opacity-20 group-hover:opacity-100 transition-all" style={{ color }}>{num}</div>
     <h4 className="text-lg lg:text-xl font-[900] uppercase italic mb-2 lg:mb-3 text-[#081031] dark:text-white transition-colors">{title}</h4>
     <p className="text-slate-500 dark:text-slate-400 font-bold mb-6 lg:mb-8 text-sm flex-grow leading-relaxed transition-colors">{desc}</p>
-    <button className="flex items-center gap-2 font-bold text-xs uppercase mt-auto" style={{ color }}>
-      Détails <ChevronRight size={16} />
-    </button>
+    <Link 
+      href={link} 
+      className="flex items-center gap-2 font-black text-xs uppercase mt-auto self-start px-4 py-2 border rounded-full transition-all group-hover:text-white"
+      style={{ 
+        color: color, 
+        borderColor: color, 
+        '--hover-bg': color // On utilise une variable CSS locale pour gérer le hover dynamique avec style={{}}
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = color;
+        e.currentTarget.style.color = '#fff';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = 'transparent';
+        e.currentTarget.style.color = color;
+      }}
+    >
+      Découvrir <ChevronRight size={14} />
+    </Link>
   </div>
 );
 
@@ -715,8 +933,13 @@ const AnimatedDonut = ({ men, women }) => {
   );
 };
 
-const NewsCard = ({ article }) => (
-  <Link href={`/actualites/${article._id}`} className="group relative bg-white dark:bg-[#0f172a] rounded-[2rem] border border-slate-200 dark:border-white/5 overflow-hidden shadow-sm hover:shadow-xl transition-all hover:-translate-y-1.5 flex flex-col w-[280px] lg:w-[350px] shrink-0 snap-center lg:snap-start block">
+const NewsCard = ({ article, onClick }) => (
+  <div 
+    onClick={() => onClick(article)} 
+    role="button" 
+    tabIndex={0} 
+    className="group relative bg-white dark:bg-[#0f172a] rounded-[2rem] border border-slate-200 dark:border-white/5 overflow-hidden shadow-sm hover:shadow-xl transition-all hover:-translate-y-1.5 flex flex-col w-[280px] lg:w-[350px] shrink-0 snap-center lg:snap-start cursor-pointer block"
+  >
     <div className="absolute top-0 left-0 w-full h-1.5 bg-[#0065FF] z-20"></div>
     <div className="aspect-video relative overflow-hidden bg-slate-100 shrink-0 border-b border-slate-100 dark:border-white/5">
       {article.imageUrl ? (
@@ -745,7 +968,7 @@ const NewsCard = ({ article }) => (
         </div>
       </div>
     </div>
-  </Link>
+  </div>
 );
 
 const TeamCard = ({ team, division, color, ranking }) => (
@@ -754,21 +977,25 @@ const TeamCard = ({ team, division, color, ranking }) => (
     <h3 className="text-2xl lg:text-3xl font-[900] italic text-[#081031] dark:text-white uppercase mb-4 lg:mb-6 transition-colors">{team}</h3>
     <div className="flex-grow">
       <ul className="space-y-2 text-xs lg:text-sm font-bold">
-        {ranking.map((item, idx) => (
-          <li key={idx} className={`flex justify-between items-center p-2 lg:p-3 rounded-xl transition-colors ${
-            item.isUs 
-              ? 'bg-slate-50 dark:bg-white/5 shadow-sm border border-slate-200 dark:border-transparent text-[#081031] dark:text-white' 
-              : 'text-slate-500 dark:text-slate-400'
-          }`}>
-            <span className="flex gap-2 lg:gap-3">
-              <span className={item.isUs ? '' : 'opacity-50'}>{item.rank}.</span> 
-              <span>{item.name}</span>
-            </span>
-            <span className={item.isUs ? 'font-[900] text-base lg:text-lg' : 'opacity-60'} style={{ color: item.isUs ? color : undefined }}>
-              {item.pts} pts
-            </span>
-          </li>
-        ))}
+        {ranking.length > 0 ? (
+          ranking.map((item, idx) => (
+            <li key={idx} className={`flex justify-between items-center p-2 lg:p-3 rounded-xl transition-colors ${
+              item.isUs 
+                ? 'bg-slate-50 dark:bg-white/5 shadow-sm border border-slate-200 dark:border-transparent text-[#081031] dark:text-white' 
+                : 'text-slate-500 dark:text-slate-400'
+            }`}>
+              <span className="flex gap-2 lg:gap-3">
+                <span className={item.isUs ? '' : 'opacity-50'}>{item.rank}.</span> 
+                <span className="truncate max-w-[120px] sm:max-w-[160px]">{item.name}</span>
+              </span>
+              <span className={item.isUs ? 'font-[900] text-base lg:text-lg' : 'opacity-60'} style={{ color: item.isUs ? color : undefined }}>
+                {item.pts} pts
+              </span>
+            </li>
+          ))
+        ) : (
+          <li className="text-slate-400 italic text-center py-4 text-xs">Classement non disponible</li>
+        )}
       </ul>
     </div>
   </div>

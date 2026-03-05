@@ -17,7 +17,8 @@ import {
   Medal,
   Target,
   Activity,
-  ChartArea
+  ChartArea,
+  Heart
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -61,7 +62,7 @@ export default function AdminDashboard() {
     { name: 'Indivs', path: '/admin/indivs', icon: <Target size={20} /> },
     { name: 'Live Score', path: '/admin/score', icon: <Activity size={20} /> },
     { name: 'Tournois', path: '/admin/tournois', icon: <Medal size={20} /> },
-    { name: 'Bureau & CRs', path: '/admin/board', icon: <Briefcase size={20} /> },
+    { name: 'Bureau & CRs', path: '/admin/bureau', icon: <Briefcase size={20} /> },
     { name: 'Staff & Équipe', path: '/admin/equipe', icon: <Users size={20} /> },
     { name: 'Paramètres', path: '/admin/settings', icon: <Settings size={20} /> },
   ];
@@ -70,6 +71,7 @@ export default function AdminDashboard() {
     { name: 'Interclubs', path: '/admin/interclubs', icon: <Trophy size={20} /> },
     { name: 'Tournois', path: '/admin/tournois', icon: <Medal size={20} /> },
     { name: 'Communication', path: '/admin/communication', icon: <ChartArea size={20} /> },
+    { name: 'Pôle Féminin', path: '/admin/pole-feminin', icon: <Heart size={20} /> },
   ]
 
   return (

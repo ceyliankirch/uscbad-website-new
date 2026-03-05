@@ -1,7 +1,8 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { CalendarDays, Clock, CheckCircle, Target, ChevronRight, X, AlertCircle } from 'lucide-react';
+import { CalendarDays, Clock, CheckCircle, Target, ChevronRight, X, AlertCircle, Settings } from 'lucide-react';
 import { useSession } from 'next-auth/react';
+import Link from 'next/link';
 
 export default function AdminIndivsPage() {
   const { data: session, status } = useSession();
@@ -120,20 +121,41 @@ export default function AdminIndivsPage() {
     );
   }
 
+  // Extraction du prénom pour le message de bienvenue
+  const firstName = session?.user?.name ? session.user.name.split(' ')[0] : 'Coach';
+
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
       
-      {/* HEADER */}
+      {/* HEADER AVEC PROFIL */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 border-b border-slate-200 dark:border-white/10 pb-6">
-        <div>
-          <h1 className="text-3xl lg:text-4xl font-[900] italic uppercase text-[#081031] dark:text-white mb-2 leading-tight pt-2">
-            Gestion <span className="text-[#F72585]">Indivs</span>
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 font-bold">
-            {session?.user?.role === 'admin' 
-              ? "Vision globale de toutes les demandes du club." 
-              : `Bienvenue ${session?.user?.name}, gérez les demandes qui vous ont été adressées.`}
-          </p>
+        <div className="flex items-center gap-5">
+          
+          {/* PHOTO DE PROFIL CLIQUABLE */}
+          <Link href="/admin/profil" className="relative group shrink-0">
+            <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#F72585] shadow-lg bg-slate-200 dark:bg-[#081031] flex items-center justify-center text-xl font-black text-slate-500 dark:text-slate-400 group-hover:scale-105 transition-transform duration-300">
+              {session?.user?.image ? (
+                <img src={session.user.image} alt="Profil" className="w-full h-full object-cover" />
+              ) : (
+                firstName.charAt(0).toUpperCase()
+              )}
+            </div>
+            {/* Petit badge d'engrenage au survol */}
+            <div className="absolute bottom-0 -right-1 bg-[#081031] dark:bg-white text-white dark:text-[#081031] p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-md border-2 border-white dark:border-[#040817]">
+              <Settings size={12} />
+            </div>
+          </Link>
+
+          <div>
+            <h1 className="text-3xl lg:text-4xl font-[900] italic uppercase text-[#081031] dark:text-white mb-1 leading-tight pt-2">
+              Gestion <span className="text-[#F72585]">Indivs</span>
+            </h1>
+            <p className="text-slate-500 dark:text-slate-400 font-bold">
+              {session?.user?.role === 'admin' 
+                ? "Vision globale de toutes les demandes du club." 
+                : `Bonjour ${firstName}, gérez les demandes qui vous ont été adressées.`}
+            </p>
+          </div>
         </div>
       </div>
 

@@ -15,26 +15,19 @@ const authOptions = {
         if (!credentials?.email || !credentials?.password) return null;
 
         try {
-          // 1. Connexion à la base de données
           await dbConnect();
-
-          // 2. Recherche de l'utilisateur réel par son email
           const user = await User.findOne({ email: credentials.email });
 
-          // 3. Vérification si l'utilisateur existe et si le mot de passe correspond
-          // NOTE : Si vous utilisez bcrypt pour hasher les mots de passe à la création,
-          // il faudra utiliser bcrypt.compare(credentials.password, user.password) ici.
           if (user && user.password === credentials.password) {
-            // On retourne l'objet utilisateur qui sera stocké dans le token JWT
             return { 
               id: user._id.toString(), 
               name: user.name, 
               email: user.email, 
-              role: user.role 
+              role: user.role,
+              image: user.image // <-- 1. ON RÉCUPÈRE L'IMAGE DE LA BDD
             };
           }
 
-          // Si les identifiants ne correspondent pas
           return null;
         } catch (error) {
           console.error("Erreur lors de l'authentification :", error);
@@ -44,25 +37,33 @@ const authOptions = {
     })
   ],
   callbacks: {
-    // On injecte les informations (ID et Rôle) dans le token JWT
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
+      // <-- 2. GESTION DE LA MISE À JOUR (Quand on clique sur Enregistrer)
+      if (trigger === "update" && session?.user) {
+        token.name = session.user.name;
+        token.email = session.user.email;
+        token.image = session.user.image; // On met à jour l'image dans le token
+      }
+
+      // <-- 3. LORS DE LA CONNEXION INITIALE
       if (user) {
         token.role = user.role;
         token.id = user.id;
+        token.image = user.image; // On injecte l'image dans le token
       }
       return token;
     },
-    // On rend ces informations accessibles dans la session (Navbar, Dashboards)
     async session({ session, token }) {
       if (session?.user) {
         session.user.role = token.role;
         session.user.id = token.id;
+        session.user.image = token.image; // <-- 4. ON EXPOSE L'IMAGE DANS LA SESSION
       }
       return session;
     }
   },
   pages: {
-    signIn: '/login', // Redirige vers votre belle page de login personnalisée
+    signIn: '/login',
   },
   session: {
     strategy: "jwt",

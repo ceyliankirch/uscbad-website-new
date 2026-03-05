@@ -11,7 +11,12 @@ import {
   Heart,
   CalendarDays,
   Clock,
-  ChevronRight
+  ChevronRight,
+  Settings,
+  Shield,
+  Briefcase,
+  Medal,
+  Target
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -21,9 +26,8 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     // Si l'utilisateur est un coach, il n'a rien à faire sur le dashboard général
-    // On le redirige immédiatement vers son outil de travail : les Indivs
     if (status === 'authenticated' && session?.user?.role === 'coach') {
-      router.replace('/mes-indivs');
+      router.replace('/admin/indivs');
     }
   }, [session, status, router]);
 
@@ -43,104 +47,168 @@ export default function AdminDashboard() {
     );
   }
 
+  // Extraction du prénom pour le message de bienvenue
+  const firstName = session?.user?.name ? session.user.name.split(' ')[0] : 'Admin';
+
+  // Liens pour le menu de gauche intégré
+  const adminMenu = [
+    { name: 'Utilisateurs', path: '/admin/utilisateurs', icon: <Shield size={20} /> },
+    { name: 'Actualités', path: '/admin/news', icon: <Newspaper size={20} /> },
+    { name: 'Calendrier', path: '/admin/events', icon: <CalendarDays size={20} /> },
+    { name: 'Staff & Équipe', path: '/admin/equipe', icon: <Users size={20} /> },
+    { name: 'Joueurs', path: '/admin/joueurs', icon: <Medal size={20} /> },
+    { name: 'Créneaux', path: '/admin/creneaux', icon: <Clock size={20} /> },
+    { name: 'Indivs', path: '/admin/indivs', icon: <Target size={20} /> },
+  ];
+
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    // Ajout d'un grand padding-bottom pour espacer avec le footer
+    <div className="flex flex-col lg:flex-row pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500">
       
-      {/* En-tête avec Date */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 dark:border-white/10 pb-6">
-        <div>
-          <h1 className="text-3xl lg:text-4xl font-[900] italic uppercase text-[#081031] dark:text-white mb-2 leading-tight pt-2">
-            Vue <span className="text-[#0065FF] dark:text-[#0EE2E2]">d'ensemble</span>
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 font-bold">Bienvenue sur le centre de contrôle du club.</p>
-        </div>
-        <div className="bg-white dark:bg-[#081031] px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10 shadow-sm inline-flex items-center gap-2">
-          <CalendarDays size={16} className="text-[#0065FF] dark:text-[#0EE2E2]" />
-          <span className="text-xs font-bold text-slate-600 dark:text-slate-300 capitalize">{today}</span>
-        </div>
+      {/* 1. CONTENEUR NAVIGATION GAUCHE (Fixé à 20px du bord sur Desktop) */}
+      <div className="hidden lg:flex fixed left-[20px] top-32 w-[260px] xl:w-[280px] h-[calc(100vh-160px)] bg-white dark:bg-[#081031] rounded-[2rem] p-6 border border-slate-200 dark:border-white/10 shadow-lg flex-col z-10">
+        <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6 pl-2">Navigation</h2>
+        <nav className="space-y-1 flex-1 overflow-y-auto hide-scrollbar">
+          {adminMenu.map(item => (
+            <Link key={item.name} href={item.path} className="flex items-center gap-4 px-4 py-4 rounded-2xl font-bold text-sm text-[#081031] dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] transition-all group">
+              <span className="text-slate-400 group-hover:text-[#0065FF] dark:group-hover:text-[#0EE2E2] group-hover:scale-110 transition-all">
+                {item.icon}
+              </span>
+              {item.name}
+            </Link>
+          ))}
+        </nav>
       </div>
 
-      {/* Cartes de statistiques rapides */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 lg:gap-6">
-        <StatCard title="Licenciés Actifs" value="307" desc="+12 ce mois-ci" icon={<Users size={24} />} color="bg-blue-500" />
-        <StatCard title="Tournois & Promobad" value="3" desc="En préparation" icon={<Trophy size={24} />} color="bg-[#F72585]" />
-        <StatCard title="Staff & Bénévoles" value="24" desc="Membres enregistrés" icon={<Heart size={24} />} color="bg-[#9333EA]" />
-        <StatCard title="Prochain Match" value="J-4" desc="Nationale 1 vs Chambly" icon={<TrendingUp size={24} />} color="bg-[#0EE2E2]" textColor="text-[#081031]" />
+      {/* NAVIGATION MOBILE (Visible uniquement sur petits écrans) */}
+      <div className="lg:hidden bg-white dark:bg-[#081031] rounded-[2rem] p-6 border border-slate-200 dark:border-white/10 shadow-sm mb-8">
+        <h2 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-5 pl-2">Navigation</h2>
+        <nav className="grid grid-cols-2 gap-2">
+          {adminMenu.map(item => (
+            <Link key={item.name} href={item.path} className="flex items-center gap-2 px-3 py-3 rounded-xl font-bold text-xs text-[#081031] dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+              <span className="text-slate-400">{item.icon}</span>
+              {item.name}
+            </Link>
+          ))}
+        </nav>
       </div>
 
-      {/* Disposition en 2 colonnes : Actions Rapides + Activité */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-10">
+      {/* 2. CONTENU CENTRAL (Décalé à droite pour laisser la place au menu) */}
+      <div className="flex-1 w-full lg:pl-[300px] xl:pl-[320px] space-y-10">
         
-        {/* COLONNE GAUCHE : Actions Rapides */}
-        <div className="lg:col-span-2">
+        {/* En-tête avec Date et Profil */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 dark:border-white/10 pb-6">
+          <div className="flex items-center gap-5">
+            <Link href="/admin/profil" className="relative group shrink-0">
+              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-[#0065FF] dark:border-[#0EE2E2] shadow-lg bg-slate-200 dark:bg-[#081031] flex items-center justify-center text-xl font-black text-slate-500 dark:text-slate-400 group-hover:scale-105 transition-transform duration-300">
+                {session?.user?.image ? (
+                  <img src={session.user.image} alt="Profil" className="w-full h-full object-cover" />
+                ) : (
+                  firstName.charAt(0).toUpperCase()
+                )}
+              </div>
+              <div className="absolute bottom-0 -right-1 bg-[#081031] dark:bg-white text-white dark:text-[#081031] p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-md border-2 border-white dark:border-[#040817]">
+                <Settings size={12} />
+              </div>
+            </Link>
+
+            <div>
+              <h1 className="text-3xl lg:text-4xl font-[900] italic uppercase text-[#081031] dark:text-white mb-1 leading-tight pt-2">
+                Bonjour <span className="text-[#0065FF] dark:text-[#0EE2E2]">{firstName}</span>
+              </h1>
+              <p className="text-slate-500 dark:text-slate-400 font-bold">Bienvenue sur le centre de contrôle du club.</p>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-[#081031] px-4 py-2 rounded-xl border border-slate-200 dark:border-white/10 shadow-sm inline-flex items-center gap-2">
+            <CalendarDays size={16} className="text-[#0065FF] dark:text-[#0EE2E2]" />
+            <span className="text-xs font-bold text-slate-600 dark:text-slate-300 capitalize">{today}</span>
+          </div>
+        </div>
+
+        {/* Cartes de statistiques rapides (3 cartes maintenant) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6">
+          <StatCard title="Licenciés Actifs" value="307" desc="+12 ce mois-ci" icon={<Users size={24} />} color="bg-blue-500" />
+          <StatCard title="Tournois & Promobad" value="3" desc="En préparation" icon={<Trophy size={24} />} color="bg-[#F72585]" />
+          <StatCard title="Prochain Match" value="J-4" desc="Nationale 1 vs Chambly" icon={<TrendingUp size={24} />} color="bg-[#0EE2E2]" textColor="text-[#081031]" />
+        </div>
+
+        {/* ACCÈS RAPIDE (4 cartes alignées) */}
+        <div>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-[900] uppercase text-[#081031] dark:text-white italic">Actions Rapides</h2>
+            <h2 className="text-xl font-[900] uppercase text-[#081031] dark:text-white italic">Accès Rapide</h2>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
             <QuickActionCard 
-              href="/admin/score"
-              icon={<Trophy size={24} />}
-              title="Mettre à jour le Score"
-              desc="Modifier le Live Score affiché en page d'accueil."
-              color="text-[#0065FF] dark:text-[#0EE2E2]"
-              bgHover="hover:border-[#0065FF] dark:hover:border-[#0EE2E2]"
+              href="/admin/score" 
+              icon={<Trophy size={24} />} 
+              title="Live Score" 
+              desc="Mettre à jour le score en direct." 
+              color="text-[#0065FF]" 
+              bgHover="hover:border-[#0065FF]" 
             />
             <QuickActionCard 
-              href="/admin/news"
-              icon={<Newspaper size={24} />}
-              title="Rédiger un Article"
-              desc="Publier une nouvelle actualité ou un résultat."
-              color="text-[#0065FF] dark:text-[#0EE2E2]"
-              bgHover="hover:border-[#0065FF] dark:hover:border-[#0EE2E2]"
+              href="/admin/tournois" 
+              icon={<Trophy size={24} />} 
+              title="Tournois" 
+              desc="Tournois officiels et Promobad." 
+              color="text-[#F72585]" 
+              bgHover="hover:border-[#F72585]" 
             />
             <QuickActionCard 
-              href="/admin/tournois"
-              icon={<Trophy size={24} />}
-              title="Gérer les Tournois"
-              desc="Modifier la Petite Plume, Grande Plume, etc."
-              color="text-[#F72585]"
-              bgHover="hover:border-[#F72585]"
+              href="/admin/board" 
+              icon={<Briefcase size={24} />} 
+              title="Bureau & CRs" 
+              desc="Comptes rendus et documents." 
+              color="text-[#0EE2E2]" 
+              bgHover="hover:border-[#0EE2E2]" 
             />
             <QuickActionCard 
-              href="/admin/equipe"
-              icon={<Users size={24} />}
-              title="Gérer le Staff"
-              desc="Ajouter un entraîneur ou un bénévole."
-              color="text-[#9333EA]"
-              bgHover="hover:border-[#9333EA]"
+              href="/admin/settings" 
+              icon={<Settings size={24} />} 
+              title="Paramètres" 
+              desc="Configuration générale du club." 
+              color="text-slate-500" 
+              bgHover="hover:border-slate-500" 
             />
           </div>
         </div>
 
-        {/* COLONNE DROITE : Rappels / Activité */}
-        <div className="bg-white dark:bg-[#081031] rounded-[2rem] p-6 border border-slate-200 dark:border-white/10 shadow-sm flex flex-col h-full">
-          <h2 className="text-lg font-[900] uppercase text-[#081031] dark:text-white mb-6 flex items-center gap-2 italic">
-            <AlertCircle className="text-orange-500" size={20} /> À ne pas oublier
+        {/* À NE PAS OUBLIER (En pleine largeur en bas) */}
+        <div className="bg-white dark:bg-[#081031] rounded-[2rem] p-6 lg:p-8 border border-slate-200 dark:border-white/10 shadow-sm flex flex-col">
+          <h2 className="text-xl font-[900] uppercase text-[#081031] dark:text-white mb-8 flex items-center gap-3 italic">
+            <AlertCircle className="text-orange-500" size={24} /> À ne pas oublier
           </h2>
           
-          <div className="space-y-4 flex-1">
-            <div className="p-4 rounded-xl bg-orange-50 dark:bg-orange-500/10 border border-orange-100 dark:border-orange-500/20">
-              <h3 className="text-sm font-bold text-[#081031] dark:text-white mb-1">CR Assemblée Générale</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 font-medium">Le document PDF de la dernière AG doit être uploadé.</p>
-              <Link href="/admin/board" className="text-xs font-black text-orange-600 hover:text-orange-700 uppercase tracking-wider flex items-center gap-1">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="p-6 rounded-2xl bg-orange-50 dark:bg-orange-500/10 border border-orange-100 dark:border-orange-500/20 flex flex-col justify-between">
+              <div>
+                <h3 className="text-base font-black text-[#081031] dark:text-white mb-2">CR Assemblée Générale</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-6">Le document PDF de la dernière AG doit être uploadé pour le rendre accessible aux adhérents.</p>
+              </div>
+              <Link href="/admin/board" className="text-xs font-black text-orange-600 hover:text-orange-700 uppercase tracking-widest flex items-center gap-2 w-fit bg-orange-100 dark:bg-orange-500/20 px-4 py-2 rounded-xl transition-colors">
                 Uploader le fichier <ChevronRight size={14} />
               </Link>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-16 h-16 bg-[#0EE2E2] rounded-full blur-[30px] opacity-20"></div>
-              <h3 className="text-sm font-bold text-[#081031] dark:text-white mb-1 flex items-center gap-2">
-                <Clock size={14} className="text-[#0065FF] dark:text-[#0EE2E2]" /> Prochain Événement
-              </h3>
-              <p className="text-xs font-black text-[#0065FF] dark:text-[#0EE2E2] mb-1 uppercase tracking-tight">Rencontre N1 vs Chambly</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Samedi prochain à 16h00. N'oubliez pas de mettre à jour le Live Score le jour J.</p>
+            <div className="p-6 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10 relative overflow-hidden group flex flex-col justify-between">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#0EE2E2] rounded-full blur-[50px] opacity-20 transition-opacity group-hover:opacity-30"></div>
+              <div className="relative z-10">
+                <h3 className="text-sm font-bold text-[#081031] dark:text-white mb-2 flex items-center gap-2">
+                  <Clock size={16} className="text-[#0065FF] dark:text-[#0EE2E2]" /> Prochain Événement
+                </h3>
+                <p className="text-lg font-black text-[#0065FF] dark:text-[#0EE2E2] mb-2 uppercase tracking-tight">Rencontre N1 vs Chambly</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Samedi prochain à 16h00. N'oubliez pas de mettre à jour le Live Score le jour J.</p>
+              </div>
             </div>
           </div>
           
-          <Link href="/admin/planning" className="mt-6 w-full py-3 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2">
-            Voir le planning complet
-          </Link>
+          <div className="pt-8 mt-4 border-t border-slate-100 dark:border-white/10">
+            <Link href="/admin/events" className="w-full py-4 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2">
+              Voir le calendrier complet
+            </Link>
+          </div>
         </div>
 
       </div>
@@ -152,14 +220,14 @@ export default function AdminDashboard() {
 // Sous-composant pour les cartes Actions Rapides
 const QuickActionCard = ({ href, icon, title, desc, color, bgHover }) => (
   <Link href={href}>
-    <div className={`group p-6 bg-white dark:bg-[#081031] border border-slate-200 dark:border-white/10 rounded-2xl transition-all cursor-pointer shadow-sm hover:shadow-md h-full flex flex-col justify-center ${bgHover}`}>
+    <div className={`group p-6 bg-white dark:bg-[#081031] border border-slate-200 dark:border-white/10 rounded-2xl transition-all cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-1 h-full flex flex-col justify-center ${bgHover}`}>
       <div className={`w-12 h-12 bg-slate-50 dark:bg-white/5 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform ${color}`}>
         {icon}
       </div>
-      <h3 className="font-[900] text-sm lg:text-base text-[#081031] dark:text-white uppercase mb-1 leading-tight pt-1">
+      <h3 className="font-[900] text-base text-[#081031] dark:text-white uppercase mb-2 leading-tight pt-1">
         {title}
       </h3>
-      <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 mt-auto leading-relaxed">
+      <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-auto leading-relaxed">
         {desc}
       </p>
     </div>
@@ -169,16 +237,15 @@ const QuickActionCard = ({ href, icon, title, desc, color, bgHover }) => (
 // Sous-composant pour les statistiques
 const StatCard = ({ title, value, desc, icon, color, textColor = "text-white" }) => (
   <div className="bg-white dark:bg-[#081031] p-6 rounded-[1.5rem] border border-slate-200 dark:border-white/10 shadow-sm flex items-start gap-4 relative overflow-hidden group">
-    {/* Petit halo lumineux au survol */}
     <div className={`absolute top-0 right-0 w-24 h-24 ${color} rounded-full blur-[40px] opacity-0 group-hover:opacity-10 transition-opacity pointer-events-none`}></div>
     
-    <div className={`w-12 h-12 ${color} ${textColor} rounded-xl flex items-center justify-center shrink-0 shadow-md relative z-10 transition-transform group-hover:scale-105`}>
+    <div className={`w-14 h-14 ${color} ${textColor} rounded-2xl flex items-center justify-center shrink-0 shadow-md relative z-10 transition-transform group-hover:scale-105`}>
       {icon}
     </div>
     <div className="relative z-10">
-      <div className="text-3xl font-[900] italic text-[#081031] dark:text-white leading-none mb-1 pt-1">{value}</div>
+      <div className="text-4xl font-[900] italic text-[#081031] dark:text-white leading-none mb-1.5 pt-1">{value}</div>
       <div className="text-[10px] font-black uppercase tracking-widest text-[#0065FF] dark:text-[#0EE2E2] mb-1">{title}</div>
-      {desc && <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 truncate">{desc}</div>}
+      {desc && <div className="text-xs font-bold text-slate-500 dark:text-slate-400 truncate">{desc}</div>}
     </div>
   </div>
 );

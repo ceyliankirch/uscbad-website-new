@@ -132,8 +132,6 @@ const Navbar = () => {
     localStorage.setItem('theme', newDark ? 'dark' : 'light');
   };
 
-  if (pathname.startsWith('/admin')) return null;
-
   const shouldBeSolid = isScrolled || !hasDarkHero || isMobileMenuOpen;
   const textColor = shouldBeSolid ? 'text-[#081031] dark:text-white' : 'text-white';
   const groupHoverColor = shouldBeSolid ? 'group-hover:text-[#0065FF]' : 'group-hover:text-[#0EE2E2]';
@@ -246,9 +244,13 @@ const Navbar = () => {
                 </div>
                 
                 {/* REDIRECTION DYNAMIQUE SELON LE RÔLE */}
-                {session.user?.role === 'admin' || session.user?.role === 'coach' ? (
+                {session.user?.role === 'admin' ? (
                   <Link href="/admin" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] uppercase">
                     <Shield size={14} /> Espace Admin
+                  </Link>
+                ) : session.user?.role === 'coach' ? (
+                  <Link href="/admin/indivs" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#F72585] uppercase">
+                    <Target size={14} /> Mes Indivs
                   </Link>
                 ) : (
                   <Link href="/mes-indivs" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#F72585] uppercase">
@@ -416,13 +418,21 @@ const Navbar = () => {
               {/* GESTION AUTHENTIFICATION MOBILE (DYNAMIQUE SELON RÔLE) */}
               {status === 'loading' ? null : session ? (
                 <>
-                  {session.user?.role === 'admin' || session.user?.role === 'coach' ? (
+                  {session.user?.role === 'admin' ? (
                     <Link 
                       href="/admin"
                       onClick={() => setIsMobileMenuOpen(false)}
                       className="p-3 text-[#081031] dark:text-slate-300 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] transition-colors flex items-center gap-2 font-bold text-sm uppercase"
                     >
                       <Shield size={20} /> Admin
+                    </Link>
+                  ) : session.user?.role === 'coach' ? (
+                    <Link 
+                      href="/admin/indivs"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="p-3 text-[#081031] dark:text-slate-300 hover:text-[#F72585] transition-colors flex items-center gap-2 font-bold text-sm uppercase"
+                    >
+                      <Target size={20} /> Mes Indivs
                     </Link>
                   ) : (
                     <Link 

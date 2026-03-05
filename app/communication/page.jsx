@@ -150,7 +150,7 @@ export default function CommunicationPage() {
                 <Sparkles size={14} className="text-[#0EE2E2]" /> L'Art du Badminton
               </div>
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-[900] uppercase italic tracking-tighter leading-[0.9] text-white drop-shadow-xl mb-4">
-                LE MUSÉE <span className="text-[#0065FF]">USC</span>
+                LE KIRCH <span className="text-[#0cc9c9]">MUSEUM</span>
               </h1>
               <p className="text-sm lg:text-base font-bold text-slate-300 leading-relaxed">
                 Collection exclusive des visuels du club. Direction Artistique par Ceylian Kirchhoffer.
@@ -249,7 +249,6 @@ export default function CommunicationPage() {
                 <button onClick={handlePrev} className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white hover:bg-[#0065FF] hover:border-transparent transition-all backdrop-blur-md"><ChevronLeft size={24} /></button>
                 <div className="flex items-center gap-6">
                   <div className="flex flex-col items-center">
-                    <span className="text-[10px] font-black uppercase text-[#0065FF] tracking-widest mb-1">Ceylian K.</span>
                     <div className="flex gap-1.5">{galleryItems.map((_, idx) => (<div key={idx} onClick={() => { setActiveIndex(idx); setTilt({x: 0, y:0}); }} className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${activeIndex === idx ? 'w-6 bg-white' : 'w-1.5 bg-white/20 hover:bg-white/50'}`} />))}</div>
                   </div>
                 </div>

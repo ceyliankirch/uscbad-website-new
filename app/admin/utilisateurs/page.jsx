@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Plus, Pencil, Trash2, X, Shield, ShieldAlert, User, Loader2, Save, Mail } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Shield, ShieldAlert, User, Loader2, Save, Mail, Coffee, MapPin, FileText, ChevronDown } from 'lucide-react';
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
@@ -8,6 +8,9 @@ export default function AdminUsersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Nouvel état pour gérer l'ouverture du menu déroulant personnalisé
+  const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -15,6 +18,16 @@ export default function AdminUsersPage() {
     role: 'user', 
     password: '' 
   });
+
+  // Liste des options de rôles pour le custom select
+  const roleOptions = [
+    { value: 'user', label: 'Membre (Accès site basique)', icon: <User size={16}/> },
+    { value: 'coach', label: 'Entraîneur (Accès Indivs & Tournois)', icon: <Shield size={16}/> },
+    { value: 'buvette', label: 'Buvette (Accès gestion buvette)', icon: <Coffee size={16}/> },
+    { value: 'geo', label: 'GEO Tournois (Accès gestion tournois)', icon: <MapPin size={16}/> },
+    { value: 'secretaire', label: 'Secrétaire (Accès gestion secrétariat)', icon: <FileText size={16}/> },
+    { value: 'admin', label: 'Administrateur (Accès Total)', icon: <ShieldAlert size={16}/> },
+  ];
 
   // 1. Récupération des utilisateurs depuis l'API
   const fetchUsers = async () => {
@@ -41,6 +54,7 @@ export default function AdminUsersPage() {
   };
 
   const openModal = (user = null) => {
+    setIsRoleDropdownOpen(false); // On s'assure que le menu est fermé en ouvrant la modale
     if (user) {
       setEditingId(user._id);
       setFormData({ name: user.name, email: user.email, role: user.role, password: '' });
@@ -51,7 +65,10 @@ export default function AdminUsersPage() {
     setIsModalOpen(true);
   };
 
-  const closeModal = () => setIsModalOpen(false);
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setIsRoleDropdownOpen(false);
+  };
 
   // 2. Sauvegarde ou Mise à jour d'un utilisateur
   const handleSubmit = async (e) => {
@@ -110,9 +127,15 @@ export default function AdminUsersPage() {
         return <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400 border border-red-200 dark:border-red-500/20 flex items-center gap-1 w-fit"><ShieldAlert size={12}/> Administrateur</span>;
       case 'coach':
         return <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-[#0065FF]/10 text-[#0065FF] border border-[#0065FF]/20 flex items-center gap-1 w-fit"><Shield size={12}/> Entraîneur</span>;
+      case 'buvette':
+        return <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-[#F72585]/10 text-[#F72585] border border-[#F72585]/20 flex items-center gap-1 w-fit"><Coffee size={12}/> Buvette</span>;
+      case 'geo':
+        return <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-[#9333EA]/10 text-[#9333EA] border border-[#9333EA]/20 flex items-center gap-1 w-fit"><MapPin size={12}/> GEO Tournois</span>;
+      case 'secretaire':
+        return <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-[#0065FF]/10 text-[#0065FF] border border-[#0065FF]/20 flex items-center gap-1 w-fit"><FileText size={12}/> Secrétaire</span>;
       default:
         return <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-slate-400 border border-slate-200 dark:border-white/10 flex items-center gap-1 w-fit"><User size={12}/> Membre</span>;
-    }
+      }
   };
 
   return (
@@ -189,10 +212,11 @@ export default function AdminUsersPage() {
         </div>
       )}
 
+      {/* Le z-[999] force la modale à passer AU-DESSUS de la navbar qui est en z-[100] */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white dark:bg-[#081031] rounded-[2rem] w-full max-w-lg shadow-2xl overflow-hidden">
-            <div className="bg-slate-50 dark:bg-white/5 p-6 border-b border-slate-200 dark:border-white/10 flex justify-between items-center">
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white dark:bg-[#081031] rounded-[2rem] w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh]">
+            <div className="bg-slate-50 dark:bg-white/5 p-6 border-b border-slate-200 dark:border-white/10 flex justify-between items-center rounded-t-[2rem] shrink-0">
               <h2 className="text-xl font-[900] uppercase italic text-[#081031] dark:text-white flex items-center gap-2">
                 <Shield className="text-[#0EE2E2]" size={20} />
                 {editingId ? "Modifier l'accès" : "Nouvel Utilisateur"}
@@ -200,41 +224,82 @@ export default function AdminUsersPage() {
               <button onClick={closeModal} className="p-2 bg-white dark:bg-[#081031] rounded-full text-slate-500 hover:text-red-500 shadow-sm"><X size={16} /></button>
             </div>
             
-            <form onSubmit={handleSubmit} className="p-6 space-y-5">
-              
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Nom complet *</label>
-                <input type="text" name="name" value={formData.name} onChange={handleChange} required className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-[#0EE2E2] outline-none" placeholder="Ex: Jean Admin" />
-              </div>
+            <div className="overflow-y-auto hide-scrollbar p-6">
+              <form onSubmit={handleSubmit} className="space-y-5">
+                
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Nom complet *</label>
+                  <input type="text" name="name" value={formData.name} onChange={handleChange} required className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-[#0EE2E2] outline-none" placeholder="Ex: Jean Admin" />
+                </div>
 
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Adresse Email *</label>
-                <input type="email" name="email" value={formData.email} onChange={handleChange} required className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-[#0EE2E2] outline-none" placeholder="jean@uscreteil.com" />
-              </div>
-              
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Niveau d'accès (Rôle) *</label>
-                <select name="role" value={formData.role} onChange={handleChange} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm font-bold appearance-none focus:ring-2 focus:ring-[#0EE2E2] outline-none">
-                  <option value="user">Membre (Accès site basique)</option>
-                  <option value="coach">Entraîneur (Accès Indivs & Tournois)</option>
-                  <option value="admin">Administrateur (Accès Total)</option>
-                </select>
-              </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Adresse Email *</label>
+                  <input type="email" name="email" value={formData.email} onChange={handleChange} required className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-[#0EE2E2] outline-none" placeholder="jean@uscreteil.com" />
+                </div>
+                
+                {/* === MENU DÉROULANT CUSTOM === */}
+                <div className="space-y-2 relative">
+                  <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Niveau d'accès (Rôle) *</label>
+                  <div className="relative">
+                    <button 
+                      type="button" 
+                      onClick={() => setIsRoleDropdownOpen(!isRoleDropdownOpen)} 
+                      className={`w-full bg-slate-50 dark:bg-[#0f172a] border ${isRoleDropdownOpen ? 'border-[#0EE2E2] ring-2 ring-[#0EE2E2]/20' : 'border-slate-200 dark:border-white/10'} rounded-xl px-4 py-3.5 text-sm font-bold flex justify-between items-center transition-all outline-none`}
+                    >
+                      <span className="flex items-center gap-2 text-[#081031] dark:text-white">
+                        <span className="text-[#0EE2E2]">
+                          {roleOptions.find(opt => opt.value === formData.role)?.icon}
+                        </span>
+                        {roleOptions.find(opt => opt.value === formData.role)?.label}
+                      </span>
+                      <ChevronDown size={16} className={`text-slate-400 transition-transform duration-300 ${isRoleDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
 
-              <div className="space-y-2 pt-2">
-                <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">
-                  {editingId ? "Nouveau mot de passe (Laisser vide pour ne pas changer)" : "Mot de passe initial *"}
-                </label>
-                <input type="password" name="password" value={formData.password} onChange={handleChange} required={!editingId} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-[#0EE2E2] outline-none" placeholder="••••••••" />
-              </div>
-              
-              <div className="pt-6 mt-4 border-t border-slate-100 dark:border-white/10 flex justify-end gap-3">
-                <button type="button" onClick={closeModal} className="px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">Annuler</button>
-                <button type="submit" disabled={isSaving} className="bg-[#0EE2E2] text-[#081031] px-8 py-3 rounded-xl font-black uppercase text-xs tracking-widest flex items-center gap-2 hover:bg-[#0bd1d1] transition-colors shadow-lg shadow-[#0EE2E2]/20 disabled:opacity-50">
-                  {isSaving && <Loader2 size={16} className="animate-spin" />} {editingId ? 'Mettre à jour' : 'Créer le compte'}
-                </button>
-              </div>
-            </form>
+                    {/* La liste déroulante qui s'affiche au clic */}
+                    {isRoleDropdownOpen && (
+                      <div className="absolute top-full left-0 w-full mt-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                        <div className="max-h-60 overflow-y-auto hide-scrollbar py-1">
+                          {roleOptions.map((opt) => (
+                            <div 
+                              key={opt.value} 
+                              onClick={() => {
+                                setFormData({ ...formData, role: opt.value });
+                                setIsRoleDropdownOpen(false);
+                              }} 
+                              className={`px-4 py-3 text-sm font-bold cursor-pointer transition-colors flex items-center gap-3 ${
+                                formData.role === opt.value 
+                                  ? 'bg-[#0EE2E2]/10 text-[#0EE2E2] border-l-2 border-[#0EE2E2]' 
+                                  : 'hover:bg-slate-50 dark:hover:bg-white/5 text-slate-600 dark:text-slate-300 border-l-2 border-transparent'
+                              }`}
+                            >
+                              <span className={formData.role === opt.value ? 'text-[#0EE2E2]' : 'text-slate-400'}>
+                                {opt.icon}
+                              </span>
+                              {opt.label}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-2 pt-2">
+                  <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">
+                    {editingId ? "Nouveau mot de passe (Laisser vide pour ne pas changer)" : "Mot de passe initial *"}
+                  </label>
+                  <input type="password" name="password" value={formData.password} onChange={handleChange} required={!editingId} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-[#0EE2E2] outline-none" placeholder="••••••••" />
+                </div>
+                
+                <div className="pt-6 mt-4 border-t border-slate-100 dark:border-white/10 flex justify-end gap-3">
+                  <button type="button" onClick={closeModal} className="px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors">Annuler</button>
+                  <button type="submit" disabled={isSaving} className="bg-[#0EE2E2] text-[#081031] px-8 py-3 rounded-xl font-black uppercase text-xs tracking-widest flex items-center gap-2 hover:bg-[#0bd1d1] transition-colors shadow-lg shadow-[#0EE2E2]/20 disabled:opacity-50">
+                    {isSaving && <Loader2 size={16} className="animate-spin" />} {editingId ? 'Mettre à jour' : 'Créer le compte'}
+                  </button>
+                </div>
+              </form>
+            </div>
+
           </div>
         </div>
       )}

@@ -249,7 +249,7 @@ const Navbar = () => {
                     <Shield size={14} /> Espace Admin
                   </Link>
                 ) : session.user?.role === 'coach' ? (
-                  <Link href="/admin/indivs" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#F72585] uppercase">
+                  <Link href="/admin/mes-indivs" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#F72585] uppercase">
                     <Target size={14} /> Mes Indivs
                   </Link>
                 ) : (

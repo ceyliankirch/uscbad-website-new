@@ -42,7 +42,7 @@ export default function PublicPlanningPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#040817] pt-32 lg:pt-48 pb-24 px-4 sm:px-6 font-['Montserrat'] transition-colors">
-      <div className="max-w-[1600px] mx-auto">
+      <div className="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-16 xl:px-20">
         
         {/* HEADER SECTION */}
         <div className="mb-12 text-center">

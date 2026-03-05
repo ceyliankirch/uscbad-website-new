@@ -3,7 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import dbConnect from "@/lib/dbConnect";
 import User from "@/models/User";
 
-const authOptions = {
+export const authOptions = {
   providers: [
     CredentialsProvider({
       name: "Identifiants",
@@ -12,22 +12,32 @@ const authOptions = {
         password: { label: "Mot de passe", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+        console.log("1. Tentative de connexion avec:", credentials?.email);
+        
+        if (!credentials?.email || !credentials?.password) {
+          console.log("2. Erreur: Email ou mot de passe manquant");
+          return null;
+        }
 
         try {
           await dbConnect();
+          console.log("3. Base de données connectée");
+          
           const user = await User.findOne({ email: credentials.email });
+          console.log("4. Utilisateur trouvé en base:", user ? "Oui" : "Non");
 
           if (user && user.password === credentials.password) {
+            console.log("5. Mot de passe correct. Connexion acceptée.");
+            // On s'assure de renvoyer l'ID sous forme de chaîne de caractères
             return { 
               id: user._id.toString(), 
               name: user.name, 
               email: user.email, 
-              role: user.role,
-              image: user.image // <-- 1. ON RÉCUPÈRE L'IMAGE DE LA BDD
+              role: user.role
             };
           }
 
+          console.log("6. Erreur: Mot de passe incorrect");
           return null;
         } catch (error) {
           console.error("Erreur lors de l'authentification :", error);
@@ -38,37 +48,52 @@ const authOptions = {
   ],
   callbacks: {
     async jwt({ token, user, trigger, session }) {
-      // <-- 2. GESTION DE LA MISE À JOUR (Quand on clique sur Enregistrer)
+      // 1. MISE À JOUR DEPUIS LA PAGE PROFIL
       if (trigger === "update" && session?.user) {
         token.name = session.user.name;
         token.email = session.user.email;
-        token.image = session.user.image; // On met à jour l'image dans le token
+        // On ne met pas l'image dans le token pour éviter l'erreur 431
       }
 
-      // <-- 3. LORS DE LA CONNEXION INITIALE
+      // 2. LORS DE LA CONNEXION (Premier appel, "user" est défini)
       if (user) {
-        token.role = user.role;
         token.id = user.id;
-        token.image = user.image; // On injecte l'image dans le token
+        token.role = user.role;
       }
+      
       return token;
     },
+    
     async session({ session, token }) {
-      if (session?.user) {
-        session.user.role = token.role;
+      // 3. CONSTRUCTION DE LA SESSION POUR LE CLIENT
+      if (session?.user && token?.id) {
         session.user.id = token.id;
-        session.user.image = token.image; // <-- 4. ON EXPOSE L'IMAGE DANS LA SESSION
+        session.user.role = token.role;
+        
+        try {
+          // On va chercher l'image fraîche depuis la base de données
+          // Cela permet d'avoir toujours la dernière image sans alourdir le cookie (token)
+          await dbConnect();
+          const userDb = await User.findById(token.id).select('image');
+          session.user.image = userDb?.image || null;
+        } catch (error) {
+          console.error("Erreur lors de la récupération de l'image de profil :", error);
+          session.user.image = null;
+        }
       }
       return session;
     }
   },
   pages: {
     signIn: '/login',
+    error: '/login', // Force NextAuth à renvoyer les erreurs vers TA page
   },
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // Force la durée à 30 jours
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || "une_cle_secrete_de_secours_si_env_manquant", // Sécurité anti-crash
+  debug: process.env.NODE_ENV === 'development', // Affiche les vraies erreurs dans ton terminal
 };
 
 const handler = NextAuth(authOptions);

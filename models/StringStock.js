@@ -10,7 +10,4 @@ const StringStockSchema = new mongoose.Schema({
   cost: { type: Number, default: 0 }
 }, { timestamps: true });
 
-// Déclaration séparée pour satisfaire l'analyse statique de Turbopack
-const StringStock = mongoose.models.StringStock || mongoose.model('StringStock', StringStockSchema);
-
-export default StringStock;
+export default mongoose.models.StringStock || mongoose.model('StringStock', StringStockSchema);

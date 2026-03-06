@@ -18,7 +18,8 @@ import {
   Target,
   Activity,
   ChartArea,
-  Heart
+  Heart,
+  Scissors
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -72,6 +73,9 @@ export default function AdminDashboard() {
     { name: 'Tournois', path: '/admin/tournois', icon: <Medal size={20} /> },
     { name: 'Communication', path: '/admin/communication', icon: <ChartArea size={20} /> },
     { name: 'Pôle Féminin', path: '/admin/pole-feminin', icon: <Heart size={20} /> },
+    { name: 'Espace Entraîneurs', path: '/admin/entrainements', icon: <Settings size={20} /> },
+    { name: 'Espace Buvette', path: '/admin/buvette', icon: <Briefcase size={20} /> },
+    { name: 'Espace cordeurs', path: '/admin/cordage', icon: <Scissors size={20} /> },
   ]
 
   return (

@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { ChevronRight, ChevronDown, Menu, X, Sun, Moon, User, ArrowRight, LogOut, Shield, Target } from 'lucide-react';
+import { ChevronRight, ChevronDown, Menu, X, Sun, Moon, User, ArrowRight, LogOut, Shield, Target, Scissors, Dumbbell, Coffee, MapPin, FileText } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useSession, signIn, signOut } from 'next-auth/react';
@@ -237,28 +237,53 @@ const Navbar = () => {
               </button>
               
               {/* Menu profil */}
-              <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-[#0f172a] rounded-2xl shadow-2xl border border-slate-100 dark:border-white/10 opacity-0 invisible group-hover/auth:opacity-100 group-hover/auth:visible transition-all duration-300 transform translate-y-2 group-hover/auth:translate-y-0 py-2 overflow-hidden">
+              <div className="absolute top-full right-0 mt-2 w-56 bg-white dark:bg-[#0f172a] rounded-2xl shadow-2xl border border-slate-100 dark:border-white/10 opacity-0 invisible group-hover/auth:opacity-100 group-hover/auth:visible transition-all duration-300 transform translate-y-2 group-hover/auth:translate-y-0 py-2 overflow-hidden">
                 <div className="px-4 py-3 border-b border-slate-100 dark:border-white/5 mb-1">
                   <p className="text-xs font-bold text-[#081031] dark:text-white truncate">{session.user?.name || 'Utilisateur'}</p>
                   <p className="text-[10px] text-slate-500 truncate">{session.user?.email}</p>
                 </div>
                 
-                {/* REDIRECTION DYNAMIQUE SELON LE RÔLE */}
-                {session.user?.role === 'admin' ? (
-                  <Link href="/admin" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] uppercase">
-                    <Shield size={14} /> Espace Admin
-                  </Link>
-                ) : session.user?.role === 'coach' ? (
-                  <Link href="/admin/mes-indivs" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#F72585] uppercase">
-                    <Target size={14} /> Mes Indivs
-                  </Link>
-                ) : (
-                  <Link href="/mes-indivs" className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#F72585] uppercase">
-                    <Target size={14} /> Mes Indivs
-                  </Link>
-                )}
+                {/* AFFICHAGE CONDITIONNEL DES DASHBOARDS SELON LES RÔLES */}
+                {(() => {
+                  const userRoles = session.user?.roles || (session.user?.role ? [session.user.role] : ['user']);
+                  
+                  return (
+                    <div className="max-h-[60vh] overflow-y-auto hide-scrollbar">
+                      {userRoles.includes('admin') && (
+                        <Link href="/admin" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-red-500 transition-colors uppercase">
+                          <Shield size={14} /> Espace Admin
+                        </Link>
+                      )}
+                      {userRoles.includes('coach') && (
+                        <Link href="/admin/entrainements" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#00E676] transition-colors uppercase">
+                          <Dumbbell size={14} /> Entraînements
+                        </Link>
+                      )}
+                      {userRoles.includes('indiv') && (
+                        <Link href="/admin/mes-indivs" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#F72585] transition-colors uppercase">
+                          <Target size={14} /> Gestion Indivs
+                        </Link>
+                      )}
+                      {userRoles.includes('cordeur') && (
+                        <Link href="/admin/cordage" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#10B981] transition-colors uppercase">
+                          <Scissors size={14} /> Atelier Recordage
+                        </Link>
+                      )}
+                      {userRoles.includes('buvette') && (
+                        <Link href="/admin/buvette" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#FFD500] transition-colors uppercase">
+                          <Coffee size={14} /> Gestion Buvette
+                        </Link>
+                      )}
+                      {userRoles.includes('user') && (
+                        <Link href="/admin/mes-indivs" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] transition-colors uppercase border-t border-slate-100 dark:border-white/5 mt-1 pt-3">
+                          <User size={14} /> Espace Joueur
+                        </Link>
+                      )}
+                    </div>
+                  );
+                })()}
 
-                <button onClick={() => signOut({ callbackUrl: '/' })} className="w-full flex items-center gap-2 text-left px-4 py-2 text-xs font-bold text-red-500 hover:bg-slate-50 dark:hover:bg-white/5 uppercase">
+                <button onClick={() => signOut({ callbackUrl: '/' })} className="w-full flex items-center gap-3 text-left px-4 py-3 mt-1 text-xs font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-red-500 uppercase border-t border-slate-100 dark:border-white/5 transition-colors">
                   <LogOut size={14} /> Déconnexion
                 </button>
               </div>
@@ -415,41 +440,35 @@ const Navbar = () => {
                 </button>
               )}
 
-              {/* GESTION AUTHENTIFICATION MOBILE (DYNAMIQUE SELON RÔLE) */}
+              {/* GESTION AUTHENTIFICATION MOBILE (DYNAMIQUE SELON RÔLES) */}
               {status === 'loading' ? null : session ? (
-                <>
-                  {session.user?.role === 'admin' ? (
-                    <Link 
-                      href="/admin"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="p-3 text-[#081031] dark:text-slate-300 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] transition-colors flex items-center gap-2 font-bold text-sm uppercase"
-                    >
-                      <Shield size={20} /> Admin
-                    </Link>
-                  ) : session.user?.role === 'coach' ? (
-                    <Link 
-                      href="/admin/indivs"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="p-3 text-[#081031] dark:text-slate-300 hover:text-[#F72585] transition-colors flex items-center gap-2 font-bold text-sm uppercase"
-                    >
-                      <Target size={20} /> Mes Indivs
-                    </Link>
-                  ) : (
-                    <Link 
-                      href="/mes-indivs"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="p-3 text-[#081031] dark:text-slate-300 hover:text-[#F72585] transition-colors flex items-center gap-2 font-bold text-sm uppercase"
-                    >
-                      <Target size={20} /> Mes Indivs
-                    </Link>
-                  )}
-                  <button 
-                    onClick={() => { setIsMobileMenuOpen(false); signOut({ callbackUrl: '/' }); }}
-                    className="p-3 text-red-500 hover:text-red-600 transition-colors flex items-center gap-2 font-bold text-sm uppercase"
-                  >
+                <div className="flex flex-col gap-2 w-full mt-4">
+                  {(() => {
+                    const userRoles = session.user?.roles || (session.user?.role ? [session.user.role] : ['user']);
+                    return (
+                      <>
+                        {userRoles.includes('admin') && (
+                          <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)} className="p-3 text-[#081031] dark:text-slate-300 hover:text-red-500 transition-colors flex items-center gap-2 font-bold text-sm uppercase"><Shield size={20} /> Admin</Link>
+                        )}
+                        {userRoles.includes('coach') && (
+                          <Link href="/admin/entrainements" onClick={() => setIsMobileMenuOpen(false)} className="p-3 text-[#081031] dark:text-slate-300 hover:text-[#00E676] transition-colors flex items-center gap-2 font-bold text-sm uppercase"><Dumbbell size={20} /> Entraînements</Link>
+                        )}
+                        {userRoles.includes('indiv') && (
+                          <Link href="/admin/mes-indivs" onClick={() => setIsMobileMenuOpen(false)} className="p-3 text-[#081031] dark:text-slate-300 hover:text-[#F72585] transition-colors flex items-center gap-2 font-bold text-sm uppercase"><Target size={20} /> Indivs</Link>
+                        )}
+                        {userRoles.includes('cordeur') && (
+                          <Link href="/admin/cordage" onClick={() => setIsMobileMenuOpen(false)} className="p-3 text-[#081031] dark:text-slate-300 hover:text-[#10B981] transition-colors flex items-center gap-2 font-bold text-sm uppercase"><Scissors size={20} /> Recordage</Link>
+                        )}
+                        {userRoles.includes('user') && (
+                          <Link href="/mes-indivs" onClick={() => setIsMobileMenuOpen(false)} className="p-3 text-[#081031] dark:text-slate-300 hover:text-[#0065FF] transition-colors flex items-center gap-2 font-bold text-sm uppercase"><User size={20} /> Espace Joueur</Link>
+                        )}
+                      </>
+                    );
+                  })()}
+                  <button onClick={() => { setIsMobileMenuOpen(false); signOut({ callbackUrl: '/' }); }} className="p-3 text-red-500 hover:text-red-600 transition-colors flex items-center gap-2 font-bold text-sm uppercase border-t border-slate-100 dark:border-white/10 mt-2">
                     <LogOut size={20} /> Sortir
                   </button>
-                </>
+                </div>
               ) : (
                 <button 
                   onClick={() => { setIsMobileMenuOpen(false); signIn(); }}

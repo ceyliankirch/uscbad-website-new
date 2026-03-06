@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/mongodb';
-import Planning from '@/models/Creneaux';
+import Planning from '@/models/Creneau';
 
 // RÉCUPÉRER TOUS LES CRÉNEAUX
 export async function GET() {

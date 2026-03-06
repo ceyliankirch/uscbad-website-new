@@ -2,77 +2,98 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import User from '@/models/User';
 
+// PUT : Mettre à jour un utilisateur (y compris ses rôles multiples)
 export async function PUT(req, { params }) {
   try {
     await dbConnect();
-    const { id } = await params;
-    const body = await req.json();
+    
+    // Obligatoire dans Next.js 15+
+    const resolvedParams = await params;
+    const id = resolvedParams?.id;
 
-    // CAS 1 : MISE À JOUR DU MOT DE PASSE
-    if (body.currentPassword && body.newPassword) {
-      const user = await User.findById(id);
-      if (!user) {
-        return NextResponse.json({ success: false, error: 'Utilisateur introuvable.' }, { status: 404 });
-      }
-
-      // Vérification du mot de passe actuel (En production : utilisez bcrypt.compare)
-      if (user.password !== body.currentPassword) {
-        return NextResponse.json({ success: false, error: 'Le mot de passe actuel est incorrect.' }, { status: 400 });
-      }
-
-      // Mise à jour (En production : utilisez bcrypt.hash(body.newPassword, 10))
-      user.password = body.newPassword;
-      await user.save();
-
-      return NextResponse.json({ success: true, message: 'Mot de passe mis à jour avec succès.' });
+    if (!id) {
+      return NextResponse.json({ success: false, error: "ID de l'utilisateur manquant." }, { status: 400 });
     }
 
-    // CAS 2 : MISE À JOUR DU PROFIL (Nom, Email, Photo de profil)
+    const body = await req.json();
+
+    // 1. Changement de mot de passe par l'utilisateur lui-même (depuis Mon Profil)
+    if (body.currentPassword && body.newPassword) {
+      const user = await User.findById(id);
+      if (!user) return NextResponse.json({ success: false, error: "Utilisateur non trouvé" }, { status: 404 });
+      
+      if (user.password !== body.currentPassword) {
+        return NextResponse.json({ success: false, error: "Mot de passe actuel incorrect" }, { status: 400 });
+      }
+      
+      user.password = body.newPassword;
+      await user.save();
+      return NextResponse.json({ success: true, message: "Mot de passe mis à jour" });
+    }
+
+    // 2. Mise à jour des informations depuis le panel Admin
     const updateData = {
       name: body.name,
       email: body.email,
     };
 
-    // On n'écrase l'image que si elle est envoyée dans la requête
+    // Si l'admin force un nouveau mot de passe
+    if (body.password) {
+      updateData.password = body.password;
+    }
+
+    // Sauvegarde de l'image (photo de profil)
     if (body.image !== undefined) {
       updateData.image = body.image;
     }
-    
-    // On met à jour le rôle uniquement si c'est un Admin qui modifie (depuis la page gestion utilisateurs)
-    if (body.role) {
-      updateData.role = body.role;
+
+    // SAUVEGARDE DES RÔLES COCHÉS (Le tableau de rôles)
+    if (body.roles) {
+      updateData.roles = body.roles;
+    } else if (body.role) {
+      // Fallback de sécurité au cas où l'ancien format texte est envoyé
+      updateData.roles = [body.role];
     }
 
     const updatedUser = await User.findByIdAndUpdate(
       id,
       { $set: updateData },
-      { returnDocument: 'after', runValidators: true }
-    ).select('-password'); // On exclut le mot de passe de la réponse
+      { returnDocument: 'after' }
+    ).select('-password'); // On exclut le mot de passe de la réponse pour la sécurité
 
     if (!updatedUser) {
-      return NextResponse.json({ success: false, error: 'Utilisateur introuvable.' }, { status: 404 });
+      return NextResponse.json({ success: false, error: "Utilisateur introuvable lors de la mise à jour." }, { status: 404 });
     }
 
     return NextResponse.json({ success: true, data: updatedUser });
   } catch (error) {
-    console.error("Erreur API PUT User :", error);
+    console.error("Erreur PUT User:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
+// DELETE : Supprimer un utilisateur
 export async function DELETE(req, { params }) {
   try {
     await dbConnect();
-    const { id } = await params;
     
+    // Obligatoire dans Next.js 15+
+    const resolvedParams = await params;
+    const id = resolvedParams?.id;
+
+    if (!id) {
+      return NextResponse.json({ success: false, error: "ID de l'utilisateur manquant." }, { status: 400 });
+    }
+
     const deletedUser = await User.findByIdAndDelete(id);
     
     if (!deletedUser) {
-      return NextResponse.json({ success: false, error: 'Utilisateur introuvable.' }, { status: 404 });
+        return NextResponse.json({ success: false, error: "Utilisateur déjà supprimé ou introuvable." }, { status: 404 });
     }
-
-    return NextResponse.json({ success: true });
+    
+    return NextResponse.json({ success: true, message: "Utilisateur supprimé avec succès." });
   } catch (error) {
+    console.error("Erreur DELETE User:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
-}
+} 

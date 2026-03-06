@@ -33,7 +33,7 @@ export const authOptions = {
               id: user._id.toString(), 
               name: user.name, 
               email: user.email, 
-              role: user.role
+              roles: user.roles && user.roles.length > 0 ? user.roles : (user.role ? [user.role] : ['user']) // Rétrocompatibilité
             };
           }
 
@@ -58,7 +58,7 @@ export const authOptions = {
       // 2. LORS DE LA CONNEXION (Premier appel, "user" est défini)
       if (user) {
         token.id = user.id;
-        token.role = user.role;
+        token.roles = user.roles;
       }
       
       return token;
@@ -68,7 +68,7 @@ export const authOptions = {
       // 3. CONSTRUCTION DE LA SESSION POUR LE CLIENT
       if (session?.user && token?.id) {
         session.user.id = token.id;
-        session.user.role = token.role;
+        session.user.roles = token.roles || ['user'];
         
         try {
           // On va chercher l'image fraîche depuis la base de données

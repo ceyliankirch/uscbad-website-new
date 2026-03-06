@@ -150,8 +150,8 @@ const Navbar = () => {
           />
         </Link>
 
-        {/* LIENS DESKTOP */}
-        <div className="hidden lg:flex absolute left-1/2 -translate-x-1/2 space-x-10 items-center">
+        {/* LIENS DESKTOP (Affichés seulement si >= 1440px) */}
+        <div className="hidden min-[1440px]:flex absolute left-1/2 -translate-x-1/2 space-x-10 items-center">
           {navLinks.map((link) => (
             <div key={link.name} className="relative group py-2">
               <div className={`flex items-center gap-1 text-sm font-[900] uppercase cursor-pointer transition-colors ${textColor} ${groupHoverColor}`}>
@@ -215,8 +215,8 @@ const Navbar = () => {
           ))}
         </div>
 
-        {/* ACTIONS DESKTOP */}
-        <div className="hidden lg:flex items-center gap-3 z-10">
+        {/* ACTIONS DESKTOP (Affichées seulement si >= 1440px) */}
+        <div className="hidden min-[1440px]:flex items-center gap-3 z-10">
           <Link href="/inscriptions" className={`px-7 py-2.5 rounded-full font-[900] text-xs transition-all flex items-center gap-2 uppercase tracking-normal group ${
             shouldBeSolid
               ? 'bg-[#081031] text-white hover:bg-[#0065FF] dark:bg-white dark:text-[#081031] dark:hover:bg-[#0065FF]'
@@ -246,6 +246,7 @@ const Navbar = () => {
                 {/* AFFICHAGE CONDITIONNEL DES DASHBOARDS SELON LES RÔLES */}
                 {(() => {
                   const userRoles = session.user?.roles || (session.user?.role ? [session.user.role] : ['user']);
+                  const hasAdminRoles = userRoles.some(r => r !== 'user');
                   
                   return (
                     <div className="max-h-[60vh] overflow-y-auto hide-scrollbar">
@@ -260,7 +261,7 @@ const Navbar = () => {
                         </Link>
                       )}
                       {userRoles.includes('indiv') && (
-                        <Link href="/admin/mes-indivs" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#F72585] transition-colors uppercase">
+                        <Link href="/admin/indivs" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#F72585] transition-colors uppercase">
                           <Target size={14} /> Gestion Indivs
                         </Link>
                       )}
@@ -274,11 +275,10 @@ const Navbar = () => {
                           <Coffee size={14} /> Gestion Buvette
                         </Link>
                       )}
-                      {userRoles.includes('user') && (
-                        <Link href="/admin/mes-indivs" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] transition-colors uppercase border-t border-slate-100 dark:border-white/5 mt-1 pt-3">
-                          <User size={14} /> Espace Joueur
-                        </Link>
-                      )}
+                      {/* Toujours visible pour les connectés */}
+                      <Link href="/profil" className={`flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] transition-colors uppercase ${hasAdminRoles ? 'border-t border-slate-100 dark:border-white/5 mt-1 pt-3' : ''}`}>
+                        <User size={14} /> Espace Joueur
+                      </Link>
                     </div>
                   );
                 })()}
@@ -311,17 +311,18 @@ const Navbar = () => {
           )}
         </div>
 
+        {/* Bouton Menu Mobile (Apparaît si < 1440px) */}
         <button 
-          className={`lg:hidden z-10 ${shouldBeSolid ? 'text-[#081031] dark:text-white' : 'text-white'}`} 
+          className={`min-[1440px]:hidden z-10 ${shouldBeSolid ? 'text-[#081031] dark:text-white' : 'text-white'}`} 
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         >
           {isMobileMenuOpen ? <X size={35} /> : <Menu size={35} />}
         </button>
       </div>
 
-      {/* MENU MOBILE */}
+      {/* MENU MOBILE (Apparaît si < 1440px) */}
       <div 
-        className={`lg:hidden absolute top-full left-0 w-full bg-white dark:bg-[#081031] shadow-[0_20px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_40px_rgba(0,0,0,0.5)] rounded-b-3xl overflow-hidden transition-all duration-500 ease-in-out origin-top ${
+        className={`min-[1440px]:hidden absolute top-full left-0 w-full bg-white dark:bg-[#081031] shadow-[0_20px_40px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_40px_rgba(0,0,0,0.5)] rounded-b-3xl overflow-hidden transition-all duration-500 ease-in-out origin-top ${
           isMobileMenuOpen ? 'max-h-[85vh] opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
         }`}
       >
@@ -430,54 +431,79 @@ const Navbar = () => {
               m'inscrire <ArrowRight size={18} />
             </Link>
 
-            <div className="flex items-center justify-center gap-6 mt-1">
-              {mounted && (
-                <button 
-                  onClick={toggleTheme} 
-                  className="p-3 text-[#081031] dark:text-slate-300 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] transition-colors"
-                >
-                  {isDark ? <Sun size={24} /> : <Moon size={24} />}
-                </button>
-              )}
-
-              {/* GESTION AUTHENTIFICATION MOBILE (DYNAMIQUE SELON RÔLES) */}
-              {status === 'loading' ? null : session ? (
-                <div className="flex flex-col gap-2 w-full mt-4">
+            {/* GESTION AUTHENTIFICATION MOBILE (DYNAMIQUE SELON RÔLES) */}
+            {status === 'loading' ? null : session ? (
+              <div className="flex flex-col gap-4 w-full mt-2 bg-slate-50 dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/5">
+                <p className="text-xs font-black uppercase italic text-[#0065FF] dark:text-[#0EE2E2] text-center mb-1">
+                  {session.user?.name}
+                </p>
+                
+                {/* LIGNE 1 : DASHBOARDS */}
+                <div className="grid grid-cols-2 gap-2">
                   {(() => {
                     const userRoles = session.user?.roles || (session.user?.role ? [session.user.role] : ['user']);
+                    const hasAdminRoles = userRoles.some(r => r !== 'user');
                     return (
                       <>
                         {userRoles.includes('admin') && (
-                          <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)} className="p-3 text-[#081031] dark:text-slate-300 hover:text-red-500 transition-colors flex items-center gap-2 font-bold text-sm uppercase"><Shield size={20} /> Admin</Link>
+                          <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)} className="p-3 bg-white dark:bg-[#0f172a] text-red-500 rounded-xl flex flex-col items-center gap-1 font-bold text-[10px] uppercase text-center shadow-sm"><Shield size={16} /> Admin</Link>
                         )}
                         {userRoles.includes('coach') && (
-                          <Link href="/admin/entrainements" onClick={() => setIsMobileMenuOpen(false)} className="p-3 text-[#081031] dark:text-slate-300 hover:text-[#00E676] transition-colors flex items-center gap-2 font-bold text-sm uppercase"><Dumbbell size={20} /> Entraînements</Link>
+                          <Link href="/admin/entrainements" onClick={() => setIsMobileMenuOpen(false)} className="p-3 bg-white dark:bg-[#0f172a] text-[#00E676] rounded-xl flex flex-col items-center gap-1 font-bold text-[10px] uppercase text-center shadow-sm"><Dumbbell size={16} /> Coach</Link>
                         )}
                         {userRoles.includes('indiv') && (
-                          <Link href="/admin/mes-indivs" onClick={() => setIsMobileMenuOpen(false)} className="p-3 text-[#081031] dark:text-slate-300 hover:text-[#F72585] transition-colors flex items-center gap-2 font-bold text-sm uppercase"><Target size={20} /> Indivs</Link>
+                          <Link href="/admin/indivs" onClick={() => setIsMobileMenuOpen(false)} className="p-3 bg-white dark:bg-[#0f172a] text-[#F72585] rounded-xl flex flex-col items-center gap-1 font-bold text-[10px] uppercase text-center shadow-sm"><Target size={16} /> Indivs</Link>
                         )}
                         {userRoles.includes('cordeur') && (
-                          <Link href="/admin/cordage" onClick={() => setIsMobileMenuOpen(false)} className="p-3 text-[#081031] dark:text-slate-300 hover:text-[#10B981] transition-colors flex items-center gap-2 font-bold text-sm uppercase"><Scissors size={20} /> Recordage</Link>
+                          <Link href="/admin/cordage" onClick={() => setIsMobileMenuOpen(false)} className="p-3 bg-white dark:bg-[#0f172a] text-[#10B981] rounded-xl flex flex-col items-center gap-1 font-bold text-[10px] uppercase text-center shadow-sm"><Scissors size={16} /> Recordage</Link>
                         )}
-                        {userRoles.includes('user') && (
-                          <Link href="/mes-indivs" onClick={() => setIsMobileMenuOpen(false)} className="p-3 text-[#081031] dark:text-slate-300 hover:text-[#0065FF] transition-colors flex items-center gap-2 font-bold text-sm uppercase"><User size={20} /> Espace Joueur</Link>
+                        {userRoles.includes('buvette') && (
+                          <Link href="/admin/buvette" onClick={() => setIsMobileMenuOpen(false)} className="p-3 bg-white dark:bg-[#0f172a] text-[#FFD500] rounded-xl flex flex-col items-center gap-1 font-bold text-[10px] uppercase text-center shadow-sm"><Coffee size={16} /> Buvette</Link>
                         )}
+                        
+                        {/* Toujours visible pour les connectés */}
+                        <Link href="/mes-indivs" onClick={() => setIsMobileMenuOpen(false)} className={`p-3 bg-white dark:bg-[#0f172a] text-[#0065FF] dark:text-[#0EE2E2] rounded-xl flex flex-col items-center gap-1 font-bold text-[10px] uppercase text-center shadow-sm ${!hasAdminRoles ? 'col-span-2' : ''}`}><User size={16} /> Espace Joueur</Link>
                       </>
                     );
                   })()}
-                  <button onClick={() => { setIsMobileMenuOpen(false); signOut({ callbackUrl: '/' }); }} className="p-3 text-red-500 hover:text-red-600 transition-colors flex items-center gap-2 font-bold text-sm uppercase border-t border-slate-100 dark:border-white/10 mt-2">
-                    <LogOut size={20} /> Sortir
+                </div>
+
+                {/* LIGNE 2 : THEME ET DECONNEXION */}
+                <div className="flex gap-2 mt-2 border-t border-slate-200 dark:border-white/10 pt-4">
+                  {mounted && (
+                    <button 
+                      onClick={toggleTheme} 
+                      className="flex-1 py-3 bg-white dark:bg-[#0f172a] text-[#081031] dark:text-white rounded-xl font-bold text-[10px] sm:text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-sm transition-colors"
+                    >
+                      {isDark ? <><Sun size={16} /> Clair</> : <><Moon size={16} /> Sombre</>}
+                    </button>
+                  )}
+                  <button 
+                    onClick={() => { setIsMobileMenuOpen(false); signOut({ callbackUrl: '/' }); }} 
+                    className="flex-1 py-3 bg-red-50 dark:bg-red-500/10 text-red-500 hover:bg-red-100 dark:hover:bg-red-500/20 rounded-xl font-bold text-[10px] sm:text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-sm transition-colors"
+                  >
+                    <LogOut size={16} /> Sortir
                   </button>
                 </div>
-              ) : (
+              </div>
+            ) : (
+              <div className="flex gap-2 w-full mt-2">
+                {mounted && (
+                  <button 
+                    onClick={toggleTheme} 
+                    className="flex-1 py-4 rounded-xl bg-slate-100 dark:bg-white/5 text-[#081031] dark:text-white font-bold text-[10px] sm:text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-colors"
+                  >
+                    {isDark ? <Sun size={18} /> : <Moon size={18} />}
+                  </button>
+                )}
                 <button 
                   onClick={() => { setIsMobileMenuOpen(false); signIn(); }}
-                  className="p-3 text-[#081031] dark:text-slate-300 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] transition-colors"
+                  className="flex-[2] py-4 rounded-xl border-2 border-slate-200 dark:border-white/10 text-[#081031] dark:text-white font-black text-[10px] sm:text-xs uppercase tracking-widest flex items-center justify-center gap-2"
                 >
-                  <User size={24} />
+                  <User size={18} /> Se Connecter
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

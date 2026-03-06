@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import User from '@/models/User';
 
-// PUT : Mettre à jour un utilisateur (y compris ses rôles multiples)
+// PUT : Mettre à jour un utilisateur
 export async function PUT(req, { params }) {
   try {
     await dbConnect();
@@ -31,7 +31,7 @@ export async function PUT(req, { params }) {
       return NextResponse.json({ success: true, message: "Mot de passe mis à jour" });
     }
 
-    // 2. Mise à jour des informations depuis le panel Admin
+    // 2. Mise à jour des informations
     const updateData = {
       name: body.name,
       email: body.email,
@@ -47,19 +47,28 @@ export async function PUT(req, { params }) {
       updateData.image = body.image;
     }
 
-    // SAUVEGARDE DES RÔLES COCHÉS (Le tableau de rôles)
+    // Sauvegarde des rôles
     if (body.roles) {
       updateData.roles = body.roles;
     } else if (body.role) {
-      // Fallback de sécurité au cas où l'ancien format texte est envoyé
       updateData.roles = [body.role];
+    }
+
+    // SAUVEGARDE DU NUMÉRO DE LICENCE
+    if (body.licence !== undefined) {
+      updateData.licence = body.licence;
+    }
+
+    // SAUVEGARDE DES CLASSEMENTS
+    if (body.rankings) {
+      updateData.rankings = body.rankings;
     }
 
     const updatedUser = await User.findByIdAndUpdate(
       id,
       { $set: updateData },
       { returnDocument: 'after' }
-    ).select('-password'); // On exclut le mot de passe de la réponse pour la sécurité
+    ).select('-password');
 
     if (!updatedUser) {
       return NextResponse.json({ success: false, error: "Utilisateur introuvable lors de la mise à jour." }, { status: 404 });
@@ -77,7 +86,6 @@ export async function DELETE(req, { params }) {
   try {
     await dbConnect();
     
-    // Obligatoire dans Next.js 15+
     const resolvedParams = await params;
     const id = resolvedParams?.id;
 
@@ -96,4 +104,4 @@ export async function DELETE(req, { params }) {
     console.error("Erreur DELETE User:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
-} 
+}

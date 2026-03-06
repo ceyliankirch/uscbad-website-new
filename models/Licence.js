@@ -4,20 +4,10 @@ const UserSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true }, 
-  
-  // Gestion des rôles multiples
   roles: { type: [String], default: ['user'] }, 
-  role: { type: String, default: 'user' }, // Gardé pour la rétrocompatibilité si besoin
-  
+  role: { type: String, default: 'user' }, 
   image: { type: String, default: null }, 
-  
-  // Champs pour l'espace joueur (FFBaD)
-  licence: { type: String, default: '' },
-  rankings: {
-    simple: { type: String, default: 'NC' },
-    double: { type: String, default: 'NC' },
-    mixte: { type: String, default: 'NC' }
-  }
+  licence: { type: String, default: '' }, // <-- Le champ licence est ici !
 }, { timestamps: true });
 
 export default mongoose.models.User || mongoose.model('User', UserSchema);

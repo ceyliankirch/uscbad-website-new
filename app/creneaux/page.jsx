@@ -88,7 +88,7 @@ export default function PublicPlanningPage() {
         
         {/* HEADER SECTION */}
         <div className="mb-12 text-center">
-          <h1 className="text-3xl md:text-7xl font-[900] italic uppercase text-[#081031] dark:text-white leading-none mb-8 tracking-tighter">
+          <h1 className="text-5xl md:text-7xl font-[900] italic uppercase text-[#081031] dark:text-white leading-none mb-8 tracking-tighter">
             Nos <span className="text-[#0065FF] dark:text-[#0EE2E2]">Créneaux</span>
           </h1>
           
@@ -184,22 +184,22 @@ export default function PublicPlanningPage() {
             </div>
           ) : (
             <>
-              {/* SLIDER JOURS (Mobile) / LISTE (Desktop) POUR ENTRAÎNEMENT & JEU LIBRE */}
+              {/* SLIDER JOURS (Mobile) / COLONNES (Desktop) POUR ENTRAÎNEMENT & JEU LIBRE */}
               {activeTab !== 'gymnases' && (
                 <>
-                  <div className="flex md:block overflow-x-auto hide-scrollbar snap-x snap-mandatory gap-6 md:gap-0 md:space-y-16 pb-8 md:pb-0 -mx-6 px-6 md:mx-0 md:px-0 items-start relative z-10">
+                  <div className="flex md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 overflow-x-auto md:overflow-visible hide-scrollbar snap-x snap-mandatory md:snap-none gap-6 pb-8 md:pb-0 -mx-6 px-6 md:mx-0 md:px-0 items-start relative z-10">
                     {days.map(day => {
                       const dayCreneaux = filteredCreneaux.filter(c => c.day === day).sort((a, b) => a.startTime.localeCompare(b.startTime));
                       if (dayCreneaux.length === 0) return null;
 
                       return (
-                        <div key={day} className="shrink-0 w-[85vw] sm:w-[350px] md:w-full snap-center md:snap-align-none animate-in fade-in slide-in-from-bottom-4 duration-700 flex flex-col">
-                          <div className="flex items-center gap-4 mb-6 md:mb-8">
-                            <h2 className="text-3xl md:text-4xl font-[900] italic uppercase text-[#081031] dark:text-white">{day}</h2>
-                            <div className="h-1 flex-1 bg-slate-200 dark:bg-white/10 rounded-full"></div>
+                        <div key={day} className="shrink-0 w-[85vw] sm:w-[320px] md:w-auto snap-center md:snap-align-none animate-in fade-in slide-in-from-bottom-4 duration-700 flex flex-col gap-5">
+                          <div className="flex items-center gap-3 mb-2 pb-3 border-b-2 border-slate-200 dark:border-white/10">
+                            <div className="h-6 w-1.5 bg-[#0EE2E2] rounded-full" />
+                            <h3 className="text-2xl font-[900] italic uppercase text-[#081031] dark:text-white tracking-tight">{day}</h3>
                           </div>
 
-                          <div className="flex flex-col md:grid md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 flex-1">
+                          <div className="flex flex-col gap-4 flex-1">
                             {dayCreneaux.map((item, idx) => (
                               <SessionCard key={item._id || idx} session={item} />
                             ))}
@@ -209,7 +209,7 @@ export default function PublicPlanningPage() {
                     })}
 
                     {filteredCreneaux.length === 0 && (
-                      <div className="text-center py-20 w-full shrink-0">
+                      <div className="col-span-full text-center py-20 w-full shrink-0">
                         <Info size={48} className="mx-auto text-slate-300 mb-4" />
                         <p className="text-slate-400 font-bold uppercase tracking-widest text-sm">Aucun créneau ne correspond à ce filtre.</p>
                       </div>

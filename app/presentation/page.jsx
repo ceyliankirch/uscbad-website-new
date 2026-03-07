@@ -132,7 +132,7 @@ export default function PresentationPage() {
   }
 
   return (
-    <div className="bg-white dark:bg-[#040817] min-h-screen font-['Montserrat'] text-[#081031] dark:text-white transition-colors duration-300 pb-20 overflow-hidden">
+    <div className="bg-white dark:bg-[#040817] min-h-screen font-['Montserrat'] text-[#081031] dark:text-white transition-colors duration-300 overflow-hidden">
       
       <style>
         {`
@@ -164,10 +164,10 @@ export default function PresentationPage() {
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[#0065FF] text-white rounded-full font-[900] uppercase text-[10px] tracking-widest italic mb-6 shadow-lg">
             {config.hero.badgeText}
           </div>
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-[900] uppercase italic tracking-tighter leading-[0.9] text-white drop-shadow-xl mb-6">
+          <h1 className="text-3xl md:text-7xl lg:text-8xl font-[900] uppercase italic tracking-tighter leading-[0.9] text-white drop-shadow-xl mb-6">
             {config.hero.title1} <span className="text-[#0EE2E2]">{config.hero.title2}</span>
           </h1>
-          <p className="text-sm lg:text-lg font-bold text-slate-300 leading-relaxed max-w-2xl mx-auto whitespace-pre-wrap">
+          <p className="text-xs lg:text-lg font-bold text-slate-300 leading-relaxed max-w-2xl mx-auto whitespace-pre-wrap">
             {config.hero.description}
           </p>
         </div>
@@ -295,10 +295,10 @@ export default function PresentationPage() {
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl lg:text-6xl font-[900] uppercase italic tracking-tighter text-[#081031] dark:text-white">
-              NOS <span className="text-[#0EE2E2]">INFRASTRUCTURES</span>
+            <h2 className="text-2xl md:text-5xl lg:text-6xl font-[900] uppercase italic tracking-tighter text-[#081031] dark:text-white">
+              NOS <span className="text-[#0EE2E2]">Gymnases</span>
             </h2>
-            <p className="text-sm lg:text-base font-bold text-slate-500 mt-4 max-w-2xl mx-auto">
+            <p className="text-xs lg:text-base font-bold text-slate-500 mt-4 max-w-2xl mx-auto">
               Le club évolue principalement sur des grands gymnases de la ville de Créteil, offrant des conditions de jeu optimales.
             </p>
           </div>
@@ -367,10 +367,10 @@ export default function PresentationPage() {
           ========================================================= */}
       <section className="py-16 lg:py-24 px-4 sm:px-6 lg:px-8 max-w-[1400px] mx-auto">
         <div className="text-center mb-12 lg:mb-20">
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-[900] uppercase italic tracking-tighter text-[#081031] dark:text-white">
+          <h2 className="text-2xl md:text-5xl lg:text-6xl font-[900] uppercase italic tracking-tighter text-[#081031] dark:text-white">
             L'ÉQUIPE <span className="text-[#0065FF]">DIRIGEANTE</span>
           </h2>
-          <p className="text-sm lg:text-base font-bold text-slate-500 mt-4 max-w-2xl mx-auto">
+          <p className="text-xs lg:text-base font-bold text-slate-500 mt-4 max-w-2xl mx-auto">
             Des bénévoles passionnés et des entraîneurs diplômés qui s'investissent au quotidien pour faire vivre le club.
           </p>
         </div>
@@ -415,7 +415,7 @@ export default function PresentationPage() {
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[800px] h-[300px] bg-[#0065FF] rounded-full blur-[150px] opacity-40 pointer-events-none z-0"></div>
         
         <div className="max-w-[800px] mx-auto px-4 sm:px-6 text-center relative z-10">
-          <h2 className="text-4xl md:text-5xl lg:text-7xl font-[900] uppercase italic tracking-tighter text-white mb-6">
+          <h2 className="text-3xl md:text-5xl lg:text-7xl font-[900] uppercase italic tracking-tighter text-white mb-6">
             PRÊT À <span className="text-[#0EE2E2]">JOUER ?</span>
           </h2>
           <p className="text-sm lg:text-base font-bold text-slate-300 mb-10 max-w-xl mx-auto leading-relaxed">

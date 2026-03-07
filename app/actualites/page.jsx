@@ -72,8 +72,8 @@ export default function NewsPage() {
         <div className="max-w-[1600px] mx-auto relative z-10">
           
           <div className="mb-12 lg:mb-16 text-center lg:text-left">
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-[900] uppercase italic tracking-tighter text-white drop-shadow-md">
-              ACTUALITÉS <span className="text-[#0EE2E2] block sm:inline">DU CLUB</span>
+            <h1 className="text-3xl md:text-7xl lg:text-8xl font-[900] uppercase italic tracking-tighter text-white drop-shadow-md">
+              ACTUS <span className="text-[#0EE2E2]">DU CLUB</span>
             </h1>
             <p className="text-sm lg:text-base font-bold text-slate-400 mt-3 max-w-2xl">
               Résultats, événements, vie du club... Ne manquez rien de ce qui se passe à l'US Créteil Badminton.

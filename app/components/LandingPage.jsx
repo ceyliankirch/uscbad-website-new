@@ -387,8 +387,8 @@ export default function HomePage() {
       <section className="py-16 lg:py-24 px-6 lg:px-8 bg-slate-50/50 dark:bg-[#0a0f25] transition-colors relative z-10">
         <div className="max-w-[1600px] mx-auto">
           <div className="mb-10 lg:mb-16 text-center lg:text-left">
-            <h2 className="text-4xl md:text-5xl lg:text-5xl font-[900] italic uppercase text-[#081031] dark:text-white">
-              Intégrer <span className="text-[#0065FF] block sm:inline">le club</span>
+            <h2 className="text-2xl md:text-5xl lg:text-5xl font-[900] italic uppercase text-[#081031] dark:text-white truncate md:whitespace-normal md:overflow-visible">
+              Intégrer <span className="text-[#0065FF]">le club</span>
             </h2>
           </div>
 
@@ -509,8 +509,8 @@ export default function HomePage() {
           
           <div className="px-6 lg:px-8 flex flex-col md:flex-row justify-between items-start md:items-end mb-8 lg:mb-12 gap-6">
             <div>
-              <h2 className="text-4xl md:text-5xl lg:text-5xl font-[900] italic uppercase text-[#081031] dark:text-white">
-                ACTUALITÉS <span className="text-[#0065FF] block sm:inline">RÉCENTES</span>
+              <h2 className="text-2xl md:text-5xl lg:text-5xl font-[900] italic uppercase text-[#081031] dark:text-white truncate md:whitespace-normal md:overflow-visible">
+                ACTUALITÉS <span className="text-[#0065FF]">RÉCENTES</span>
               </h2>
             </div>
             
@@ -570,8 +570,8 @@ export default function HomePage() {
               <div className="text-[#0EE2E2] font-bold text-[10px] uppercase tracking-normal mb-2 flex items-center gap-2">
                 <TrendingUp size={16} /> Classements en cours
               </div>
-              <h2 className="text-4xl md:text-5xl lg:text-5xl font-[900] italic uppercase text-[#081031] dark:text-white">
-                RÉSULTATS <span className="text-[#0065FF] block sm:inline">INTERCLUBS</span>
+              <h2 className="text-2xl md:text-5xl lg:text-5xl font-[900] italic uppercase text-[#081031] dark:text-white truncate md:whitespace-normal md:overflow-visible">
+                RÉSULTATS <span className="text-[#0065FF]">INTERCLUBS</span>
               </h2>
             </div>
             <Link href="/interclubs" className="w-full md:w-auto text-[#0A266D] dark:text-[#0EE2E2] bg-[#0A266D]/5 dark:bg-white/5 md:bg-transparent py-3 md:py-0 rounded-xl md:rounded-none hover:text-[#0065FF] dark:hover:text-white font-bold text-xs uppercase transition-colors text-center">
@@ -600,8 +600,8 @@ export default function HomePage() {
         <div className="max-w-[1600px] mx-auto relative z-10">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 lg:mb-16 gap-6">
             <div>
-              <h2 className="text-4xl lg:text-5xl font-[900] italic uppercase text-white leading-none">
-                ÉVÉNEMENTS <span className="text-[#0EE2E2] block sm:inline">À VENIR</span>
+              <h2 className="text-2xl md:text-4xl lg:text-5xl font-[900] italic uppercase text-white leading-none truncate md:whitespace-normal md:overflow-visible">
+                ÉVÉNEMENTS <span className="text-[#0EE2E2]">À VENIR</span>
               </h2>
               <p className="text-slate-400 font-bold mt-4 max-w-xl">
                 Ne manquez rien de la vie du club : compétitions, tournois internes et moments de convivialité.
@@ -844,7 +844,7 @@ const InfoCard = ({ num, title, desc, color, link }) => (
       style={{ 
         color: color, 
         borderColor: color, 
-        '--hover-bg': color // On utilise une variable CSS locale pour gérer le hover dynamique avec style={{}}
+        '--hover-bg': color 
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.backgroundColor = color;

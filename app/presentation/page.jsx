@@ -1,6 +1,85 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
-import { Users, Trophy, MapPin, Target, Shield, Heart, ArrowRight, ExternalLink, Mail, Phone, Loader2, Link } from 'lucide-react';
+import Link from 'next/link';
+import { Users, Trophy, MapPin, Target, Shield, Heart, ArrowRight, ExternalLink, Mail, Phone, Loader2, Link as LinkIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+
+// =========================================================
+// HOOK CUSTOM & COMPOSANTS POUR LE SLIDER
+// =========================================================
+function useSlider(totalItems) {
+  const scrollRef = useRef(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const handleScroll = () => {
+    if (!scrollRef.current || scrollRef.current.children.length === 0) return;
+    const container = scrollRef.current;
+    const { scrollLeft, scrollWidth, clientWidth } = container;
+    const itemWidth = container.children[0].offsetWidth;
+    const gap = parseFloat(window.getComputedStyle(container).gap) || 0;
+
+    // Si on a scrollé tout à fait à droite
+    if (scrollLeft + clientWidth >= scrollWidth - 10) {
+      setActiveIndex(totalItems - 1);
+      return;
+    }
+
+    const index = Math.round(scrollLeft / (itemWidth + gap));
+    setActiveIndex(Math.max(0, Math.min(index, totalItems - 1)));
+  };
+
+  const scrollToIndex = (index) => {
+    if (!scrollRef.current || scrollRef.current.children.length === 0) return;
+    const container = scrollRef.current;
+    const itemWidth = container.children[0].offsetWidth;
+    const gap = parseFloat(window.getComputedStyle(container).gap) || 0;
+    container.scrollTo({ left: index * (itemWidth + gap), behavior: 'smooth' });
+    setActiveIndex(index);
+  };
+
+  const next = () => scrollToIndex(Math.min(activeIndex + 1, totalItems - 1));
+  const prev = () => scrollToIndex(Math.max(activeIndex - 1, 0));
+
+  return { scrollRef, activeIndex, handleScroll, scrollToIndex, next, prev };
+}
+
+const SliderControls = ({ activeIndex, total, onNext, onPrev, onScrollTo }) => {
+  if (total <= 1) return null;
+  return (
+    <div className="flex items-center justify-center gap-6 lg:gap-8 mt-10">
+      <button
+        onClick={onPrev}
+        disabled={activeIndex === 0}
+        className="w-12 h-12 rounded-full border-2 border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-500 dark:text-white/50 hover:border-[#0065FF] hover:text-[#0065FF] dark:hover:border-[#0EE2E2] dark:hover:text-[#0EE2E2] transition-all disabled:opacity-30 disabled:hover:border-slate-200 disabled:hover:text-slate-500 dark:disabled:hover:border-white/10 dark:disabled:hover:text-white/50"
+      >
+        <ChevronLeft size={24} />
+      </button>
+
+      <div className="flex items-center gap-2.5">
+        {Array.from({ length: total }).map((_, idx) => (
+          <button
+            key={idx}
+            onClick={() => onScrollTo(idx)}
+            className={`h-2.5 rounded-full transition-all duration-500 ${
+              activeIndex === idx
+                ? 'w-10 bg-[#0065FF] dark:bg-white'
+                : 'w-2.5 bg-slate-300 dark:bg-white/20 hover:bg-slate-400 dark:hover:bg-white/40'
+            }`}
+            aria-label={`Aller au slide ${idx + 1}`}
+          />
+        ))}
+      </div>
+
+      <button
+        onClick={onNext}
+        disabled={activeIndex === total - 1}
+        className="w-12 h-12 rounded-full border-2 border-slate-200 dark:border-white/10 flex items-center justify-center text-slate-500 dark:text-white/50 hover:border-[#0065FF] hover:text-[#0065FF] dark:hover:border-[#0EE2E2] dark:hover:text-[#0EE2E2] transition-all disabled:opacity-30 disabled:hover:border-slate-200 disabled:hover:text-slate-500 dark:disabled:hover:border-white/10 dark:disabled:hover:text-white/50"
+      >
+        <ChevronRight size={24} />
+      </button>
+    </div>
+  );
+};
+
 
 // Composant Helper pour rendre les icônes dynamiquement
 const IconRenderer = ({ name, size = 28 }) => {
@@ -9,25 +88,43 @@ const IconRenderer = ({ name, size = 28 }) => {
   return <IconComponent size={size} />;
 };
 
+// =========================================================
+// PAGE PRINCIPALE
+// =========================================================
 export default function PresentationPage() {
   const [config, setConfig] = useState(null);
+  const [gyms, setGyms] = useState([]);
+  const [bureau, setBureau] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Instanciation des hooks de slider
+  const profilesSlider = useSlider(config?.profiles?.length || 0);
+  const gymsSlider = useSlider(gyms.length);
+
   useEffect(() => {
-    const fetchConfig = async () => {
+    const fetchAllData = async () => {
       try {
-        const res = await fetch('/api/admin/presentation-config');
-        const json = await res.json();
-        if (json.success) {
-          setConfig(json.data);
-        }
+        const [configRes, gymsRes, bureauRes] = await Promise.all([
+          fetch('/api/admin/presentation-config'),
+          fetch('/api/gymnases'),
+          fetch('/api/board-members')
+        ]);
+        
+        const configJson = await configRes.json();
+        const gymsJson = await gymsRes.json();
+        const bureauJson = await bureauRes.json();
+
+        if (configJson.success) setConfig(configJson.data);
+        if (gymsJson.success) setGyms(gymsJson.data);
+        if (bureauJson.success) setBureau(bureauJson.data);
+
       } catch (error) {
-        console.error("Erreur de chargement de la présentation", error);
+        console.error("Erreur de chargement des données de présentation", error);
       } finally {
         setIsLoading(false);
       }
     };
-    fetchConfig();
+    fetchAllData();
   }, []);
 
   if (isLoading || !config) {
@@ -35,8 +132,20 @@ export default function PresentationPage() {
   }
 
   return (
-    <div className="bg-white dark:bg-[#040817] min-h-screen font-['Montserrat'] text-[#081031] dark:text-white transition-colors duration-300 pb-20">
+    <div className="bg-white dark:bg-[#040817] min-h-screen font-['Montserrat'] text-[#081031] dark:text-white transition-colors duration-300 pb-20 overflow-hidden">
       
+      <style>
+        {`
+          .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+          }
+          .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+        `}
+      </style>
+
       {/* =========================================================
           SECTION 1 : HERO 
           ========================================================= */}
@@ -134,10 +243,10 @@ export default function PresentationPage() {
       </section>
 
       {/* =========================================================
-          SECTION 4 : PROFILS DE JEU
+          SECTION 4 : PROFILS DE JEU (SLIDER)
           ========================================================= */}
-      <section className="py-16 lg:py-24 px-4 sm:px-6 lg:px-8 bg-white dark:bg-[#040817] transition-colors">
-        <div className="max-w-[1400px] mx-auto">
+      <section className="py-16 lg:py-24 bg-white dark:bg-[#040817] transition-colors">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col lg:flex-row justify-between items-end mb-12 lg:mb-16 gap-6">
             <div className="max-w-2xl">
               <h2 className="text-4xl md:text-5xl lg:text-6xl font-[900] uppercase italic tracking-tighter text-[#081031] dark:text-white leading-none">
@@ -149,28 +258,43 @@ export default function PresentationPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-            {config.profiles.map((profile, idx) => (
-              <ProfileCard 
-                key={idx}
-                title={profile.title} 
-                subtitle={profile.subtitle}
-                desc={profile.desc}
-                img={profile.img}
-                color={profile.color}
-              />
-            ))}
+          <div className="-mx-4 px-4 sm:mx-0 sm:px-0">
+            <div 
+              ref={profilesSlider.scrollRef}
+              onScroll={profilesSlider.handleScroll}
+              className="flex overflow-x-auto hide-scrollbar gap-6 pb-4 snap-x snap-mandatory"
+            >
+              {config.profiles.map((profile, idx) => (
+                <div key={idx} className="shrink-0 snap-center sm:snap-start w-[85vw] sm:w-[320px] md:w-[350px] lg:w-[380px] xl:w-[420px]">
+                  <ProfileCard 
+                    title={profile.title} 
+                    subtitle={profile.subtitle}
+                    desc={profile.desc}
+                    img={profile.img}
+                    color={profile.color}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <SliderControls 
+              activeIndex={profilesSlider.activeIndex} 
+              total={config.profiles.length} 
+              onNext={profilesSlider.next} 
+              onPrev={profilesSlider.prev} 
+              onScrollTo={profilesSlider.scrollToIndex} 
+            />
           </div>
         </div>
       </section>
 
       {/* =========================================================
-          SECTION 5 : GYMNASES
+          SECTION 5 : GYMNASES (DYNAMIQUE BDD + SLIDER)
           ========================================================= */}
-      <section className="py-16 lg:py-24 px-4 sm:px-6 lg:px-8 bg-slate-50 dark:bg-[#0a0f25] border-y border-slate-200 dark:border-white/5 transition-colors">
-        <div className="max-w-[1400px] mx-auto">
+      <section className="py-16 lg:py-24 bg-slate-50 dark:bg-[#0a0f25] border-y border-slate-200 dark:border-white/5 transition-colors overflow-hidden">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="text-center mb-12 lg:mb-16">
+          <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-[900] uppercase italic tracking-tighter text-[#081031] dark:text-white">
               NOS <span className="text-[#0EE2E2]">INFRASTRUCTURES</span>
             </h2>
@@ -179,39 +303,67 @@ export default function PresentationPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-            {config.gyms.map((gym, idx) => (
-              <div key={idx} className="group bg-white dark:bg-[#0f172a] rounded-[2rem] overflow-hidden border border-slate-200 dark:border-white/10 shadow-lg hover:shadow-2xl transition-all duration-300">
-                <div className="h-48 lg:h-64 bg-slate-200 dark:bg-slate-800 relative overflow-hidden">
-                  <img src={gym.img} alt={gym.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                  {gym.badge && (
-                    <div className="absolute top-4 left-4 bg-[#0065FF] text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-md z-10">
-                      {gym.badge}
+          <div className="-mx-4 px-4 sm:mx-0 sm:px-0">
+            <div 
+              ref={gymsSlider.scrollRef}
+              onScroll={gymsSlider.handleScroll}
+              className="flex overflow-x-auto hide-scrollbar gap-6 pb-4 snap-x snap-mandatory"
+            >
+              {gyms.length === 0 ? (
+                <div className="w-full py-10 text-center text-slate-500 font-bold uppercase tracking-widest text-sm">
+                  Aucun gymnase enregistré.
+                </div>
+              ) : (
+                gyms.map((gym) => (
+                  <div key={gym._id} className="w-[85vw] sm:w-[320px] md:w-[350px] lg:w-[380px] xl:w-[420px] shrink-0 snap-center sm:snap-start group bg-white dark:bg-[#0f172a] rounded-[2rem] border border-slate-200 dark:border-white/10 shadow-sm hover:shadow-xl hover:-translate-y-1 hover:border-[#0EE2E2] transition-all duration-300 flex flex-col p-6">
+                    
+                    {/* Icône et Badge */}
+                    <div className="flex justify-between items-start mb-6">
+                      <div className="w-12 h-12 rounded-2xl bg-[#0EE2E2]/10 text-[#0EE2E2] flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
+                        <MapPin size={24} />
+                      </div>
+                      {gym.badge && (
+                        <span className="bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border border-slate-200 dark:border-white/5">
+                          {gym.badge}
+                        </span>
+                      )}
                     </div>
-                  )}
-                </div>
-                <div className="p-8 lg:p-10">
-                  <h3 className="text-2xl lg:text-3xl font-[900] italic uppercase text-[#081031] dark:text-white mb-2">{gym.title}</h3>
-                  <p className="flex items-center gap-2 text-xs lg:text-sm font-bold text-slate-500 mb-6">
-                    <MapPin size={16} className="text-[#0EE2E2] shrink-0" /> {gym.address}
-                  </p>
-                  <div className="flex flex-wrap gap-2 mb-8">
-                    {gym.tags.map((tag, i) => (
-                      <span key={i} className="bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 px-3 py-1 rounded-lg text-[10px] font-bold uppercase">{tag}</span>
-                    ))}
+
+                    <div className="flex-1 flex flex-col">
+                      <h3 className="text-xl lg:text-2xl font-[900] italic uppercase text-[#081031] dark:text-white mb-2 leading-tight">{gym.name}</h3>
+                      <p className="text-xs font-bold text-slate-500 mb-4 truncate">
+                        {gym.address || "Adresse non renseignée"}
+                      </p>
+                      
+                      {gym.description && (
+                        <div className="text-sm font-medium text-slate-600 dark:text-slate-400 leading-relaxed mb-6 line-clamp-3">
+                          {gym.description}
+                        </div>
+                      )}
+                    </div>
+                    
+                    <a href={gym.mapLink || '#'} target="_blank" rel="noopener noreferrer" className="mt-auto inline-flex items-center justify-center w-full bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-300 py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-[#0065FF] hover:text-white dark:hover:bg-[#0EE2E2] dark:hover:text-[#081031] transition-colors shadow-sm">
+                      Voir sur la carte <ExternalLink size={14} className="ml-2" />
+                    </a>
                   </div>
-                  <a href={gym.mapLink || '#'} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center w-full bg-[#081031] dark:bg-white text-white dark:text-[#081031] py-4 rounded-xl font-[900] uppercase text-xs tracking-widest hover:bg-[#0065FF] dark:hover:bg-[#0EE2E2] transition-colors shadow-md">
-                    Voir sur la carte <ExternalLink size={16} className="ml-2" />
-                  </a>
-                </div>
-              </div>
-            ))}
+                ))
+              )}
+            </div>
+
+            <SliderControls 
+              activeIndex={gymsSlider.activeIndex} 
+              total={gyms.length} 
+              onNext={gymsSlider.next} 
+              onPrev={gymsSlider.prev} 
+              onScrollTo={gymsSlider.scrollToIndex} 
+            />
           </div>
+
         </div>
       </section>
 
       {/* =========================================================
-          SECTION 6 : LE STAFF
+          SECTION 6 : L'ÉQUIPE DIRIGEANTE (DYNAMIQUE BDD)
           ========================================================= */}
       <section className="py-16 lg:py-24 px-4 sm:px-6 lg:px-8 max-w-[1400px] mx-auto">
         <div className="text-center mb-12 lg:mb-20">
@@ -223,14 +375,21 @@ export default function PresentationPage() {
           </p>
         </div>
 
-        {config.bureau.length > 0 && (
+        {bureau.length > 0 && (
           <div className="mb-16">
             <h3 className="text-xl lg:text-2xl font-[900] italic uppercase text-[#081031] dark:text-white mb-6 border-l-4 border-[#0EE2E2] pl-4">
               Le Bureau
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
-              {config.bureau.map((member, idx) => (
-                <TeamContactCard key={idx} {...member} />
+              {bureau.map((member) => (
+                <TeamContactCard 
+                  key={member._id} 
+                  name={`${member.prenom} ${member.nom}`}
+                  role={member.role}
+                  img={member.photo}
+                  email={member.mail}
+                  color="#0065FF" 
+                />
               ))}
             </div>
           </div>
@@ -284,7 +443,7 @@ export default function PresentationPage() {
 const TeamContactCard = ({ name, role, img, color, email, phone }) => (
   <div className="group bg-white dark:bg-[#0f172a] rounded-[1.5rem] p-4 border border-slate-200 dark:border-white/5 shadow-sm hover:shadow-lg dark:hover:shadow-[0_10px_20px_rgba(0,0,0,0.5)] transition-all duration-300 flex flex-row items-center">
     <div className="w-16 h-16 lg:w-20 lg:h-20 shrink-0 rounded-full overflow-hidden border-[3px] shadow-sm" style={{ borderColor: color }}>
-      {img ? <img src={img} alt={name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" /> : <div className="w-full h-full bg-slate-200"></div>}
+      {img ? <img src={img} alt={name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" /> : <div className="w-full h-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-400">{name.charAt(0)}</div>}
     </div>
     <div className="ml-4 flex flex-col min-w-0 flex-grow">
       <h4 className="text-base lg:text-lg font-[900] italic uppercase text-[#081031] dark:text-white leading-tight truncate">{name}</h4>
@@ -306,7 +465,7 @@ const TeamContactCard = ({ name, role, img, color, email, phone }) => (
 );
 
 const ProfileCard = ({ title, subtitle, desc, img, color }) => (
-  <div className="group relative h-[450px] lg:h-[500px] rounded-[2rem] overflow-hidden flex flex-col justify-end p-8 cursor-default border border-transparent dark:border-white/5">
+  <div className="group relative h-[450px] lg:h-[500px] rounded-[2rem] overflow-hidden flex flex-col justify-end p-8 cursor-default border border-transparent dark:border-white/5 w-full">
     <div className="absolute inset-0 z-0">
       <img src={img} alt={title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
       <div className="absolute inset-0 bg-gradient-to-t from-[#081031] via-[#081031]/60 to-transparent"></div>

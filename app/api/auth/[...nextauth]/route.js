@@ -20,7 +20,7 @@ const handler = NextAuth({
             id: user._id.toString(), 
             name: user.name, 
             email: user.email, 
-            image: user.image,
+            // ⚠️ ON A SUPPRIMÉ L'IMAGE ICI POUR ÉVITER L'ERREUR 431
             roles: user.roles && user.roles.length > 0 ? user.roles : (user.role ? [user.role] : ['user']),
             licence: user.licence || '',
             rankings: user.rankings || { simple: 'NC', double: 'NC', mixte: 'NC' }
@@ -32,16 +32,16 @@ const handler = NextAuth({
   ],
   callbacks: {
     async jwt({ token, user, trigger, session }) {
-      // 1. Lors d'une mise à jour du profil depuis le front-end
+      // Lors d'une mise à jour du profil depuis le front-end
       if (trigger === "update" && session?.user) {
         token.name = session.user.name;
         token.email = session.user.email;
-        token.image = session.user.image;
         token.licence = session.user.licence;
-        token.rankings = session.user.rankings; // SAUVEGARDE DES CLASSEMENTS
+        token.rankings = session.user.rankings; 
+        // ⚠️ On ne stocke plus l'image dans le token
       }
       
-      // 2. Lors de la connexion initiale
+      // Lors de la connexion initiale
       if (user) {
         token.id = user.id;
         token.roles = user.roles;
@@ -52,12 +52,15 @@ const handler = NextAuth({
       return token;
     },
     async session({ session, token }) {
-      // 3. Construction de la session renvoyée au navigateur
+      // Construction de la session renvoyée au navigateur
       if (session?.user && token?.id) {
         session.user.id = token.id;
         session.user.roles = token.roles || ['user'];
         session.user.licence = token.licence || ''; 
         session.user.rankings = token.rankings || { simple: 'NC', double: 'NC', mixte: 'NC' };
+        
+        // ⚠️ Sécurité supplémentaire : on force la suppression de l'image de la session
+        delete session.user.image;
       }
       return session;
     }
@@ -66,7 +69,8 @@ const handler = NextAuth({
     strategy: "jwt",
   },
   pages: {
-    signIn: '/login',
+    // ⚠️ MODIFICATION ICI : On redirige vers l'accueil au lieu de /login
+    signIn: '/', 
   },
   secret: process.env.NEXTAUTH_SECRET,
 });

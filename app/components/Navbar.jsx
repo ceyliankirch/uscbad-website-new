@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { ChevronRight, ChevronDown, Menu, X, Sun, Moon, User, ArrowRight, LogOut, Shield, Target, Scissors, Dumbbell, Coffee, MapPin, FileText } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { useSession, signIn, signOut } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
+import AuthModal from './AuthModal'; // Importation de la modale
 
 const Navbar = () => {
   const pathname = usePathname();
@@ -13,6 +14,9 @@ const Navbar = () => {
   const [openMobileNestedDropdown, setOpenMobileNestedDropdown] = useState(null);
   const [mounted, setMounted] = useState(false);
   const [isDark, setIsDark] = useState(false);
+  
+  // État pour contrôler l'affichage de la modale d'authentification
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // RÉCUPÉRATION DE LA SESSION UTILISATEUR
   const { data: session, status } = useSession();
@@ -22,7 +26,7 @@ const Navbar = () => {
   const [dynamicPromobads, setDynamicPromobads] = useState([]);
 
   // Définir les pages qui ont un "Hero sombre" en haut de page
-  const hasDarkHero = pathname === '/' || pathname === '/interclubs' || pathname.startsWith('/actualites') || pathname === '/presentation' || pathname === '/communication' || pathname === '/entraineurs' || pathname === '/benevoles' || pathname === '/evenements' || pathname.startsWith('/tournois/') || pathname.startsWith('/promobad/') || pathname === '/indivs' || pathname === '/pole-feminines' || pathname === '/mes-indivs'; 
+  const hasDarkHero = pathname === '/' || pathname === '/interclubs' || pathname.startsWith('/actualites') || pathname === '/presentation' || pathname === '/communication' || pathname === '/entraineurs' || pathname === '/benevoles' || pathname === '/evenements' || pathname.startsWith('/tournois/') || pathname.startsWith('/promobad/') || pathname === '/indivs' || pathname === '/pole-feminines' || pathname === '/mes-indivs' || pathname === '/inscriptions' || pathname === '/profil'; 
   
   // APPEL API POUR RÉCUPÉRER LES TOURNOIS ET PROMOBADS DYNAMIQUEMENT
   useEffect(() => {
@@ -217,13 +221,6 @@ const Navbar = () => {
 
         {/* ACTIONS DESKTOP (Affichées seulement si >= 1440px) */}
         <div className="hidden min-[1440px]:flex items-center gap-3 z-10">
-          <Link href="/inscriptions" className={`px-7 py-2.5 rounded-full font-[900] text-xs transition-all flex items-center gap-2 uppercase tracking-normal group ${
-            shouldBeSolid
-              ? 'bg-[#081031] text-white hover:bg-[#0065FF] dark:bg-white dark:text-[#081031] dark:hover:bg-[#0065FF]'
-              : 'bg-white text-[#081031] hover:bg-[#0EE2E2]'
-          }`}>
-            m'inscrire <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
-          </Link>
 
           {/* GESTION DE L'AUTHENTIFICATION DESKTOP */}
           {status === 'loading' ? (
@@ -290,7 +287,7 @@ const Navbar = () => {
             </div>
           ) : (
             <button 
-              onClick={() => signIn()}
+              onClick={() => setIsAuthModalOpen(true)}
               className={`p-2.5 rounded-full transition-colors flex items-center justify-center ${
                 shouldBeSolid ? 'bg-slate-100 text-[#081031] dark:bg-white/10 dark:text-white hover:bg-[#0065FF] hover:text-white' : 'bg-white/20 text-white hover:bg-white hover:text-[#081031]'
               }`}
@@ -427,9 +424,6 @@ const Navbar = () => {
 
           {/* ACTIONS FINALES MOBILE */}
           <div className="flex flex-col gap-4 pt-6 pb-6 mt-4 border-t border-slate-100 dark:border-white/10">
-            <Link href="/inscriptions" onClick={() => setIsMobileMenuOpen(false)} className="w-full bg-[#0065FF] text-white py-4 rounded-2xl font-[900] uppercase shadow-lg shadow-[#0065FF]/30 hover:scale-[1.02] hover:shadow-xl transition-all flex items-center justify-center gap-2 font-['Montserrat']">
-              m'inscrire <ArrowRight size={18} />
-            </Link>
 
             {/* GESTION AUTHENTIFICATION MOBILE (DYNAMIQUE SELON RÔLES) */}
             {status === 'loading' ? null : session ? (
@@ -462,7 +456,7 @@ const Navbar = () => {
                         )}
                         
                         {/* Toujours visible pour les connectés */}
-                        <Link href="/mes-indivs" onClick={() => setIsMobileMenuOpen(false)} className={`p-3 bg-white dark:bg-[#0f172a] text-[#0065FF] dark:text-[#0EE2E2] rounded-xl flex flex-col items-center gap-1 font-bold text-[10px] uppercase text-center shadow-sm ${!hasAdminRoles ? 'col-span-2' : ''}`}><User size={16} /> Espace Joueur</Link>
+                        <Link href="/profil" onClick={() => setIsMobileMenuOpen(false)} className={`p-3 bg-white dark:bg-[#0f172a] text-[#0065FF] dark:text-[#0EE2E2] rounded-xl flex flex-col items-center gap-1 font-bold text-[10px] uppercase text-center shadow-sm ${!hasAdminRoles ? 'col-span-2' : ''}`}><User size={16} /> Espace Joueur</Link>
                       </>
                     );
                   })()}
@@ -491,22 +485,25 @@ const Navbar = () => {
                 {mounted && (
                   <button 
                     onClick={toggleTheme} 
-                    className="flex-1 py-4 rounded-xl bg-slate-100 dark:bg-white/5 text-[#081031] dark:text-white font-bold text-[10px] sm:text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-colors"
+                    className="flex-1 py-3 rounded-xl bg-slate-100 dark:bg-white/5 text-[#081031] dark:text-white font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 transition-colors"
                   >
-                    {isDark ? <Sun size={18} /> : <Moon size={18} />}
+                    {isDark ? <Sun size={16} /> : <Moon size={16} />}
                   </button>
                 )}
                 <button 
-                  onClick={() => { setIsMobileMenuOpen(false); signIn(); }}
-                  className="flex-[2] py-4 rounded-xl border-2 border-slate-200 dark:border-white/10 text-[#081031] dark:text-white font-black text-[10px] sm:text-xs uppercase tracking-widest flex items-center justify-center gap-2"
+                  onClick={() => { setIsMobileMenuOpen(false); setIsAuthModalOpen(true); }}
+                  className="flex-[2] py-3 rounded-xl border-2 border-slate-200 dark:border-white/10 text-[#081031] dark:text-white font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
                 >
-                  <User size={18} /> Se Connecter
+                  <User size={16} /> Connexion Staff
                 </button>
               </div>
             )}
           </div>
         </div>
       </div>
+      
+      {/* MODALE D'AUTHENTIFICATION */}
+      {isAuthModalOpen && <AuthModal onClose={() => setIsAuthModalOpen(false)} />}
     </nav>
   );
 };

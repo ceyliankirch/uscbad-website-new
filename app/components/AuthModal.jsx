@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { X, Mail, Lock, ArrowRight } from 'lucide-react';
+import { X, Mail, Lock, ArrowRight, Shield, AlertCircle, Loader2 } from 'lucide-react';
 import { signIn } from 'next-auth/react';
 
 const AuthModal = ({ onClose }) => {
@@ -25,9 +25,8 @@ const AuthModal = ({ onClose }) => {
         setError("Identifiants incorrects. Veuillez réessayer.");
         setIsLoading(false);
       } else {
-        // Succès ! On ferme et on redirige vers l'admin
         onClose();
-        window.location.href = '/admin';
+        window.location.href = '/admin'; 
       }
     } catch (err) {
       setError("Une erreur est survenue lors de la connexion.");
@@ -36,93 +35,100 @@ const AuthModal = ({ onClose }) => {
   };
 
   return (
-    /* Le z-[9999] est CRUCIAL ici pour sortir du contexte de la Navbar 
-       et s'afficher par-dessus le contenu du Planning ou de la Landing.
-    */
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center px-4 font-['Montserrat']">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 font-['Montserrat']">
       
-      {/* Overlay sombre avec flou intense pour l'immersion */}
+      {/* Overlay sombre */}
       <div 
-        className="absolute inset-0 bg-[#081031]/80 backdrop-blur-md transition-opacity duration-300"
+        className="absolute inset-0 bg-[#040817]/80 backdrop-blur-md animate-in fade-in duration-300"
         onClick={onClose}
       ></div>
 
-      {/* Fenêtre de la Modale */}
-      <div className="relative bg-white dark:bg-[#081031] w-full max-w-md rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.3)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)] overflow-hidden animate-in fade-in zoom-in duration-300 border border-slate-100 dark:border-white/10">
+      {/* Fenêtre minimaliste */}
+      <div className="relative w-full max-w-[360px] bg-white dark:bg-[#081031] rounded-[2rem] shadow-2xl overflow-hidden border border-slate-200 dark:border-white/10 animate-in zoom-in-95 duration-300 flex flex-col">
         
-        {/* Bouton Fermer */}
         <button 
           onClick={onClose}
-          className="absolute top-6 right-6 text-slate-400 hover:text-[#081031] dark:hover:text-white transition-all p-2 bg-slate-100 dark:bg-white/5 rounded-full hover:rotate-90"
+          className="absolute top-4 right-4 z-50 p-2 bg-slate-100 dark:bg-white/5 text-slate-500 hover:text-red-500 rounded-full transition-all shadow-sm hover:rotate-90"
         >
-          <X size={20} />
+          <X size={16} />
         </button>
 
-        <div className="p-8 lg:p-12">
-          {/* En-tête */}
-          <div className="mb-10 text-center lg:text-left">
-            <h3 className="text-2xl lg:text-3xl font-[900] italic uppercase text-[#081031] dark:text-white mb-2">
-              Espace <span className="text-[#0065FF] dark:text-[#0EE2E2]">Admin</span>
+        <div className="p-6 lg:p-8 relative z-10">
+          
+          {/* En-tête Compact */}
+          <div className="flex flex-col items-center text-center mb-6 mt-2">
+            <div className="w-10 h-10 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 rounded-xl flex items-center justify-center mb-3 border border-slate-200 dark:border-white/5">
+              <Shield size={18} />
+            </div>
+            <h3 className="text-xl font-[900] uppercase text-[#081031] dark:text-white leading-none tracking-tight">
+              Connexion <span className="text-[#0065FF]">Staff</span>
             </h3>
-            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tighter">
-              Accès réservé au bureau de l'US Créteil
-            </p>
           </div>
 
           {/* Message d'erreur */}
           {error && (
-            <div className="mb-6 p-4 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-2xl text-red-600 dark:text-red-400 text-[10px] font-[900] uppercase text-center animate-shake">
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400 rounded-xl flex items-center gap-2 font-bold text-[10px] uppercase tracking-widest animate-in shake">
+              <AlertCircle size={14} className="shrink-0" />
               {error}
             </div>
           )}
 
           {/* Formulaire */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-[10px] font-[900] uppercase tracking-widest text-[#081031] dark:text-white/60 ml-1">Identifiant</label>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            
+            <div className="space-y-1.5">
+              <label className="text-[9px] font-black uppercase tracking-widest text-slate-500 ml-1">Email</label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#0065FF] dark:text-[#0EE2E2]">
-                  <Mail size={18} />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <Mail size={16} />
                 </div>
                 <input 
                   type="email" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-[#040817] border border-slate-200 dark:border-white/10 text-[#081031] dark:text-white text-sm font-bold rounded-2xl focus:ring-2 focus:ring-[#0065FF] dark:focus:ring-[#0EE2E2] focus:border-transparent block pl-12 p-4 transition-all outline-none" 
+                  className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 text-[#081031] dark:text-white rounded-xl px-4 py-3 pl-10 text-xs font-bold focus:ring-2 focus:ring-[#0065FF] dark:focus:ring-[#0EE2E2] outline-none transition-all placeholder:text-slate-400" 
                   placeholder="admin@uscbad.fr"
                   required
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-[10px] font-[900] uppercase tracking-widest text-[#081031] dark:text-white/60 ml-1">Mot de passe</label>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between ml-1 mr-1">
+                <label className="text-[9px] font-black uppercase tracking-widest text-slate-500">Mot de passe</label>
+              </div>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#0065FF] dark:text-[#0EE2E2]">
-                  <Lock size={18} />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <Lock size={16} />
                 </div>
                 <input 
                   type="password" 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-[#040817] border border-slate-200 dark:border-white/10 text-[#081031] dark:text-white text-sm font-bold rounded-2xl focus:ring-2 focus:ring-[#0065FF] dark:focus:ring-[#0EE2E2] focus:border-transparent block pl-12 p-4 transition-all outline-none" 
+                  className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 text-[#081031] dark:text-white rounded-xl px-4 py-3 pl-10 text-xs font-bold focus:ring-2 focus:ring-[#0065FF] dark:focus:ring-[#0EE2E2] outline-none transition-all placeholder:text-slate-400" 
                   placeholder="••••••••"
                   required
                 />
               </div>
             </div>
 
-            <button 
-              type="submit" 
-              disabled={isLoading}
-              className="w-full bg-[#081031] dark:bg-[#0EE2E2] text-white dark:text-[#081031] hover:bg-[#0065FF] dark:hover:bg-white font-[900] uppercase text-[11px] tracking-[0.2em] rounded-2xl p-4 mt-6 flex items-center justify-center gap-2 transition-all group disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-black/10"
-            >
-              {isLoading ? 'Authentification...' : 'Se Connecter'}
-              {!isLoading && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}
-            </button>
+            <div className="pt-2">
+              <button 
+                type="submit" 
+                disabled={isLoading}
+                className="w-full bg-[#0065FF] hover:bg-[#0052cc] text-white py-3 rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 transition-all shadow-md disabled:opacity-50 group"
+              >
+                {isLoading ? (
+                  <><Loader2 size={14} className="animate-spin" /> Connexion...</>
+                ) : (
+                  <>Accéder <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" /></>
+                )}
+              </button>
+            </div>
+            
           </form>
-
         </div>
+
       </div>
     </div>
   );

@@ -56,7 +56,13 @@ export default function PublicPlanningPage() {
   // Filtrage par catégorie et par tab (entraînement vs jeu libre)
   const filteredCreneaux = sessions.filter(s => {
     const matchTab = activeTab === 'jeu-libre' ? s.type === 'Jeu Libre' : s.type !== 'Jeu Libre';
-    const matchCat = activeFilter === 'Tout voir' || s.category === activeFilter;
+    
+    // On élargit la recherche à 'category', 'type' et 'title' pour s'assurer de trouver la correspondance
+    const matchCat = activeFilter === 'Tout voir' || 
+                     s.category === activeFilter || 
+                     s.type === activeFilter || 
+                     s.title === activeFilter;
+                     
     return matchTab && matchCat;
   });
 

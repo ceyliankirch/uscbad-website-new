@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Clock, MapPin, Loader2, Building2, ExternalLink, Trophy, Map, Info, AlertCircle, Dumbbell, Activity, ChevronDown, User } from 'lucide-react';
 
@@ -16,6 +16,9 @@ export default function PublicPlanningPage() {
 
   // État pour le custom select sur mobile
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
+  
+  // Référence pour le conteneur du slider afin de gérer le scroll
+  const scrollContainerRef = useRef(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,6 +44,13 @@ export default function PublicPlanningPage() {
     };
     fetchData();
   }, []);
+
+  // Effet pour recentrer le slider au début quand on change de filtre ou d'onglet
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+    }
+  }, [activeFilter, activeTab]);
 
   const getCategoryColor = (category) => {
     switch (category) {
@@ -190,16 +200,19 @@ export default function PublicPlanningPage() {
             </div>
           ) : (
             <>
-              {/* SLIDER JOURS (Mobile) / COLONNES (Desktop) POUR ENTRAÎNEMENT & JEU LIBRE */}
+              {/* SLIDER JOURS (Mobile) / COLONNES CENTRÉES (Desktop) POUR ENTRAÎNEMENT & JEU LIBRE */}
               {activeTab !== 'gymnases' && (
                 <>
-                  <div className="flex md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 overflow-x-auto md:overflow-visible hide-scrollbar snap-x snap-mandatory md:snap-none gap-6 pb-8 md:pb-0 -mx-6 px-6 md:mx-0 md:px-0 items-start relative z-10">
+                  <div 
+                    ref={scrollContainerRef}
+                    className="flex md:flex-wrap md:justify-center overflow-x-auto md:overflow-visible hide-scrollbar snap-x snap-mandatory md:snap-none gap-6 pb-8 md:pb-0 -mx-6 px-6 md:mx-0 md:px-0 items-start relative z-10 scroll-smooth"
+                  >
                     {days.map(day => {
                       const dayCreneaux = filteredCreneaux.filter(c => c.day === day).sort((a, b) => a.startTime.localeCompare(b.startTime));
                       if (dayCreneaux.length === 0) return null;
 
                       return (
-                        <div key={day} className="shrink-0 w-[85vw] sm:w-[320px] md:w-auto snap-center md:snap-align-none animate-in fade-in slide-in-from-bottom-4 duration-700 flex flex-col gap-5">
+                        <div key={day} className="shrink-0 w-[85vw] sm:w-[320px] md:w-auto md:flex-1 md:min-w-[220px] md:max-w-[350px] snap-center md:snap-align-none animate-in fade-in slide-in-from-bottom-4 duration-700 flex flex-col gap-5">
                           <div className="flex items-center gap-3 mb-2 pb-3 border-b-2 border-slate-200 dark:border-white/10">
                             <div className="h-6 w-1.5 bg-[#0EE2E2] rounded-full" />
                             <h3 className="text-2xl font-[900] italic uppercase text-[#081031] dark:text-white tracking-tight">{day}</h3>
@@ -237,12 +250,12 @@ export default function PublicPlanningPage() {
                 </>
               )}
 
-              {/* ONGLET GYMNASES : SLIDER (Mobile) / GRILLE (Desktop) */}
+              {/* ONGLET GYMNASES : SLIDER (Mobile) / GRILLE CENTRÉE (Desktop) */}
               {activeTab === 'gymnases' && gymnases.length > 0 && (
                 <div className="animate-in fade-in duration-500 relative z-10">
-                  <div className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 overflow-x-auto hide-scrollbar snap-x snap-mandatory pb-8 -mx-6 px-6 md:mx-0 md:px-0">
+                  <div className="flex md:flex-wrap md:justify-center overflow-x-auto md:overflow-visible hide-scrollbar snap-x snap-mandatory md:snap-none gap-6 md:gap-8 pb-8 -mx-6 px-6 md:mx-0 md:px-0">
                     {gymnases.map((gym) => (
-                      <div key={gym._id} className="shrink-0 w-[85vw] sm:w-[320px] md:w-auto snap-center md:snap-align-none bg-white dark:bg-[#0f172a] p-8 rounded-[2.5rem] border border-slate-200 dark:border-white/10 shadow-sm hover:shadow-xl transition-all group flex flex-col">
+                      <div key={gym._id} className="shrink-0 w-[85vw] sm:w-[320px] md:w-auto md:flex-1 md:min-w-[280px] md:max-w-[400px] snap-center md:snap-align-none bg-white dark:bg-[#0f172a] p-8 rounded-[2.5rem] border border-slate-200 dark:border-white/10 shadow-sm hover:shadow-xl transition-all group flex flex-col">
                         <div className="flex items-start justify-between mb-6">
                           <div className="bg-slate-50 dark:bg-white/5 p-4 rounded-2xl text-[#0065FF]">
                             <MapPin size={28} />

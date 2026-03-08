@@ -83,7 +83,7 @@ export default function AdminUsersPage() {
     setIsModalOpen(false);
   };
 
-  // 2. Sauvegarde ou Mise à jour d'un utilisateur
+  // 2. Sauvegarde ou Mise à jour d'un utilisateur + ENVOI EMAILJS
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSaving(true);
@@ -100,6 +100,43 @@ export default function AdminUsersPage() {
       const data = await res.json();
 
       if (data.success) {
+        // --- NOUVEAU : ENVOI D'EMAIL VIA EMAILJS UNIQUEMENT À LA CRÉATION ---
+        if (!editingId) {
+          try {
+            // Création d'une liste lisible des rôles pour l'email
+            const roleLabels = formData.roles.map(r => {
+              const found = roleOptions.find(opt => opt.value === r);
+              return found ? found.label : r;
+            }).join(', ');
+
+            // URL de connexion dynamique
+            const loginUrl = `${window.location.origin}/login`;
+
+            // Paramètres attendus par l'API REST d'EmailJS
+            const emailjsPayload = {
+              service_id: 'service_k965f98', // 🔴 À REMPLACER PAR VOTRE SERVICE ID EMAILJS
+              template_id: 'template_64xd3ts', // 🔴 À REMPLACER PAR VOTRE TEMPLATE ID EMAILJS
+              user_id: 'QCj4y1pQixCxB7usX', // 🔴 À REMPLACER PAR VOTRE CLÉ PUBLIQUE EMAILJS (Public Key)
+              template_params: {
+                to_name: formData.name,
+                to_email: formData.email,
+                temp_password: formData.password,
+                roles_list: roleLabels,
+                login_url: loginUrl
+              }
+            };
+
+            await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(emailjsPayload)
+            });
+            console.log("Email de bienvenue envoyé via EmailJS !");
+          } catch (emailErr) {
+            console.error("Erreur lors de l'envoi de l'email :", emailErr);
+          }
+        }
+
         fetchUsers();
         closeModal();
       } else {

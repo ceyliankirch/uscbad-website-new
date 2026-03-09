@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import Event from '@/models/Event';
 
+// 🔴 LIGNE CRUCIALE : Désactive le cache de Next.js pour avoir les données en temps réel
+export const dynamic = 'force-dynamic';
+
 // GET : Récupérer les événements (utilisé par la page publique et l'admin)
 export async function GET(request) {
   try {

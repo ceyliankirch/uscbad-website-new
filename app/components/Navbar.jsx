@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { ChevronRight, ChevronDown, Menu, X, Sun, Moon, User, ArrowRight, LogOut, Shield, Target, Scissors, Dumbbell, Coffee, MapPin, FileText } from 'lucide-react';
+import { ChevronRight, ChevronDown, Menu, X, Sun, Moon, User, ArrowRight, LogOut, Shield, Target, Scissors, Dumbbell, Coffee, MapPin, FileText, Briefcase } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
@@ -252,6 +252,11 @@ const Navbar = () => {
                           <Shield size={14} /> Espace Admin
                         </Link>
                       )}
+                      {userRoles.includes('bureau') && (
+                        <Link href="/admin/dashboard-bureau" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#0065FF] transition-colors uppercase">
+                          <Briefcase size={14} /> Espace Bureau
+                        </Link>
+                      )}
                       {userRoles.includes('coach') && (
                         <Link href="/admin/entrainements" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#00E676] transition-colors uppercase">
                           <Dumbbell size={14} /> Entraînements
@@ -441,6 +446,9 @@ const Navbar = () => {
                       <>
                         {userRoles.includes('admin') && (
                           <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)} className="p-3 bg-white dark:bg-[#0f172a] text-red-500 rounded-xl flex flex-col items-center gap-1 font-bold text-[10px] uppercase text-center shadow-sm"><Shield size={16} /> Admin</Link>
+                        )}
+                        {userRoles.includes('bureau') && (
+                          <Link href="/admin/bureau-dashboard" onClick={() => setIsMobileMenuOpen(false)} className="p-3 bg-white dark:bg-[#0f172a] text-[#0065FF] rounded-xl flex flex-col items-center gap-1 font-bold text-[10px] uppercase text-center shadow-sm"><Briefcase size={16} /> Bureau</Link>
                         )}
                         {userRoles.includes('coach') && (
                           <Link href="/admin/entrainements" onClick={() => setIsMobileMenuOpen(false)} className="p-3 bg-white dark:bg-[#0f172a] text-[#00E676] rounded-xl flex flex-col items-center gap-1 font-bold text-[10px] uppercase text-center shadow-sm"><Dumbbell size={16} /> Coach</Link>

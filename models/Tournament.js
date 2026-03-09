@@ -1,59 +1,55 @@
 import mongoose from 'mongoose';
 
-// Sous-schéma pour organiser le palmarès proprement
+// Sous-schéma pour le palmarès
 const PalmaresSchema = new mongoose.Schema({
-  serie: { type: String, default: '' },
-  sh: { type: String, default: '' }, // Simple Homme
-  sd: { type: String, default: '' }, // Simple Dame
-  dh: { type: String, default: '' }, // Double Homme
-  dd: { type: String, default: '' }, // Double Dame
-  dx: { type: String, default: '' }  // Double Mixte
+  serie: String,
+  sh: String,
+  sd: String,
+  dh: String,
+  dd: String,
+  dx: String
 });
 
 const TournamentSchema = new mongoose.Schema({
-  // --- GÉNÉRAL ---
-  title: { type: String, required: [true, 'Le titre est obligatoire'], trim: true },
-  subtitle: { type: String, trim: true },
+  title: { type: String, required: true },
+  subtitle: { type: String },
   type: { type: String, enum: ['tournoi', 'promobad'], required: true },
-  dateStr: { type: String, required: true },
-  location: { type: String, required: true },
-  levels: { type: String, required: true },
-  registrationLink: { type: String, default: '' },
-  status: { type: String, enum: ['a_venir', 'ouvert', 'complet', 'termine'], default: 'a_venir' },
-  spotsLeft: { type: Number, default: null },
+  dateStr: { type: String }, 
+  location: { type: String },
+  levels: { type: String },
+  registrationLink: { type: String }, 
+  status: { type: String, default: 'a_venir' },
+  spotsLeft: { type: Number },
   color: { type: String, default: '#0065FF' },
-  tournamentLogo: { type: String, default: '' },
-  mainVisual: { type: String, default: '' },
-
-  title: { type: String, required: [true, 'Le titre est obligatoire'], trim: true },
-  subtitle: { type: String, trim: true },
-  type: { type: String, enum: ['tournoi', 'promobad'], required: true },
-  dateStr: { type: String, required: true },
-  location: { type: String, required: true },
-  googleMapsLink: { type: String, default: '' },
-  heroImage: { type: String, default: '' },
-
-  // --- CONTENU PERSONNALISÉ ---
-  description: { type: String, default: '' }, // "Le mot du club"
-  gymImage: { type: String, default: '' }, // Photo du gymnase  
-  // 👇 NOUVEAUX CHAMPS POUR L'ONGLET INFOS 👇
-  disciplines: { type: String, default: 'Simples, Doubles, Mixtes' },
-  buvetteDescription: { type: String, default: "Les joueurs et supporters pourront profiter de notre espace buvette tout au long de l'événement. Croque-monsieurs, crêpes, boissons et snacks pour recharger les batteries !" },
-  amenities: { type: String, default: 'Parking gratuit sur place, Vestiaires & Douches, Tribunes' },
+  description: { type: String },
   
-  // --- SPONSOR ---
+  // Images et Liens d'édition
+  heroImage: { type: String },
+  mainVisual: { type: String },
+  tournamentLogo: { type: String },
+  gymImage: { type: String },
+  canvaLink: { type: String }, // <-- LE CHAMP MANQUANT EST ICI !
+  
+  // Contenu détaillé
+  disciplines: { type: String },
+  buvetteDescription: { type: String },
+  amenities: { type: String },
+  googleMapsLink: { type: String },
+  
+  // Sponsor
   sponsor: {
-    name: { type: String, default: '' },
-    logoUrl: { type: String, default: '' },
-    website: { type: String, default: '' }
+    name: String,
+    logoUrl: String,
+    website: String
   },
-
-  // --- MÉDIAS & RÉSULTATS ---
-  googlePhotosLink: { type: String, default: '' }, // Lien vers l'album complet
-  galleryImages: [{ type: String }], // Tableau contenant les URLs des 4 images Best-Of
-  palmares: [PalmaresSchema] // Tableau contenant les résultats par série
-}, {
-  timestamps: true,
-});
+  
+  // Médias
+  googlePhotosLink: { type: String },
+  galleryImages: { type: [String], default: ['', '', '', ''] },
+  
+  // Résultats
+  palmares: [PalmaresSchema]
+  
+}, { timestamps: true });
 
 export default mongoose.models.Tournament || mongoose.model('Tournament', TournamentSchema);

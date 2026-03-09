@@ -24,7 +24,7 @@ export default function AdminUsersPage() {
     { value: 'cordeur', label: 'Cordeur', icon: <Scissors size={14}/>, color: 'text-[#10B981]', bgHover: 'hover:bg-[#10B981]/10', borderActive: 'border-[#10B981] bg-[#10B981]/10 text-[#10B981]' },
     { value: 'buvette', label: 'Buvette', icon: <Coffee size={14}/>, color: 'text-[#FFD500]', bgHover: 'hover:bg-[#FFD500]/10', borderActive: 'border-[#FFD500] bg-[#FFD500]/10 text-[#FFD500]' },
     { value: 'geo', label: 'GEO Tournois', icon: <MapPin size={14}/>, color: 'text-[#9333EA]', bgHover: 'hover:bg-[#9333EA]/10', borderActive: 'border-[#9333EA] bg-[#9333EA]/10 text-[#9333EA]' },
-    { value: 'secretaire', label: 'Secrétaire', icon: <FileText size={14}/>, color: 'text-[#0065FF]', bgHover: 'hover:bg-[#0065FF]/10', borderActive: 'border-[#0065FF] bg-[#0065FF]/10 text-[#0065FF]' },
+    { value: 'bureau', label: 'Bureau', icon: <FileText size={14}/>, color: 'text-[#0065FF]', bgHover: 'hover:bg-[#0065FF]/10', borderActive: 'border-[#0065FF] bg-[#0065FF]/10 text-[#0065FF]' },
     { value: 'user', label: 'Membre (Joueur)', icon: <User size={14}/>, color: 'text-slate-500', bgHover: 'hover:bg-slate-100 dark:hover:bg-white/10', borderActive: 'border-[#0EE2E2] bg-[#0EE2E2]/10 text-[#0EE2E2]' },
   ];
 
@@ -114,9 +114,9 @@ export default function AdminUsersPage() {
 
             // Paramètres attendus par l'API REST d'EmailJS
             const emailjsPayload = {
-              service_id: 'service_k965f98', // 🔴 À REMPLACER PAR VOTRE SERVICE ID EMAILJS
-              template_id: 'template_64xd3ts', // 🔴 À REMPLACER PAR VOTRE TEMPLATE ID EMAILJS
-              user_id: 'QCj4y1pQixCxB7usX', // 🔴 À REMPLACER PAR VOTRE CLÉ PUBLIQUE EMAILJS (Public Key)
+              service_id: 'VOTRE_SERVICE_ID', // 🔴 À REMPLACER PAR VOTRE SERVICE ID EMAILJS
+              template_id: 'VOTRE_TEMPLATE_ID', // 🔴 À REMPLACER PAR VOTRE TEMPLATE ID EMAILJS
+              user_id: 'VOTRE_CLE_PUBLIQUE', // 🔴 À REMPLACER PAR VOTRE CLÉ PUBLIQUE EMAILJS (Public Key)
               template_params: {
                 to_name: formData.name,
                 to_email: formData.email,
@@ -164,13 +164,15 @@ export default function AdminUsersPage() {
   };
 
   const getRoleBadge = (role) => {
-    switch (role) {
+    // On met en minuscules pour éviter les bugs si le rôle a été sauvegardé en majuscule ('BUREAU')
+    switch (role.toLowerCase()) {
       case 'admin': return <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400 border border-red-200 dark:border-red-500/20 flex items-center gap-1 w-fit"><ShieldAlert size={12}/> Admin</span>;
       case 'coach': return <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-[#00E676]/10 text-[#00E676] border border-[#00E676]/20 flex items-center gap-1 w-fit"><Dumbbell size={12}/> Entraîneur</span>;
       case 'indiv': return <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-[#F72585]/10 text-[#F72585] border border-[#F72585]/20 flex items-center gap-1 w-fit"><Target size={12}/> Indivs</span>;
       case 'cordeur': return <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20 flex items-center gap-1 w-fit"><Scissors size={12}/> Cordeur</span>;
       case 'buvette': return <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-[#FFD500]/10 text-[#FFD500] border border-[#FFD500]/20 flex items-center gap-1 w-fit"><Coffee size={12}/> Buvette</span>;
       case 'geo': return <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-[#9333EA]/10 text-[#9333EA] border border-[#9333EA]/20 flex items-center gap-1 w-fit"><MapPin size={12}/> GEO</span>;
+      case 'bureau': return <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-[#0065FF]/10 text-[#0065FF] border border-[#0065FF]/20 flex items-center gap-1 w-fit"><FileText size={12}/> Bureau</span>;
       case 'secretaire': return <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-[#0065FF]/10 text-[#0065FF] border border-[#0065FF]/20 flex items-center gap-1 w-fit"><FileText size={12}/> Secrétaire</span>;
       default: return <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-slate-400 border border-slate-200 dark:border-white/10 flex items-center gap-1 w-fit"><User size={12}/> Membre</span>;
     }

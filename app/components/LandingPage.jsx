@@ -256,9 +256,9 @@ export default function HomePage() {
                 <span className="text-[10px] lg:text-[14px] font-[900] uppercase text-[#0EE2E2]">Union Sportive de Créteil</span>
               </div>
               <div className="flex gap-2">
-                <MiniSocialBtn icon={<Instagram size={14} />} href="#" />
-                <MiniSocialBtn icon={<Facebook size={14} fill="currentColor" />} href="#" />
-                <MiniSocialBtn icon={<Mail size={14} />} href="#" />
+                <MiniSocialBtn icon={<Instagram size={14} />} href="https://instagram.com/uscbad" />
+                <MiniSocialBtn icon={<Facebook size={14} fill="currentColor" />} href="https://www.facebook.com/USCRETEIL.Bad" />
+                <MiniSocialBtn icon={<Mail size={14} />} href="/contact" />
               </div>
             </div>
             

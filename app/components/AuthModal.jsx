@@ -26,7 +26,7 @@ const AuthModal = ({ onClose }) => {
         setIsLoading(false);
       } else {
         onClose();
-        window.location.href = '/admin'; 
+        window.location.href = '/'; 
       }
     } catch (err) {
       setError("Une erreur est survenue lors de la connexion.");

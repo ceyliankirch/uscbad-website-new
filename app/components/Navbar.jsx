@@ -448,7 +448,7 @@ const Navbar = () => {
                           <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)} className="p-3 bg-white dark:bg-[#0f172a] text-red-500 rounded-xl flex flex-col items-center gap-1 font-bold text-[10px] uppercase text-center shadow-sm"><Shield size={16} /> Admin</Link>
                         )}
                         {userRoles.includes('bureau') && (
-                          <Link href="/admin/bureau-dashboard" onClick={() => setIsMobileMenuOpen(false)} className="p-3 bg-white dark:bg-[#0f172a] text-[#0065FF] rounded-xl flex flex-col items-center gap-1 font-bold text-[10px] uppercase text-center shadow-sm"><Briefcase size={16} /> Bureau</Link>
+                          <Link href="/admin/dashboard-bureau" onClick={() => setIsMobileMenuOpen(false)} className="p-3 bg-white dark:bg-[#0f172a] text-[#0065FF] rounded-xl flex flex-col items-center gap-1 font-bold text-[10px] uppercase text-center shadow-sm"><Briefcase size={16} /> Bureau</Link>
                         )}
                         {userRoles.includes('coach') && (
                           <Link href="/admin/entrainements" onClick={() => setIsMobileMenuOpen(false)} className="p-3 bg-white dark:bg-[#0f172a] text-[#00E676] rounded-xl flex flex-col items-center gap-1 font-bold text-[10px] uppercase text-center shadow-sm"><Dumbbell size={16} /> Coach</Link>

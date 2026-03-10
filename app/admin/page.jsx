@@ -65,7 +65,7 @@ export default function AdminDashboard() {
       bgHover: "hover:border-[#0EE2E2] hover:shadow-[#0EE2E2]/20",
       iconBg: "bg-[#0EE2E2]/10 dark:bg-[#0EE2E2]/20",
       items: [
-        { name: 'Événementiel', path: '/admin/evenements', icon: <CalendarDays size={24} /> },
+        { name: 'Événementiel', path: '/admin/evenementiel', icon: <CalendarDays size={24} /> },
         { name: 'Interclubs', path: '/admin/interclubs', icon: <Trophy size={24} /> },
         { name: 'Live Score', path: '/admin/score', icon: <Activity size={24} /> },
         { name: 'Créneaux', path: '/admin/creneaux', icon: <Clock size={24} /> },

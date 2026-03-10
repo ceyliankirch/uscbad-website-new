@@ -114,9 +114,9 @@ export default function AdminUsersPage() {
 
             // Paramètres attendus par l'API REST d'EmailJS
             const emailjsPayload = {
-              service_id: 'VOTRE_SERVICE_ID', // 🔴 À REMPLACER PAR VOTRE SERVICE ID EMAILJS
-              template_id: 'VOTRE_TEMPLATE_ID', // 🔴 À REMPLACER PAR VOTRE TEMPLATE ID EMAILJS
-              user_id: 'VOTRE_CLE_PUBLIQUE', // 🔴 À REMPLACER PAR VOTRE CLÉ PUBLIQUE EMAILJS (Public Key)
+              service_id: 'service_k965f98', // 🔴 À REMPLACER PAR VOTRE SERVICE ID EMAILJS
+              template_id: 'template_64xd3ts', // 🔴 À REMPLACER PAR VOTRE TEMPLATE ID EMAILJS
+              user_id: 'QCj4y1pQixCxB7usX', // 🔴 À REMPLACER PAR VOTRE CLÉ PUBLIQUE EMAILJS (Public Key)
               template_params: {
                 to_name: formData.name,
                 to_email: formData.email,

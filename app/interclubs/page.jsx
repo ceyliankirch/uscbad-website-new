@@ -41,6 +41,7 @@ export default function App() {
   const hoverTimeoutRef = useRef(null);
 
   useEffect(() => {
+  document.title = "Interclubs | US Créteil Badminton"; 
     // 1. CHARGEMENT DES JOUEURS DEPUIS LA BDD
     const fetchPlayers = async () => {
       try {

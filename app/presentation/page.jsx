@@ -102,6 +102,10 @@ export default function PresentationPage() {
   const gymsSlider = useSlider(gyms.length);
 
   useEffect(() => {
+    document.title = "Le Club | US Créteil Badminton";
+  }, []);
+
+  useEffect(() => {
     const fetchAllData = async () => {
       try {
         const [configRes, gymsRes, bureauRes] = await Promise.all([

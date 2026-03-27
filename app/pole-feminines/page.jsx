@@ -7,6 +7,10 @@ export default function PoleFemininesPage() {
   const [coach, setCoach] = useState(null);
   const [isLoadingCoach, setIsLoadingCoach] = useState(true);
 
+  useEffect(() => {
+    document.title = "Pôle féminin | US Créteil Badminton";
+  }, []);
+
   // RÉCUPÉRATION DU COACH RÉFÉRENT DEPUIS LA BDD
   useEffect(() => {
     const fetchCoach = async () => {

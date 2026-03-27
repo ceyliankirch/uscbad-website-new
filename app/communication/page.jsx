@@ -21,6 +21,7 @@ export default function CommunicationPage() {
 
   // --- CHARGEMENT DYNAMIQUE DES DONNÉES ET DE LA CONFIG ---
   useEffect(() => {
+  document.title = "Communication | US Créteil Badminton";    
     const fetchData = async () => {
       try {
         const [galleryRes, configRes] = await Promise.all([
@@ -150,7 +151,7 @@ export default function CommunicationPage() {
                 <Sparkles size={14} className="text-[#0EE2E2]" /> L'Art du Badminton
               </div>
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-[900] uppercase italic tracking-tighter leading-[0.9] text-white drop-shadow-xl mb-4">
-                LE KIRCH <span className="text-[#0cc9c9]">MUSEUM</span>
+                le design <span className="text-[#0cc9c9]">museum</span>
               </h1>
               <p className="text-sm lg:text-base font-bold text-slate-300 leading-relaxed">
                 Collection exclusive des visuels du club. Direction Artistique par Ceylian Kirchhoffer.
@@ -269,21 +270,21 @@ export default function CommunicationPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* INSTAGRAM */}
-          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="group bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 p-1 rounded-[2rem] hover:scale-105 transition-transform duration-300 shadow-lg">
+          <a href="https://instagram.com/uscbad" target="_blank" rel="noopener noreferrer" className="group bg-gradient-to-br from-purple-600 via-pink-500 to-orange-400 p-1 rounded-[2rem] hover:scale-105 transition-transform duration-300 shadow-lg">
             <div className="bg-white dark:bg-[#0f172a] h-full rounded-[1.85rem] p-8 flex flex-col items-center text-center">
               <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-600 to-orange-400 text-white flex items-center justify-center mb-6 shadow-md group-hover:rotate-12 transition-transform">
                 <Instagram size={32} />
               </div>
               <h3 className="text-2xl font-[900] italic uppercase text-[#081031] dark:text-white mb-2">Instagram</h3>
               <p className="text-slate-500 font-bold text-xs mb-6 whitespace-pre-wrap">{pageConfig.instagramText}</p>
-              <span className="text-[#F72585] font-[900] uppercase text-[10px] tracking-widest flex items-center gap-2 mt-auto">
-                @us_creteil_badminton <ExternalLink size={14} />
+              <span className="text-[#F72585] font-[900] text-[10px] tracking-widest flex items-center gap-2 mt-auto">
+                @uscbad <ExternalLink size={14} />
               </span>
             </div>
           </a>
 
           {/* FACEBOOK */}
-          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="group bg-gradient-to-br from-[#1877F2] to-[#0065FF] p-1 rounded-[2rem] hover:scale-105 transition-transform duration-300 shadow-lg">
+          <a href="https://www.facebook.com/USCRETEIL.Bad" target="_blank" rel="noopener noreferrer" className="group bg-gradient-to-br from-[#1877F2] to-[#0065FF] p-1 rounded-[2rem] hover:scale-105 transition-transform duration-300 shadow-lg">
             <div className="bg-white dark:bg-[#0f172a] h-full rounded-[1.85rem] p-8 flex flex-col items-center text-center">
               <div className="w-16 h-16 rounded-full bg-[#1877F2] text-white flex items-center justify-center mb-6 shadow-md group-hover:rotate-12 transition-transform">
                 <Facebook size={32} fill="currentColor" />

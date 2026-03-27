@@ -8,6 +8,7 @@ export default function EntraineursPage() {
 
   // Appel à notre nouvelle API pour récupérer l'équipe
   useEffect(() => {
+  document.title = "Nos entraîneurs | US Créteil Badminton"; 
     const fetchTeam = async () => {
       try {
         const res = await fetch('/api/team');

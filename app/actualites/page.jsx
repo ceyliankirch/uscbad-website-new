@@ -14,7 +14,7 @@ export default function NewsPage() {
 
   // APPEL API
   useEffect(() => {
-    const fetchArticles = async () => {
+  document.title = "L'actu du club | US Créteil Badminton";    const fetchArticles = async () => {
       try {
         const res = await fetch('/api/articles');
         const data = await res.json();

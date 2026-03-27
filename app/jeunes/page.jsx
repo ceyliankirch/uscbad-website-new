@@ -20,7 +20,8 @@ const EcoleJeunes = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // --- RÉCUPÉRATION DES DONNÉES (Créneaux, Staff, Joueurs) ---
-  useEffect(() => {
+    useEffect(() => {
+    document.title = "Les Jeunes | US Créteil Badminton"; 
     setIsLoading(true);
     Promise.all([
       fetch('/api/creneaux').then(res => res.json()).catch(() => ({ data: [] })),

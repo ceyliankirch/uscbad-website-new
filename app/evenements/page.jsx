@@ -28,6 +28,7 @@ export default function EvenementsPage() {
   };
 
   useEffect(() => {
+  document.title = "Evénements à venir | US Créteil Badminton"; 
     const fetchEvents = async () => {
       try {
         const res = await fetch('/api/events');

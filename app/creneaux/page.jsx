@@ -47,7 +47,8 @@ export default function PublicPlanningPage() {
 
   // Effet pour recentrer le slider au début quand on change de filtre ou d'onglet
   useEffect(() => {
-    if (scrollContainerRef.current) {
+  document.title = "Nos créneaux | US Créteil Badminton"; 
+      if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTo({ left: 0, behavior: 'smooth' });
     }
   }, [activeFilter, activeTab]);

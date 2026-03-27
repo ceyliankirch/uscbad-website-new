@@ -40,6 +40,10 @@ function LoginForm() {
     }
   };
 
+  useEffect(() => {
+    document.title = "Connexion | US Créteil Badminton";
+  }, []);
+
   return (
     <div className="bg-white dark:bg-[#040817] min-h-screen font-sans flex items-center justify-center p-6 relative overflow-hidden transition-colors duration-300">
       

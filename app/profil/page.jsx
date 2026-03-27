@@ -10,6 +10,10 @@ export default function ProfilPage() {
   const router = useRouter();
   const fileInputRef = useRef(null);
 
+  useEffect(() => {
+    document.title = "Mon Profil | US Créteil Badminton";
+  }, []);
+
   // ÉTATS DE LA PAGE
   const [isLoading, setIsLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');

@@ -13,7 +13,7 @@ export default function LeClubPublic() {
 
   // RÉCUPÉRATION DES DONNÉES DEPUIS LES API
   useEffect(() => {
-    const fetchData = async () => {
+  document.title = "Le Bureau & Compte-rendus | US Créteil Badminton";    const fetchData = async () => {
       setIsLoading(true);
       try {
         const [memRes, repRes] = await Promise.all([

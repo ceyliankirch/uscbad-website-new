@@ -26,6 +26,7 @@ export default function IndivsPage() {
 
   // 1. Récupération des vrais comptes utilisateurs (Rôle = Coach)
   useEffect(() => {
+  document.title = "Séances Indivs | US Créteil Badminton"; 
     const fetchCoaches = async () => {
       try {
         // Idéalement, faire appel à '/api/users' et filtrer côté serveur

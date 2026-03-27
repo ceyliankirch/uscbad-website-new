@@ -14,7 +14,7 @@ export default function AdminDashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirection de sécurité selon le rôle
+  document.title = "Dashboard | US Créteil Badminton";    // Redirection de sécurité selon le rôle
     if (status === 'authenticated') {
       const roles = session?.user?.roles || (session?.user?.role ? [session.user.role] : []);
       const isAdmin = roles.includes('admin');

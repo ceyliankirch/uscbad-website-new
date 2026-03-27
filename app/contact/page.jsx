@@ -9,6 +9,7 @@ export default function ContactPage() {
     subject: 'Général',
     message: ''
   });
+  
 
   const handleSubmit = (e) => {
     e.preventDefault();

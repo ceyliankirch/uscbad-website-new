@@ -8,7 +8,7 @@ export default function BenevolesPage() {
 
   // Appel à notre API pour récupérer toute l'équipe
   useEffect(() => {
-    const fetchTeam = async () => {
+  document.title = "Nos bénévoles | US Créteil Badminton";    const fetchTeam = async () => {
       try {
         const res = await fetch('/api/team');
         const data = await res.json();

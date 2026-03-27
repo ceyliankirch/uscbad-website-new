@@ -2,12 +2,43 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Home, ArrowRight, Trophy, Calendar, ChevronRight, TrendingUp, MapPin, Instagram, Facebook, Mail, Users, Star, Loader2, X, Clock, CalendarDays, Share2, PartyPopper, Dumbbell } from 'lucide-react';
+import { Home, ArrowRight, Trophy, Calendar, ChevronRight, TrendingUp, MapPin, Instagram, Facebook, Mail, Users, Star, Loader2, X, Clock, CalendarDays, Share2, PartyPopper, Dumbbell, DownloadCloud } from 'lucide-react';
 
 // LES CATÉGORIES EXACTES DU DASHBOARD
 const categories = ["Tout voir", "Événements", "Compétitions", "Vie du Club", "Interclubs", "Jeunes"];
 
 export default function HomePage() {
+  // --- GESTION DE LA PWA (INSTALLATION) ---
+  const [installPrompt, setInstallPrompt] = useState(null);
+
+  useEffect(() => {
+    // Écoute l'événement natif du navigateur pour proposer l'installation
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault(); // Empêche l'affichage automatique natif (parfois intrusif)
+      setInstallPrompt(e); // Sauvegarde l'événement pour l'utiliser sur notre propre bouton
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!installPrompt) return;
+    
+    // Affiche le prompt natif d'installation d'iOS/Android/Chrome
+    installPrompt.prompt();
+    
+    // Attend le choix de l'utilisateur
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === 'accepted') {
+      console.log('PWA installée avec succès');
+      setInstallPrompt(null); // On cache le bouton une fois installé
+    }
+  };
+
   // --- GESTION DU LIVE SCORE ET CLASSEMENTS ICBAD ---
   const [liveScore, setLiveScore] = useState({
     division: 'NATIONALE 1 | J05',
@@ -221,7 +252,7 @@ export default function HomePage() {
           }
           .animate-marquee {
             display: inline-flex;
-            animation: marquee 40s linear infinite;
+            animation: marquee 20s linear infinite;
           }
           .hide-scrollbar::-webkit-scrollbar {
             display: none;
@@ -256,9 +287,9 @@ export default function HomePage() {
                 <span className="text-[10px] lg:text-[14px] font-[900] uppercase text-[#0EE2E2]">Union Sportive de Créteil</span>
               </div>
               <div className="flex gap-2">
-                <MiniSocialBtn icon={<Instagram size={14} />} href="https://instagram.com/uscbad" />
-                <MiniSocialBtn icon={<Facebook size={14} fill="currentColor" />} href="https://www.facebook.com/USCRETEIL.Bad" />
-                <MiniSocialBtn icon={<Mail size={14} />} href="/contact" />
+                <MiniSocialBtn icon={<Instagram size={14} />} href="#" />
+                <MiniSocialBtn icon={<Facebook size={14} fill="currentColor" />} href="#" />
+                <MiniSocialBtn icon={<Mail size={14} />} href="#" />
               </div>
             </div>
             
@@ -270,7 +301,7 @@ export default function HomePage() {
               Rejoignez le club dynamique dont l'équipe première évolue en Nationale 1. Rassemblant des joueurs de tous niveaux, du loisir à la compétition, et offrant une école de jeunes labellisée.
             </p>
 
-            <div className="flex flex-row items-center gap-2 lg:gap-4 pt-4 lg:pt-8 w-full md:w-auto">
+            <div className="flex flex-row flex-wrap items-center gap-2 lg:gap-4 pt-4 lg:pt-8 w-full md:w-auto">
               <Link 
                 href="/inscriptions" 
                 className="flex-1 md:flex-none flex items-center justify-center bg-[#0065FF] text-white px-4 py-3 lg:px-8 lg:py-4 rounded-xl lg:rounded-2xl font-[900] italic text-xs lg:text-lg shadow-2xl hover:scale-[1.02] transition-transform uppercase tracking-normal hover:bg-[#0EE2E2] hover:text-[#081031]"
@@ -289,6 +320,16 @@ export default function HomePage() {
                   Le Club
                 </span>
               </Link>
+
+              {/* BOUTON D'INSTALLATION PWA (S'affiche uniquement si compatible) */}
+              {installPrompt && (
+                <button 
+                  onClick={handleInstallClick}
+                  className="w-full md:w-auto md:flex-none flex items-center justify-center gap-2 lg:gap-3 bg-gradient-to-r from-[#F72585] to-[#ff4d9a] text-white px-4 py-3 lg:px-8 lg:py-4 rounded-xl lg:rounded-2xl font-[900] italic text-xs lg:text-lg shadow-[0_0_20px_rgba(247,37,133,0.4)] hover:scale-[1.02] transition-transform uppercase tracking-normal"
+                >
+                  <DownloadCloud size={20} className="shrink-0" /> Installer l'App
+                </button>
+              )}
             </div>
 
           </div>
@@ -388,115 +429,138 @@ export default function HomePage() {
         <div className="max-w-[1600px] mx-auto">
           <div className="mb-10 lg:mb-16 text-center lg:text-left">
             <h2 className="text-2xl md:text-5xl lg:text-5xl font-[900] italic uppercase text-[#081031] dark:text-white truncate md:whitespace-normal md:overflow-visible">
-              Intégrer <span className="text-[#0065FF]">le club</span>
+              Intégrer <span className="text-[#0065FF] block sm:inline">le club</span>
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            <InfoCard 
-              num="01" 
-              title="Jeu Libre & Loisir" 
-              desc="Des créneaux tous les jours pour venir jouer librement avec d'autres passionnés dans une ambiance conviviale." 
-              color="#0065FF" 
-              link="/creneaux" 
-            />
-            <InfoCard 
-              num="02" 
-              title="Compétition & IC" 
-              desc="Entraînements dirigés par des coachs et intégration à nos équipes interclubs, jusqu'en Nationale 1." 
-              color="#0EE2E2" 
-              link="/interclubs" 
-            />
-            <InfoCard 
-              num="03" 
-              title="École des Jeunes" 
-              desc="Une école labellisée pour former les champions de demain dès le plus jeune âge avec des pros." 
-              color="#0A266D" 
-              link="/jeunes" 
-            />
+          {/* CARDS D'INFORMATIONS SWIPEABLES SUR MOBILE */}
+          <div className="flex overflow-x-auto xl:grid xl:grid-cols-4 gap-6 pb-8 -mx-6 px-6 xl:mx-0 xl:px-0 snap-x snap-mandatory hide-scrollbar">
+            <div className="w-[85vw] sm:w-[320px] xl:w-auto shrink-0 snap-center flex flex-col">
+              <InfoCard 
+                num="01" 
+                title="Jeu Libre & Loisir" 
+                desc="Des créneaux tous les jours pour venir jouer librement avec d'autres passionnés dans une ambiance conviviale." 
+                color="#0065FF" 
+                link="/creneaux" 
+              />
+            </div>
+            <div className="w-[85vw] sm:w-[320px] xl:w-auto shrink-0 snap-center flex flex-col">
+              <InfoCard 
+                num="02" 
+                title="Compétition & IC" 
+                desc="Entraînements dirigés par des coachs et intégration à nos équipes interclubs, jusqu'en Nationale 1." 
+                color="#0EE2E2" 
+                link="/interclubs" 
+              />
+            </div>
+            <div className="w-[85vw] sm:w-[320px] xl:w-auto shrink-0 snap-center flex flex-col">
+              <InfoCard 
+                num="03" 
+                title="École des Jeunes" 
+                desc="Une école labellisée pour former les champions de demain dès le plus jeune âge avec des pros." 
+                color="#0A266D" 
+                link="/jeunes" 
+              />
+            </div>
             
-            <div className="bg-[#0065FF] rounded-[1.5rem] lg:rounded-[2rem] p-8 flex flex-col justify-center items-center text-center text-white shadow-xl hover:scale-[1.02] transition-transform duration-300">
-              <h4 className="text-2xl font-[900] italic uppercase mb-3 leading-tight">Prêt à nous rejoindre ?</h4>
-              <p className="text-[11px] font-bold opacity-90 mb-6">Les inscriptions pour la saison sont ouvertes. Rejoignez la famille USC.</p>
-              <Link href="/inscriptions" className="bg-[#081031] text-white px-6 py-4 w-full rounded-xl font-[900] uppercase text-xs tracking-widest flex items-center justify-center gap-3 hover:bg-[#0EE2E2] hover:text-[#081031] transition-colors shadow-lg">
-                M'inscrire <ArrowRight size={18} />
-              </Link>
+            <div className="w-[85vw] sm:w-[320px] xl:w-auto shrink-0 snap-center flex flex-col">
+              <div className="h-full bg-[#0065FF] rounded-[1.5rem] lg:rounded-[2rem] p-8 flex flex-col justify-center items-center text-center text-white shadow-xl hover:scale-[1.02] transition-transform duration-300">
+                <h4 className="text-2xl font-[900] italic uppercase mb-3 leading-tight">Prêt à nous rejoindre ?</h4>
+                <p className="text-[11px] font-bold opacity-90 mb-6">Les inscriptions pour la saison sont ouvertes. Rejoignez la famille USC.</p>
+                <Link href="/inscriptions" className="bg-[#081031] text-white px-6 py-4 w-full rounded-xl font-[900] uppercase text-xs tracking-widest flex items-center justify-center gap-3 hover:bg-[#0EE2E2] hover:text-[#081031] transition-colors shadow-lg">
+                  M'inscrire <ArrowRight size={18} />
+                </Link>
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mt-6">
-            <div className="bg-white dark:bg-[#0f172a] p-6 rounded-[1.5rem] border border-slate-100 dark:border-white/5 flex items-center justify-between group hover:shadow-lg transition-all">
-              <div>
-                <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Total Licenciés</div>
-                <div className="text-5xl font-[900] italic text-[#081031] dark:text-white">
-                  <AnimatedNumber value={307} />
-                </div>
-              </div>
-              <div className="w-16 h-16 rounded-2xl bg-[#0EE2E2]/10 flex items-center justify-center text-[#0EE2E2] group-hover:scale-110 group-hover:rotate-6 transition-all">
-                <Users size={32} />
-              </div>
-            </div>
-
-            <div className="bg-white dark:bg-[#0f172a] p-6 rounded-[1.5rem] border border-slate-100 dark:border-white/5 flex flex-col justify-center hover:shadow-lg transition-all">
-              <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-4">Parité du club</div>
-              <div className="flex items-center gap-4">
-                <AnimatedDonut men={184} women={132} />
-                <div className="flex flex-col gap-3">
-                  <div className="flex flex-col">
-                    <span className="text-[#0065FF] text-[9px] font-black uppercase flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#0065FF] shadow-[0_0_8px_#0065FF]"></span> Hommes</span>
-                    <span className="text-xl font-[900] italic text-[#081031] dark:text-white leading-none"><AnimatedNumber value={184} /></span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[#F72585] text-[9px] font-black uppercase flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#F72585] shadow-[0_0_8px_#F72585]"></span> Femmes</span>
-                    <span className="text-xl font-[900] italic text-[#081031] dark:text-white leading-none"><AnimatedNumber value={132} /></span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white dark:bg-[#0f172a] p-6 rounded-[1.5rem] border border-slate-100 dark:border-white/5 flex flex-col justify-center items-center text-center group hover:shadow-lg transition-all">
-              <div className="flex gap-1 text-[#FFD500] mb-3 group-hover:scale-110 transition-transform">
-                <Star size={28} fill="currentColor" className="drop-shadow-[0_0_10px_rgba(255, 213, 0, 0.5)]" />
-                <Star size={28} fill="currentColor" className="drop-shadow-[0_0_10px_rgba(255, 213, 0, 0.5)] -translate-y-2" />
-                <Star size={28} fill="currentColor" className="drop-shadow-[0_0_10px_rgba(255, 213, 0, 0.5)]" />
-              </div>
-              <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest">École de Badminton</div>
-              <div className="text-sm font-[900] italic text-[#081031] dark:text-white uppercase mt-1">Labellisée FFBAD</div>
-            </div>
-
-            <div className="bg-[#081031] dark:bg-[#0065FF]/10 p-6 rounded-[1.5rem] border-none dark:border dark:border-[#0065FF]/20 flex flex-col justify-center relative overflow-hidden group hover:shadow-[0_0_30px_rgba(14,226,226,0.15)] transition-all">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-[#0EE2E2]/20 blur-[40px] rounded-full group-hover:scale-150 transition-transform duration-700"></div>
-              <div className="flex items-center gap-2 mb-3 relative z-10">
-                {nextSession && nextSession.isToday ? (
-                  <span className="relative flex h-3 w-3">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0EE2E2] opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-3 w-3 bg-[#0EE2E2] shadow-[0_0_8px_#0EE2E2]"></span>
-                  </span>
-                ) : (
-                  <CalendarDays size={14} className="text-[#0EE2E2]" />
-                )}
-                <span className="text-[10px] font-black uppercase text-[#0EE2E2] tracking-widest">
-                  Prochain créneau (Jeu Libre)
-                </span>
-              </div>
-              
-              {isLoadingSession ? (
-                <div className="flex items-center gap-2 text-white font-bold"><Loader2 size={16} className="animate-spin"/> Recherche...</div>
-              ) : nextSession ? (
-                <>
-                  <div className="text-2xl font-[900] italic text-white uppercase leading-tight mb-2 relative z-10">
-                    {nextSession.type} <span className="text-slate-400">| {nextSession.startTime}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase relative z-10">
-                    <MapPin size={12} className="text-[#0EE2E2] shrink-0" /> 
-                    <span className="truncate">
-                      {nextSession.isToday ? 'Ce soir' : nextSession.day} - {nextSession.gymnasium}
+          {/* STATISTIQUES (EN DESSOUS DES CARTES D'INFOS) */}
+          <div className="flex overflow-x-auto xl:grid xl:grid-cols-4 gap-6 pb-8 -mx-6 px-6 xl:mx-0 xl:px-0 snap-x snap-mandatory hide-scrollbar mt-4">
+            
+            {/* CARTE 1 : Prochain Créneau (Déplacée en premier) */}
+            <div className="w-[85vw] sm:w-[320px] xl:w-auto shrink-0 snap-center flex flex-col">
+              <div className="bg-[#081031] dark:bg-[#0065FF]/10 p-6 rounded-[1.5rem] border-none dark:border dark:border-[#0065FF]/20 flex flex-col justify-center relative overflow-hidden group hover:shadow-[0_0_30px_rgba(14,226,226,0.15)] transition-all h-full">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-[#0EE2E2]/20 blur-[40px] rounded-full group-hover:scale-150 transition-transform duration-700"></div>
+                <div className="flex items-center gap-2 mb-3 relative z-10">
+                  {nextSession && nextSession.isToday ? (
+                    <span className="relative flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0EE2E2] opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-[#0EE2E2] shadow-[0_0_8px_#0EE2E2]"></span>
                     </span>
+                  ) : (
+                    <CalendarDays size={14} className="text-[#0EE2E2]" />
+                  )}
+                  <span className="text-[10px] font-black uppercase text-[#0EE2E2] tracking-widest">
+                    Prochain créneau (Jeu Libre)
+                  </span>
+                </div>
+                
+                {isLoadingSession ? (
+                  <div className="flex items-center gap-2 text-white font-bold"><Loader2 size={16} className="animate-spin"/> Recherche...</div>
+                ) : nextSession ? (
+                  <>
+                    <div className="text-2xl font-[900] italic text-white uppercase leading-tight mb-2 relative z-10">
+                      {nextSession.type} <span className="text-slate-400">| {nextSession.startTime}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase relative z-10">
+                      <MapPin size={12} className="text-[#0EE2E2] shrink-0" /> 
+                      <span className="truncate">
+                        {nextSession.isToday ? 'Ce soir' : nextSession.day} - {nextSession.gymnasium}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-sm font-bold text-slate-400 italic">Aucun créneau programmé</div>
+                )}
+              </div>
+            </div>
+
+            {/* CARTE 2 : Total Licenciés */}
+            <div className="w-[85vw] sm:w-[320px] xl:w-auto shrink-0 snap-center flex flex-col">
+              <div className="bg-white dark:bg-[#0f172a] p-6 rounded-[1.5rem] border border-slate-100 dark:border-white/5 flex items-center justify-between group hover:shadow-lg transition-all h-full">
+                <div>
+                  <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Total Licenciés</div>
+                  <div className="text-5xl font-[900] italic text-[#081031] dark:text-white">
+                    <AnimatedNumber value={307} />
                   </div>
-                </>
-              ) : (
-                <div className="text-sm font-bold text-slate-400 italic">Aucun créneau programmé</div>
-              )}
+                </div>
+                <div className="w-16 h-16 rounded-2xl bg-[#0EE2E2]/10 flex items-center justify-center text-[#0EE2E2] group-hover:scale-110 group-hover:rotate-6 transition-all">
+                  <Users size={32} />
+                </div>
+              </div>
+            </div>
+
+            {/* CARTE 3 : Parité du club */}
+            <div className="w-[85vw] sm:w-[320px] xl:w-auto shrink-0 snap-center flex flex-col">
+              <div className="bg-white dark:bg-[#0f172a] p-6 rounded-[1.5rem] border border-slate-100 dark:border-white/5 flex flex-col justify-center hover:shadow-lg transition-all h-full">
+                <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-4">Parité du club</div>
+                <div className="flex items-center gap-4">
+                  <AnimatedDonut men={184} women={132} />
+                  <div className="flex flex-col gap-3">
+                    <div className="flex flex-col">
+                      <span className="text-[#0065FF] text-[9px] font-black uppercase flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#0065FF] shadow-[0_0_8px_#0065FF]"></span> Hommes</span>
+                      <span className="text-xl font-[900] italic text-[#081031] dark:text-white leading-none"><AnimatedNumber value={184} /></span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[#F72585] text-[9px] font-black uppercase flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#F72585] shadow-[0_0_8px_#F72585]"></span> Femmes</span>
+                      <span className="text-xl font-[900] italic text-[#081031] dark:text-white leading-none"><AnimatedNumber value={132} /></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* CARTE 4 : École de Badminton */}
+            <div className="w-[85vw] sm:w-[320px] xl:w-auto shrink-0 snap-center flex flex-col">
+              <div className="bg-white dark:bg-[#0f172a] p-6 rounded-[1.5rem] border border-slate-100 dark:border-white/5 flex flex-col justify-center items-center text-center group hover:shadow-lg transition-all h-full">
+                <div className="flex gap-1 text-[#FFD500] mb-3 group-hover:scale-110 transition-transform">
+                  <Star size={28} fill="currentColor" className="drop-shadow-[0_0_10px_rgba(255, 213, 0, 0.5)]" />
+                  <Star size={28} fill="currentColor" className="drop-shadow-[0_0_10px_rgba(255, 213, 0, 0.5)] -translate-y-2" />
+                  <Star size={28} fill="currentColor" className="drop-shadow-[0_0_10px_rgba(255, 213, 0, 0.5)]" />
+                </div>
+                <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest">École de Badminton</div>
+                <div className="text-sm font-[900] italic text-[#081031] dark:text-white uppercase mt-1">Labellisée FFBAD</div>
+              </div>
             </div>
 
           </div>
@@ -510,7 +574,7 @@ export default function HomePage() {
           <div className="px-6 lg:px-8 flex flex-col md:flex-row justify-between items-start md:items-end mb-8 lg:mb-12 gap-6">
             <div>
               <h2 className="text-2xl md:text-5xl lg:text-5xl font-[900] italic uppercase text-[#081031] dark:text-white truncate md:whitespace-normal md:overflow-visible">
-                ACTUALITÉS <span className="text-[#0065FF]">RÉCENTES</span>
+                ACTUALITÉS <span className="text-[#0065FF] block sm:inline">RÉCENTES</span>
               </h2>
             </div>
             
@@ -563,15 +627,15 @@ export default function HomePage() {
       </section>
 
       {/* 5. SECTION INTERCLUBS CONNECTÉE À LA BDD (ICBAD) */}
-      <section className="py-16 lg:py-24 px-6 lg:px-8 bg-slate-50/50 dark:bg-[#0a0f25] border-t border-slate-100 dark:border-white/5 transition-colors">
-        <div className="max-w-[1600px] mx-auto">
+      <section className="py-16 lg:py-24 bg-slate-50/50 dark:bg-[#0a0f25] border-t border-slate-100 dark:border-white/5 transition-colors overflow-hidden">
+        <div className="max-w-[1600px] mx-auto px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 lg:mb-16 gap-6">
             <div>
               <div className="text-[#0EE2E2] font-bold text-[10px] uppercase tracking-normal mb-2 flex items-center gap-2">
                 <TrendingUp size={16} /> Classements en cours
               </div>
               <h2 className="text-2xl md:text-5xl lg:text-5xl font-[900] italic uppercase text-[#081031] dark:text-white truncate md:whitespace-normal md:overflow-visible">
-                RÉSULTATS <span className="text-[#0065FF]">INTERCLUBS</span>
+                RÉSULTATS <span className="text-[#0065FF] block sm:inline">INTERCLUBS</span>
               </h2>
             </div>
             <Link href="/interclubs" className="w-full md:w-auto text-[#0A266D] dark:text-[#0EE2E2] bg-[#0A266D]/5 dark:bg-white/5 md:bg-transparent py-3 md:py-0 rounded-xl md:rounded-none hover:text-[#0065FF] dark:hover:text-white font-bold text-xs uppercase transition-colors text-center">
@@ -584,24 +648,30 @@ export default function HomePage() {
               <Loader2 size={40} className="animate-spin text-[#0065FF]" />
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-              <TeamCard team="Équipe 1" division="Nationale 1" color="#0065FF" ranking={rankings.n1.slice(0, 4)} />
-              <TeamCard team="Équipe 2" division="Régionale" color="#0EE2E2" ranking={rankings.eq2.slice(0, 4)} />
-              <TeamCard team="Équipe 3" division="Régionale" color="#0A266D" ranking={rankings.eq3.slice(0, 4)} />
+            <div className="flex overflow-x-auto lg:grid lg:grid-cols-3 gap-6 lg:gap-8 pb-8 -mx-6 px-6 lg:mx-0 lg:px-0 snap-x snap-mandatory hide-scrollbar">
+              <div className="w-[85vw] sm:w-[350px] lg:w-auto shrink-0 snap-center flex flex-col">
+                <TeamCard team="Équipe 1" division="Nationale 1" color="#0065FF" ranking={rankings.n1.slice(0, 4)} />
+              </div>
+              <div className="w-[85vw] sm:w-[350px] lg:w-auto shrink-0 snap-center flex flex-col">
+                <TeamCard team="Équipe 2" division="Régionale" color="#0EE2E2" ranking={rankings.eq2.slice(0, 4)} />
+              </div>
+              <div className="w-[85vw] sm:w-[350px] lg:w-auto shrink-0 snap-center flex flex-col">
+                <TeamCard team="Équipe 3" division="Régionale" color="#0A266D" ranking={rankings.eq3.slice(0, 4)} />
+              </div>
             </div>
           )}
         </div>
       </section>
 
       {/* 6. SECTION ÉVÉNEMENTS DYNAMIQUE */}
-      <section className="py-16 lg:py-24 px-6 lg:px-8 bg-[#081031] text-white relative overflow-hidden">
+      <section className="py-16 lg:py-24 bg-[#081031] text-white relative overflow-hidden">
         <div className="absolute right-[-10%] bottom-[-20%] w-[300px] lg:w-[600px] h-[300px] lg:h-[600px] bg-[#0065FF]/20 lg:bg-[#0065FF]/10 rounded-full blur-[80px] lg:blur-[120px]" />
         
-        <div className="max-w-[1600px] mx-auto relative z-10">
+        <div className="max-w-[1600px] mx-auto relative z-10 px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 lg:mb-16 gap-6">
             <div>
               <h2 className="text-2xl md:text-4xl lg:text-5xl font-[900] italic uppercase text-white leading-none truncate md:whitespace-normal md:overflow-visible">
-                ÉVÉNEMENTS <span className="text-[#0EE2E2]">À VENIR</span>
+                ÉVÉNEMENTS <span className="text-[#0EE2E2] block sm:inline">À VENIR</span>
               </h2>
               <p className="text-slate-400 font-bold mt-4 max-w-xl">
                 Ne manquez rien de la vie du club : compétitions, tournois internes et moments de convivialité.
@@ -617,13 +687,14 @@ export default function HomePage() {
               <Loader2 size={40} className="animate-spin text-[#0EE2E2]" />
             </div>
           ) : upcomingEvents.length > 0 ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+            <div className="flex overflow-x-auto lg:grid lg:grid-cols-2 gap-4 lg:gap-6 pb-8 -mx-6 px-6 lg:mx-0 lg:px-0 snap-x snap-mandatory hide-scrollbar">
               {upcomingEvents.map((event) => (
-                <EventRow 
-                  key={event._id} 
-                  event={event}
-                  onClick={() => handleOpenModal(event)}
-                />
+                <div key={event._id} className="w-[85vw] sm:w-[400px] lg:w-auto shrink-0 snap-center flex flex-col">
+                  <EventRow 
+                    event={event}
+                    onClick={() => handleOpenModal(event)}
+                  />
+                </div>
               ))}
             </div>
           ) : (
@@ -834,7 +905,7 @@ const MiniSocialBtn = ({ icon, href }) => (
 );
 
 const InfoCard = ({ num, title, desc, color, link }) => (
-  <div className="group bg-white dark:bg-[#0f172a] p-8 lg:p-10 rounded-[1.5rem] lg:rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-sm hover:shadow-xl dark:hover:shadow-black/50 transition-all duration-300 flex flex-col h-full">
+  <div className="group bg-white dark:bg-[#0f172a] p-8 lg:p-10 rounded-[1.5rem] lg:rounded-[2rem] border border-slate-100 dark:border-white/5 shadow-sm hover:shadow-xl dark:hover:shadow-black/50 transition-all duration-300 flex flex-col h-full w-full">
     <div className="text-4xl lg:text-5xl font-[900] italic mb-4 lg:mb-6 opacity-20 group-hover:opacity-100 transition-all" style={{ color }}>{num}</div>
     <h4 className="text-lg lg:text-xl font-[900] uppercase italic mb-2 lg:mb-3 text-[#081031] dark:text-white transition-colors">{title}</h4>
     <p className="text-slate-500 dark:text-slate-400 font-bold mb-6 lg:mb-8 text-sm flex-grow leading-relaxed transition-colors">{desc}</p>
@@ -972,7 +1043,7 @@ const NewsCard = ({ article, onClick }) => (
 );
 
 const TeamCard = ({ team, division, color, ranking }) => (
-  <div className="bg-white dark:bg-[#0f172a] p-6 lg:p-8 rounded-[1.5rem] lg:rounded-[2rem] border border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/20 transition-all flex flex-col shadow-sm">
+  <div className="bg-white dark:bg-[#0f172a] p-6 lg:p-8 rounded-[1.5rem] lg:rounded-[2rem] border border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/20 transition-all flex flex-col shadow-sm h-full w-full">
     <div className="text-xs lg:text-sm font-bold text-slate-500 dark:text-slate-400 mb-1 transition-colors">{division}</div>
     <h3 className="text-2xl lg:text-3xl font-[900] italic text-[#081031] dark:text-white uppercase mb-4 lg:mb-6 transition-colors">{team}</h3>
     <div className="flex-grow">
@@ -1007,7 +1078,7 @@ const EventRow = ({ event, onClick }) => {
   return (
     <div 
       onClick={onClick}
-      className="group flex flex-row items-center gap-3 lg:gap-5 p-3 lg:p-5 rounded-[1.2rem] lg:rounded-[1.5rem] bg-white/5 border border-white/10 hover:bg-[#0065FF]/20 hover:border-[#0065FF]/50 transition-all cursor-pointer"
+      className="group flex flex-row items-center gap-3 lg:gap-5 p-3 lg:p-5 rounded-[1.2rem] lg:rounded-[1.5rem] bg-white/5 border border-white/10 hover:bg-[#0065FF]/20 hover:border-[#0065FF]/50 transition-all cursor-pointer h-full w-full"
     >
       <div className="flex-shrink-0 w-14 h-14 lg:w-16 lg:h-16 rounded-[0.8rem] lg:rounded-xl bg-[#0A266D] flex flex-col justify-center items-center group-hover:bg-[#0EE2E2] transition-colors">
         <span className="text-xl lg:text-2xl font-[900] text-white group-hover:text-[#081031] leading-none mb-0.5">{day}</span>

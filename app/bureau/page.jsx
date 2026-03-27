@@ -145,23 +145,25 @@ export default function LeClubPublic() {
                           </div>
                         </div>
                         
-                        {report.type === 'texte' ? (
+                        <div className="flex items-center gap-2">
                           <button 
                             onClick={() => setViewingReport(report)}
-                            className="bg-[#081031] dark:bg-white/10 text-white p-4 rounded-2xl hover:bg-[#F72585] dark:hover:bg-white/20 transition-all flex items-center gap-2 font-black uppercase text-[10px] tracking-widest shadow-lg"
+                            className="bg-[#081031] dark:bg-white/10 text-white px-5 py-3 sm:px-6 sm:py-4 rounded-2xl hover:bg-[#0EE2E2] hover:text-[#081031] transition-all flex items-center gap-2 font-black uppercase text-[10px] tracking-widest shadow-lg"
                           >
-                            <Eye size={20} /> <span className="hidden sm:inline">Lire le CR</span>
+                            <Eye size={20} /> <span className="hidden sm:inline">Consulter</span>
                           </button>
-                        ) : (
-                          <a 
-                            href={report.fichier} 
-                            download={`${report.titre}.pdf`}
-                            className="bg-[#081031] dark:bg-white/10 text-white p-4 rounded-2xl hover:bg-[#0065FF] dark:hover:bg-white/20 transition-all shadow-lg"
-                            title="Télécharger le PDF"
-                          >
-                            <Download size={20} />
-                          </a>
-                        )}
+                          
+                          {report.type === 'pdf' && (
+                            <a 
+                              href={report.fichier} 
+                              download={`${report.titre}.pdf`}
+                              className="bg-slate-100 dark:bg-white/5 text-slate-500 p-3 sm:p-4 rounded-2xl hover:text-[#0065FF] transition-all shadow-sm"
+                              title="Télécharger le PDF"
+                            >
+                              <Download size={20} />
+                            </a>
+                          )}
+                        </div>
                       </div>
                     ))
                   )}
@@ -173,22 +175,24 @@ export default function LeClubPublic() {
         )}
       </main>
 
-      {/* --- MODALE DE LECTURE CR IA --- */}
+      {/* --- MODALE DE LECTURE CR (IA & PDF) --- */}
       {viewingReport && (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-[#081031]/90 backdrop-blur-md animate-in fade-in" onClick={() => setViewingReport(null)}></div>
           
-          <div className="relative bg-white dark:bg-[#081031] w-full max-w-4xl max-h-[85vh] rounded-[3rem] shadow-2xl overflow-hidden flex flex-col border border-white/10 animate-in zoom-in-95 duration-300">
+          <div className="relative bg-white dark:bg-[#081031] w-full max-w-5xl max-h-[90vh] rounded-[3rem] shadow-2xl overflow-hidden flex flex-col border border-white/10 animate-in zoom-in-95 duration-300">
             
             {/* Header Modale */}
-            <div className="p-8 border-b border-slate-100 dark:border-white/10 flex justify-between items-center bg-slate-50 dark:bg-[#040817]">
+            <div className="p-6 lg:p-8 border-b border-slate-100 dark:border-white/10 flex justify-between items-center bg-slate-50 dark:bg-[#040817] shrink-0">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-500/20 text-purple-500 rounded-2xl flex items-center justify-center">
-                  <Sparkles size={24} />
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${viewingReport.type === 'texte' ? 'bg-purple-100 text-purple-500 dark:bg-purple-500/20' : 'bg-red-100 text-red-500 dark:bg-red-500/20'}`}>
+                  {viewingReport.type === 'texte' ? <Sparkles size={24} /> : <FileText size={24} />}
                 </div>
                 <div>
                   <h2 className="text-xl font-black uppercase italic text-[#081031] dark:text-white leading-none mb-1">{viewingReport.titre}</h2>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Synthèse IA de la réunion du {viewingReport.date}</p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    {viewingReport.type === 'texte' ? 'Synthèse IA' : 'Document officiel'} du {viewingReport.date}
+                  </p>
                 </div>
               </div>
               <button 
@@ -199,20 +203,24 @@ export default function LeClubPublic() {
               </button>
             </div>
 
-            {/* Contenu Texte */}
-            <div className="p-8 lg:p-12 overflow-y-auto hide-scrollbar bg-white dark:bg-[#081031]">
-              <div className="prose dark:prose-invert max-w-none text-sm sm:text-base font-medium leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-300">
-                {viewingReport.contenu}
-              </div>
+            {/* Contenu Texte ou PDF */}
+            <div className="p-6 lg:p-8 overflow-y-auto hide-scrollbar bg-white dark:bg-[#081031] flex-1">
+              {viewingReport.type === 'texte' ? (
+                <div className="prose dark:prose-invert max-w-none text-sm sm:text-base font-medium leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+                  {viewingReport.contenu}
+                </div>
+              ) : (
+                <iframe src={viewingReport.fichier} className="w-full h-full min-h-[60vh] rounded-2xl border border-slate-200 dark:border-white/10" />
+              )}
             </div>
 
             {/* Footer Modale */}
-            <div className="p-6 border-t border-slate-100 dark:border-white/10 bg-slate-50 dark:bg-[#040817] flex justify-end">
+            <div className="p-6 border-t border-slate-100 dark:border-white/10 bg-slate-50 dark:bg-[#040817] flex justify-end shrink-0">
               <button 
                 onClick={() => setViewingReport(null)}
-                className="px-8 py-3 bg-[#081031] dark:bg-white text-white dark:text-[#081031] rounded-xl font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all"
+                className="px-8 py-3 bg-[#081031] dark:bg-white text-white dark:text-[#081031] rounded-xl font-black uppercase text-[10px] tracking-widest hover:scale-105 transition-all shadow-md"
               >
-                Fermer la lecture
+                Fermer
               </button>
             </div>
 

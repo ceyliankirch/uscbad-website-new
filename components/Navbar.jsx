@@ -169,7 +169,7 @@ const Navbar = () => {
               </div>
 
               {link.dropdown && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-52 bg-white rounded-2xl shadow-2xl border border-slate-100 dark:border-white/10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 py-2">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-52 bg-white dark:bg-[#081031] rounded-2xl shadow-2xl border border-slate-100 dark:border-white/10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 py-2">
                   {link.dropdown.map((sub) => (
                     <div key={sub.name} className="relative group/sub">
                       
@@ -182,20 +182,20 @@ const Navbar = () => {
                           </div>
                           
                           {/* LE SOUS-SOUS-MENU */}
-                          <div className="absolute top-0 left-[95%] ml-2 w-56 bg-white dark:bg-[#0f172a] rounded-2xl shadow-2xl border border-slate-100 dark:border-white/10 opacity-0 invisible group-hover/sub:opacity-100 group-hover/sub:visible transition-all duration-300 transform -translate-x-2 group-hover/sub:translate-x-0 py-2">
+                          <div className="absolute top-0 left-[95%] ml-2 w-56 bg-white dark:bg-[#081031] rounded-2xl shadow-2xl border border-slate-100 dark:border-white/10 opacity-0 invisible group-hover/sub:opacity-100 group-hover/sub:visible transition-all duration-300 transform -translate-x-2 group-hover/sub:translate-x-0 py-2">
                             {sub.subDropdown.length > 0 && sub.subDropdown[0].name !== 'Chargement...' ? (
                               sub.subDropdown.map((nested) => (
                                 <Link 
                                   key={nested.name} 
                                   href={nested.href} 
-                                  className="block pl-5 pr-5 py-3 text-[10px] font-bold font-['Montserrat'] uppercase text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] hover:pl-7 transition-all duration-300 whitespace-nowrap overflow-hidden text-ellipsis"
+                                  className="block pl-5 pr-5 py-3 text-[10px] font-bold font-['Montserrat'] uppercase text-slate-600 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] hover:pl-7 transition-all duration-300 whitespace-nowrap overflow-hidden text-ellipsis"
                                   title={nested.name}
                                 >
                                   {nested.name}
                                 </Link>
                               ))
                             ) : (
-                              <span className="block px-5 py-3 text-[10px] font-bold uppercase text-slate-400 italic">
+                              <span className="block px-5 py-3 text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500 italic">
                                 {sub.subDropdown[0]?.name || "Aucun événement"}
                               </span>
                             )}
@@ -234,10 +234,10 @@ const Navbar = () => {
               </button>
               
               {/* Menu profil */}
-              <div className="absolute top-full right-0 mt-2 w-56 bg-white dark:bg-[#0f172a] rounded-2xl shadow-2xl border border-slate-100 dark:border-white/10 opacity-0 invisible group-hover/auth:opacity-100 group-hover/auth:visible transition-all duration-300 transform translate-y-2 group-hover/auth:translate-y-0 py-2 overflow-hidden">
+              <div className="absolute top-full right-0 mt-2 w-56 bg-white dark:bg-[#081031] rounded-2xl shadow-2xl border border-slate-100 dark:border-white/10 opacity-0 invisible group-hover/auth:opacity-100 group-hover/auth:visible transition-all duration-300 transform translate-y-2 group-hover/auth:translate-y-0 py-2 overflow-hidden">
                 <div className="px-4 py-3 border-b border-slate-100 dark:border-white/5 mb-1">
                   <p className="text-xs font-bold text-[#081031] dark:text-white truncate">{session.user?.name || 'Utilisateur'}</p>
-                  <p className="text-[10px] text-slate-500 truncate">{session.user?.email}</p>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{session.user?.email}</p>
                 </div>
                 
                 {/* AFFICHAGE CONDITIONNEL DES DASHBOARDS SELON LES RÔLES */}
@@ -248,44 +248,44 @@ const Navbar = () => {
                   return (
                     <div className="max-h-[60vh] overflow-y-auto hide-scrollbar">
                       {userRoles.includes('admin') && (
-                        <Link href="/admin" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-red-500 transition-colors uppercase">
+                        <Link href="/admin" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 hover:text-red-500 dark:hover:text-red-500 transition-colors uppercase">
                           <Shield size={14} /> Espace Admin
                         </Link>
                       )}
                       {userRoles.includes('bureau') && (
-                        <Link href="/admin/dashboard-bureau" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#0065FF] transition-colors uppercase">
+                        <Link href="/admin/dashboard-bureau" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] transition-colors uppercase">
                           <Briefcase size={14} /> Espace Bureau
                         </Link>
                       )}
                       {userRoles.includes('coach') && (
-                        <Link href="/admin/entrainements" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#00E676] transition-colors uppercase">
+                        <Link href="/admin/entrainements" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#00E676] dark:hover:text-[#00E676] transition-colors uppercase">
                           <Dumbbell size={14} /> Entraînements
                         </Link>
                       )}
                       {userRoles.includes('indiv') && (
-                        <Link href="/admin/indivs" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#F72585] transition-colors uppercase">
+                        <Link href="/admin/indivs" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#F72585] dark:hover:text-[#F72585] transition-colors uppercase">
                           <Target size={14} /> Gestion Indivs
                         </Link>
                       )}
                       {userRoles.includes('cordeur') && (
-                        <Link href="/admin/cordage" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#10B981] transition-colors uppercase">
+                        <Link href="/admin/cordage" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#10B981] dark:hover:text-[#10B981] transition-colors uppercase">
                           <Scissors size={14} /> Atelier Recordage
                         </Link>
                       )}
                       {userRoles.includes('buvette') && (
-                        <Link href="/admin/buvette" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#FFD500] transition-colors uppercase">
+                        <Link href="/admin/buvette" className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#FFD500] dark:hover:text-[#FFD500] transition-colors uppercase">
                           <Coffee size={14} /> Gestion Buvette
                         </Link>
                       )}
                       {/* Toujours visible pour les connectés */}
-                      <Link href="/profil" className={`flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] transition-colors uppercase ${hasAdminRoles ? 'border-t border-slate-100 dark:border-white/5 mt-1 pt-3' : ''}`}>
+                      <Link href="/profil" className={`flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-white/5 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] transition-colors uppercase ${hasAdminRoles ? 'border-t border-slate-100 dark:border-white/5 mt-1 pt-3' : ''}`}>
                         <User size={14} /> Espace Joueur
                       </Link>
                     </div>
                   );
                 })()}
 
-                <button onClick={() => signOut({ callbackUrl: '/' })} className="w-full flex items-center gap-3 text-left px-4 py-3 mt-1 text-xs font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-red-500 uppercase border-t border-slate-100 dark:border-white/5 transition-colors">
+                <button onClick={() => signOut({ callbackUrl: '/' })} className="w-full flex items-center gap-3 text-left px-4 py-3 mt-1 text-xs font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/5 hover:text-red-500 dark:hover:text-red-500 uppercase border-t border-slate-100 dark:border-white/5 transition-colors">
                   <LogOut size={14} /> Déconnexion
                 </button>
               </div>
@@ -294,7 +294,7 @@ const Navbar = () => {
             <button 
               onClick={() => setIsAuthModalOpen(true)}
               className={`p-2.5 rounded-full transition-colors flex items-center justify-center ${
-                shouldBeSolid ? 'bg-slate-100 text-[#081031] dark:bg-white/10 dark:text-white hover:bg-[#0065FF] hover:text-white' : 'bg-white/20 text-white hover:bg-white hover:text-[#081031]'
+                shouldBeSolid ? 'bg-slate-100 text-[#081031] dark:bg-white/10 dark:text-white hover:bg-[#0065FF] hover:text-white dark:hover:bg-[#0065FF]' : 'bg-white/20 text-white hover:bg-white hover:text-[#081031]'
               }`}
             >
               <User size={18} />
@@ -378,7 +378,7 @@ const Navbar = () => {
                               className="flex items-center justify-between py-2 text-sm font-bold font-['Montserrat'] text-black dark:text-white uppercase transition-colors"
                             >
                               <span>{sub.name}</span>
-                              <ChevronDown size={16} className={`transition-transform text-slate-400 ${openMobileNestedDropdown === sub.name ? 'rotate-180 text-[#0065FF]' : ''}`} />
+                              <ChevronDown size={16} className={`transition-transform text-slate-400 ${openMobileNestedDropdown === sub.name ? 'rotate-180 text-[#0065FF] dark:text-[#0EE2E2]' : ''}`} />
                             </button>
                             
                             <div className={`overflow-hidden transition-all duration-300 ease-in-out ${openMobileNestedDropdown === sub.name ? 'max-h-[400px] opacity-100' : 'max-h-0 opacity-0'}`}>
@@ -393,7 +393,7 @@ const Navbar = () => {
                                         setOpenMobileDropdown(null);
                                         setOpenMobileNestedDropdown(null);
                                       }} 
-                                      className="text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:text-[#0065FF] dark:hover:text-[#0EE2E2] uppercase transition-colors"
+                                      className="text-[11px] font-bold text-slate-500 dark:text-white hover:text-[#0065FF] dark:hover:text-[#0EE2E2] uppercase transition-colors"
                                     >
                                       {nested.name}
                                     </Link>
@@ -448,7 +448,7 @@ const Navbar = () => {
                           <Link href="/admin" onClick={() => setIsMobileMenuOpen(false)} className="p-3 bg-white dark:bg-[#0f172a] text-red-500 rounded-xl flex flex-col items-center gap-1 font-bold text-[10px] uppercase text-center shadow-sm"><Shield size={16} /> Admin</Link>
                         )}
                         {userRoles.includes('bureau') && (
-                          <Link href="/admin/dashboard-bureau" onClick={() => setIsMobileMenuOpen(false)} className="p-3 bg-white dark:bg-[#0f172a] text-[#0065FF] rounded-xl flex flex-col items-center gap-1 font-bold text-[10px] uppercase text-center shadow-sm"><Briefcase size={16} /> Bureau</Link>
+                          <Link href="/admin/dashboard-bureau" onClick={() => setIsMobileMenuOpen(false)} className="p-3 bg-white dark:bg-[#0f172a] text-[#0065FF] dark:text-[#0EE2E2] rounded-xl flex flex-col items-center gap-1 font-bold text-[10px] uppercase text-center shadow-sm"><Briefcase size={16} /> Bureau</Link>
                         )}
                         {userRoles.includes('coach') && (
                           <Link href="/admin/entrainements" onClick={() => setIsMobileMenuOpen(false)} className="p-3 bg-white dark:bg-[#0f172a] text-[#00E676] rounded-xl flex flex-col items-center gap-1 font-bold text-[10px] uppercase text-center shadow-sm"><Dumbbell size={16} /> Coach</Link>

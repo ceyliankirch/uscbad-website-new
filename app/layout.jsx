@@ -1,10 +1,9 @@
 import { Montserrat } from 'next/font/google';
 import './globals.css';
-import Navbar from '../components/Navbar'; 
-import Footer from '../components/Footer'; 
-import AuthProvider from '../components/AuthProvider'; // <-- 1. IMPORT DU PROVIDER
+import Navbar from '@/components/Navbar'; 
+import Footer from '@/components/Footer'; 
+import AuthProvider from '@/components/AuthProvider';
 
-// Configuration de la police Montserrat optimisée pour Next.js
 const montserrat = Montserrat({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700', '800', '900'],
@@ -14,14 +13,14 @@ const montserrat = Montserrat({
 
 // Métadonnées du site incluant le logo pour l'onglet (Favicon) et l'Open Graph
 export const metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://www.uscreteilbadminton.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://www.uscbad.fr'),
   title: 'US Créteil Badminton | Site Officiel',
   description: 'Découvrez le club de Badminton de Créteil : entraînements, école de jeunes labellisée, compétitions et vie du club.',
   keywords: ['badminton', 'Créteil', 'club', 'sport', 'jeunes', 'compétition', 'USC', 'Val-de-Marne'],
   icons: {
-    icon: '/logo.png',
-    shortcut: '/logo.png',
-    apple: '/logo.png',
+    icon: '/logo-uscbadminton.png',
+    shortcut: '/logo-uscbadminton.png',
+    apple: '/logo-uscbadminton.png',
   },
   openGraph: {
     title: 'US Créteil Badminton',

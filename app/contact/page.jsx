@@ -146,10 +146,10 @@ export default function ContactPage() {
         {/* ACCÈS ET GYMNASES */}
         <div className="flex flex-col justify-center">
           <h2 className="text-3xl font-[900] uppercase italic text-[#081031] dark:text-white mb-4">
-            Un document <span className="text-[#0EE2E2]">à nous transmettre ?</span>
+            Un document à nous <span className="text-[#0EE2E2]">transmettre ?</span>
           </h2>
           <p className="text-slate-500 dark:text-slate-400 font-medium mb-10">
-            Vous pouvez nous écrire au
+            Vous pouvez nous écrire à l'adresse suivante :
           </p>
 
           <div className="space-y-8">

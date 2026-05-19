@@ -51,7 +51,7 @@ export default function ContactPage() {
             icon={<Info className="text-[#0065FF]" />} 
             title="Inscriptions"
             desc="Questions sur les licences, tarifs et documents administratifs."
-            contact="secretariat@uscbad.fr"
+            contact="inscriptions@uscbad.fr"
             color="border-[#0065FF]"
           />
           
@@ -59,7 +59,7 @@ export default function ContactPage() {
             icon={<Trophy className="text-[#F72585]" />} 
             title="Sportif & Compétition"
             desc="Interclubs, tournois et entraînements dirigés."
-            contact="sportif@uscbad.fr"
+            contact="tournois@uscbad.fr"
             color="border-[#F72585]"
           />
           
@@ -67,7 +67,7 @@ export default function ContactPage() {
             icon={<Heart className="text-[#FFD500]" />} 
             title="Partenariats"
             desc="Devenir sponsor ou proposer une collaboration avec le club."
-            contact="com@uscbad.fr"
+            contact="communication@uscbad.fr"
             color="border-[#FFD500]"
           />
 
@@ -146,24 +146,18 @@ export default function ContactPage() {
         {/* ACCÈS ET GYMNASES */}
         <div className="flex flex-col justify-center">
           <h2 className="text-3xl font-[900] uppercase italic text-[#081031] dark:text-white mb-4">
-            Où nous <span className="text-[#0EE2E2]">Trouver ?</span>
+            Un document <span className="text-[#0EE2E2]">à nous transmettre ?</span>
           </h2>
           <p className="text-slate-500 dark:text-slate-400 font-medium mb-10">
-            Le club évolue principalement sur deux complexes sportifs à Créteil. Voici les adresses pour vos rencontres ou vos entraînements.
+            Vous pouvez nous écrire au
           </p>
 
           <div className="space-y-8">
             <LocationItem 
-              name="Gymnase Casalis"
-              address="2 Rue de la Côte d'Or, 94000 Créteil"
-              desc="Gymnase principal pour les rencontres de Nationale 1 et les tournois."
+              name="Union Sportive de Créteil Badminton"
+              address="5 Rue d'Estienne d'Orves, 94000 Créteil"
+              desc="Siège social de l'US Créteil."
             />
-            <LocationItem 
-              name="Gymnase Nelson Mandela"
-              address="Rue d'Ouessant, 94000 Créteil"
-              desc="Centre principal pour l'école de jeunes et les créneaux loisirs."
-            />
-          </div>
 
           <div className="mt-12 p-8 bg-[#0065FF]/5 dark:bg-[#0EE2E2]/5 rounded-3xl border border-[#0065FF]/20 flex items-start gap-4">
             <Info className="text-[#0065FF] shrink-0 mt-1" />

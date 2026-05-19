@@ -4,7 +4,7 @@ import {
   Plus, Pencil, Trash2, Mail, User, 
   FileText, Download, Camera, Save, X, 
   Mic, Square, Sparkles, Loader2, Play, Eye, Bot, AlertCircle, 
-  CheckCircle, RefreshCw, UploadCloud, FileAudio, BrainCircuit, CheckCircle2, Users
+  CheckCircle, RefreshCw, UploadCloud, FileAudio, BrainCircuit, CheckCircle2, Users, FileUp, Target
 } from 'lucide-react';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import ReportPDF from '@/components/ReportPDF';
@@ -14,10 +14,10 @@ function ProgressiveLoader() {
   const [currentStep, setCurrentStep] = useState(0);
 
   const steps = [
-    { id: 0, title: "Envoi sécurisé", desc: "Upload de l'enregistrement...", delay: 0, icon: <UploadCloud size={20} /> },
+    { id: 0, title: "Envoi sécurisé", desc: "Upload de l'enregistrement et des documents...", delay: 0, icon: <UploadCloud size={20} /> },
     { id: 1, title: "Transcription (Whisper)", desc: "L'IA écoute la réunion...", delay: 1500, icon: <FileAudio size={20} /> },
-    { id: 2, title: "Analyse & Llama 3", desc: "Extraction des décisions clés...", delay: 4000, icon: <BrainCircuit size={20} /> },
-    { id: 3, title: "Génération", desc: "Formatage du compte-rendu...", delay: 7000, icon: <FileText size={20} /> }
+    { id: 2, title: "Analyse & Llama 3", desc: "Extraction des décisions et actions...", delay: 4000, icon: <BrainCircuit size={20} /> },
+    { id: 3, title: "Génération", desc: "Structuration des blocs thématiques...", delay: 7000, icon: <FileText size={20} /> }
   ];
 
   useEffect(() => {
@@ -85,11 +85,13 @@ export default function AdminBoard() {
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [audioBlob, setAudioBlob] = useState(null);
-  const [generatedCR, setGeneratedCR] = useState('');
+  const [agendaFile, setAgendaFile] = useState(null); // Nouveau: PDF Ordre du jour
+
+  const [generatedCR, setGeneratedCR] = useState(null); // Contient maintenant un Objet JSON
   const [crTitle, setCrTitle] = useState('');
   const [aiError, setAiError] = useState('');
   
-  // Nouveaux états pour le PDF
+  // États pour le PDF final
   const [meetingDate, setMeetingDate] = useState(new Date().toISOString().split('T')[0]);
   const [participants, setParticipants] = useState('');
   
@@ -249,7 +251,7 @@ export default function AdminBoard() {
         const x = i * (barWidth + barGap);
         const y = (height - barHeight) / 2; 
 
-        ctx.fillStyle = '#F72585'; // Rose US Créteil
+        ctx.fillStyle = '#F72585';
         
         ctx.beginPath();
         ctx.roundRect(x, y, barWidth, barHeight, 4);
@@ -304,7 +306,7 @@ export default function AdminBoard() {
     setIsRecording(false);
   };
 
-  // --- APPEL API IA (GROQ) ---
+  // --- APPEL API IA (GROQ) AVEC JSON ---
   const generateCRWithAI = async () => {
     if (!audioBlob) return;
     setIaViewState('processing');
@@ -313,13 +315,19 @@ export default function AdminBoard() {
     try {
       const formData = new FormData();
       formData.append('file', audioBlob, 'recording.webm'); 
+      if (agendaFile) {
+        formData.append('agenda', agendaFile);
+      }
+
       const res = await fetch('/api/generate-cr', { method: 'POST', body: formData });
       const data = await res.json();
       
       if (data.success) { 
-        setGeneratedCR(data.summary); 
-        // On pré-remplit le titre du PDF et de la base avec la date saisie
-        setCrTitle(`Compte-Rendu du ${new Date(meetingDate).toLocaleDateString('fr-FR')}`);
+        // L'API renvoie un JSON stringifié, on le parse pour l'utiliser dans nos inputs
+        const parsedSummary = JSON.parse(data.summary);
+        setGeneratedCR(parsedSummary); 
+        
+        setCrTitle(parsedSummary.title || `Compte-Rendu du ${new Date(meetingDate).toLocaleDateString('fr-FR')}`);
         setIaViewState('validation');
       } else {
         setAiError(data.error || "Erreur inconnue lors de la génération.");
@@ -335,13 +343,32 @@ export default function AdminBoard() {
     if (!crTitle || !generatedCR) return alert("Donnez un titre.");
     setIsSaving(true);
     try {
+      // On sauvegarde l'objet JSON sous forme de chaîne dans "contenu"
+      const contentToSave = JSON.stringify(generatedCR);
+
       const res = await fetch('/api/reports', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ titre: crTitle, date: new Date(meetingDate).toLocaleDateString('fr-FR'), type: 'texte', contenu: generatedCR })
+        body: JSON.stringify({ 
+          titre: crTitle, 
+          date: new Date(meetingDate).toLocaleDateString('fr-FR'), 
+          type: 'texte', // type texte = JSON stocké en string dans BDD
+          contenu: contentToSave 
+        })
       });
       if (res.ok) { fetchData(); closeModal(); }
     } catch (error) { alert("Erreur lors de la sauvegarde."); } finally { setIsSaving(false); }
+  };
+
+  // --- ÉDITION DES BLOCS JSON ---
+  const updateTopicField = (index, field, value) => {
+    const updatedTopics = [...generatedCR.topics];
+    if (field === 'decisions' || field === 'actions') {
+      updatedTopics[index][field] = value.split('\n').filter(line => line.trim() !== '');
+    } else {
+      updatedTopics[index][field] = value;
+    }
+    setGeneratedCR({ ...generatedCR, topics: updatedTopics });
   };
 
   // --- GESTION MODALES ---
@@ -354,7 +381,8 @@ export default function AdminBoard() {
     if (type === 'cr_ai') {
       setIaViewState('recording');
       setAudioBlob(null);
-      setGeneratedCR('');
+      setAgendaFile(null);
+      setGeneratedCR(null);
       setCrTitle('');
       setAiError('');
       setRecordingTime(0);
@@ -390,6 +418,59 @@ export default function AdminBoard() {
       const reader = new FileReader();
       reader.onloadend = () => setReportForm({ ...reportForm, fichier: reader.result });
       reader.readAsDataURL(file);
+    }
+  };
+
+  // Rendu des blocs dynamiques pour la modale de visualisation
+  const renderViewContent = (contenu) => {
+    try {
+      const parsed = JSON.parse(contenu);
+      if (parsed && parsed.topics) {
+        return (
+          <div className="space-y-8">
+            {parsed.topics.map((topic, idx) => (
+              <div key={idx} className="bg-white dark:bg-[#0f172a] rounded-[2rem] border border-slate-200 dark:border-white/10 p-6 shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-2 h-full bg-[#0065FF]"></div>
+                <h3 className="text-xl font-black uppercase italic text-[#081031] dark:text-white mb-3 pl-2">{topic.theme}</h3>
+                <p className="text-sm font-medium text-slate-600 dark:text-slate-300 leading-relaxed mb-6 pl-2">
+                  {topic.content}
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-2">
+                  {topic.decisions && topic.decisions.length > 0 && (
+                    <div className="bg-emerald-50 dark:bg-emerald-500/10 p-4 rounded-xl border border-emerald-100 dark:border-emerald-500/20">
+                      <h4 className="text-[10px] font-black uppercase text-emerald-600 tracking-widest mb-2 flex items-center gap-1.5"><CheckCircle size={14}/> Décisions actées</h4>
+                      <ul className="space-y-2">
+                        {topic.decisions.map((dec, dIdx) => (
+                          <li key={dIdx} className="text-sm font-bold text-emerald-800 dark:text-emerald-300 flex items-start gap-2">
+                            <span className="text-emerald-500 mt-1">•</span> {dec}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
+                  {topic.actions && topic.actions.length > 0 && (
+                    <div className="bg-fuchsia-50 dark:bg-fuchsia-500/10 p-4 rounded-xl border border-fuchsia-100 dark:border-fuchsia-500/20">
+                      <h4 className="text-[10px] font-black uppercase text-fuchsia-600 tracking-widest mb-2 flex items-center gap-1.5"><Target size={14}/> Actions à mener</h4>
+                      <ul className="space-y-2">
+                        {topic.actions.map((act, aIdx) => (
+                          <li key={aIdx} className="text-sm font-bold text-fuchsia-800 dark:text-fuchsia-300 flex items-start gap-2">
+                            <span className="text-fuchsia-500 mt-1">→</span> {act}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      }
+    } catch {
+      // Fallback si c'est de l'ancien Markdown
+      return <div className="prose dark:prose-invert max-w-none text-sm font-medium leading-loose whitespace-pre-wrap text-slate-700 dark:text-slate-300">{contenu}</div>;
     }
   };
 
@@ -546,16 +627,31 @@ export default function AdminBoard() {
                  </form>
                )}
 
-               {/* 3. MODALE ASSISTANT IA (Complètement repensée avec PDF) */}
+               {/* 3. MODALE ASSISTANT IA (AVEC JSON ET PDF) */}
                {modalType === 'cr_ai' && (
                  <div className="flex flex-col h-full w-full max-w-2xl mx-auto">
                    
-                   {/* ÉTAPE 1 : ENREGISTREMENT */}
+                   {/* ÉTAPE 1 : ENREGISTREMENT & UPLOAD ORDRE DU JOUR */}
                    {iaViewState === 'recording' && (
                      <div className="flex flex-col items-center text-center animate-in fade-in zoom-in duration-300 py-4">
                        <h4 className="text-2xl font-[900] italic uppercase text-[#081031] dark:text-white mb-2">Prêt à dicter ?</h4>
-                       <p className="text-sm font-bold text-slate-500 mb-10">L'IA retranscrira et structurera votre réunion.</p>
+                       <p className="text-sm font-bold text-slate-500 mb-8">L'IA retranscrira et structurera votre réunion.</p>
                        
+                       <div className="w-full max-w-sm bg-slate-50 dark:bg-[#0f172a] p-4 rounded-2xl border border-slate-200 dark:border-white/10 mb-8">
+                         <label className="cursor-pointer flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-300 dark:border-white/20 rounded-xl hover:border-[#0065FF] dark:hover:border-[#0EE2E2] transition-colors group">
+                           <FileUp size={24} className="text-slate-400 group-hover:text-[#0065FF] dark:group-hover:text-[#0EE2E2] mb-2" />
+                           <span className="text-xs font-bold text-slate-500 group-hover:text-[#081031] dark:group-hover:text-white">
+                             {agendaFile ? `PDF : ${agendaFile.name}` : "Joindre un ordre du jour (Optionnel)"}
+                           </span>
+                           <input 
+                             type="file" 
+                             accept=".pdf" 
+                             className="hidden" 
+                             onChange={(e) => setAgendaFile(e.target.files[0])} 
+                           />
+                         </label>
+                       </div>
+
                        <div className="flex flex-col items-center justify-center gap-6 w-full h-16 mb-8">
                          <div className={`flex items-center gap-4 transition-all duration-300 ${isRecording ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>
                            <canvas ref={canvasRef} width={200} height={60} className="w-48 h-16" />
@@ -579,7 +675,6 @@ export default function AdminBoard() {
                            <div className="w-full space-y-6 flex flex-col items-center bg-slate-50 dark:bg-[#081031] p-8 rounded-[2rem] border border-slate-200 dark:border-white/10 animate-in slide-in-from-bottom-4">
                              <audio src={URL.createObjectURL(audioBlob)} controls className="w-full max-w-sm" />
                              
-                             {/* NOUVEAUX INPUTS (Pour le PDF et le Titre BDD) */}
                              <div className="w-full max-w-sm bg-white dark:bg-[#0f172a] p-5 rounded-2xl border border-slate-200 dark:border-white/5 space-y-4 text-left">
                                 <div className="space-y-2">
                                   <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Date de la réunion</label>
@@ -605,25 +700,45 @@ export default function AdminBoard() {
                    {/* ÉTAPE 2 : CHARGEMENT (PROGRESSIVE LOADER) */}
                    {iaViewState === 'processing' && <ProgressiveLoader />}
 
-                   {/* ÉTAPE 3 : VALIDATION ET ÉDITION DU MARKDOWN */}
+                   {/* ÉTAPE 3 : VALIDATION ET ÉDITION DU JSON DYNAMIQUE */}
                    {iaViewState === 'validation' && generatedCR && (
                      <div className="flex flex-col h-full space-y-6 animate-in zoom-in-95 duration-500">
                        <div className="bg-fuchsia-50 dark:bg-fuchsia-500/10 p-4 rounded-2xl flex items-start gap-3 border border-fuchsia-100 dark:border-fuchsia-500/20 mb-2">
                          <CheckCircle className="text-fuchsia-500 shrink-0 mt-0.5" size={20} />
                          <div>
                            <p className="text-sm font-black text-fuchsia-600 dark:text-fuchsia-400 uppercase tracking-widest mb-1">Génération Réussie</p>
-                           <p className="text-xs font-bold text-fuchsia-600/70 dark:text-fuchsia-400/70">Relisez et ajustez le texte généré par l'IA avant de le publier définitivement.</p>
+                           <p className="text-xs font-bold text-fuchsia-600/70 dark:text-fuchsia-400/70">Relisez et ajustez le contenu généré par l'IA bloc par bloc.</p>
                          </div>
                        </div>
 
                        <div className="space-y-2">
                          <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Titre du Compte-rendu *</label>
-                         <input type="text" value={crTitle} onChange={(e) => setCrTitle(e.target.value)} className="w-full bg-slate-50 dark:bg-[#081031] border border-slate-200 dark:border-white/10 p-4 rounded-2xl font-black text-sm outline-none focus:border-[#F72585] transition-colors" />
+                         <input type="text" value={crTitle} onChange={(e) => setCrTitle(e.target.value)} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 p-4 rounded-2xl font-black text-sm outline-none focus:border-[#F72585] transition-colors dark:text-white" />
                        </div>
                        
-                       <div className="space-y-2 flex-1 flex flex-col min-h-[300px]">
-                         <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Contenu (Format Markdown)</label>
-                         <textarea value={generatedCR} onChange={(e) => setGeneratedCR(e.target.value)} className="w-full flex-1 bg-slate-50 dark:bg-[#081031] border border-slate-200 dark:border-white/10 p-6 rounded-[2rem] font-medium text-sm leading-relaxed outline-none focus:border-[#F72585] transition-colors resize-none custom-scrollbar" />
+                       <div className="space-y-6 flex-1">
+                         {generatedCR.topics && generatedCR.topics.map((topic, idx) => (
+                           <div key={idx} className="bg-slate-50 dark:bg-[#0f172a] p-5 rounded-2xl border border-slate-200 dark:border-white/10 space-y-4">
+                              <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Thème de la discussion</label>
+                                <input type="text" value={topic.theme} onChange={(e) => updateTopicField(idx, 'theme', e.target.value)} className="w-full bg-white dark:bg-[#081031] border border-slate-200 dark:border-white/5 rounded-xl p-3 text-sm font-bold outline-none focus:border-[#F72585] dark:text-white" />
+                              </div>
+                              <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Résumé</label>
+                                <textarea rows="3" value={topic.content} onChange={(e) => updateTopicField(idx, 'content', e.target.value)} className="w-full bg-white dark:bg-[#081031] border border-slate-200 dark:border-white/5 rounded-xl p-3 text-sm font-medium outline-none focus:border-[#F72585] resize-none dark:text-white"></textarea>
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                  <label className="text-[10px] font-black uppercase text-emerald-600 tracking-widest">Décisions (1 par ligne)</label>
+                                  <textarea rows="2" value={topic.decisions ? topic.decisions.join('\n') : ''} onChange={(e) => updateTopicField(idx, 'decisions', e.target.value)} className="w-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-xl p-3 text-sm font-medium outline-none focus:border-emerald-500 resize-none text-emerald-800 dark:text-emerald-300"></textarea>
+                                </div>
+                                <div className="space-y-2">
+                                  <label className="text-[10px] font-black uppercase text-fuchsia-600 tracking-widest">Actions (1 par ligne)</label>
+                                  <textarea rows="2" value={topic.actions ? topic.actions.join('\n') : ''} onChange={(e) => updateTopicField(idx, 'actions', e.target.value)} className="w-full bg-fuchsia-50 dark:bg-fuchsia-500/10 border border-fuchsia-200 dark:border-fuchsia-500/20 rounded-xl p-3 text-sm font-medium outline-none focus:border-fuchsia-500 resize-none text-fuchsia-800 dark:text-fuchsia-300"></textarea>
+                                </div>
+                              </div>
+                           </div>
+                         ))}
                        </div>
 
                        <div className="pt-6 border-t border-slate-200 dark:border-white/10 flex flex-col-reverse sm:flex-row justify-end gap-3 shrink-0">
@@ -647,16 +762,14 @@ export default function AdminBoard() {
                  </div>
                )}
 
-               {/* 4. Modale Visualisation CR */}
+               {/* 4. Modale Visualisation CR (Gère le format JSON) */}
                {modalType === 'cr_view' && viewingReport && (
                  <div className="flex flex-col h-full bg-slate-50 dark:bg-[#081031] p-6 lg:p-10 rounded-[2.5rem] border border-slate-200 dark:border-white/10">
                    <h1 className="text-2xl lg:text-3xl font-[900] uppercase italic mb-2 text-[#081031] dark:text-white leading-tight">{viewingReport.titre}</h1>
                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-8 pb-6 border-b border-slate-200 dark:border-white/10">Document du {viewingReport.date}</p>
                    
                    {viewingReport.type === 'texte' ? (
-                     <div className="prose dark:prose-invert max-w-none text-sm font-medium leading-loose whitespace-pre-wrap text-slate-700 dark:text-slate-300">
-                       {viewingReport.contenu}
-                     </div>
+                     renderViewContent(viewingReport.contenu)
                    ) : (
                      <iframe src={viewingReport.fichier} className="w-full min-h-[60vh] rounded-xl border border-slate-200 dark:border-white/10 shadow-inner" />
                    )}

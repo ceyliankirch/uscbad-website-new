@@ -158,6 +158,7 @@ export default function ContactPage() {
               address="5 Rue d'Estienne d'Orves, 94000 Créteil"
               desc="Siège social de l'US Créteil."
             />
+          </div>  
 
           <div className="mt-12 p-8 bg-[#0065FF]/5 dark:bg-[#0EE2E2]/5 rounded-3xl border border-[#0065FF]/20 flex items-start gap-4">
             <Info className="text-[#0065FF] shrink-0 mt-1" />

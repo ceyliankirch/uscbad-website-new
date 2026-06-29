@@ -7,7 +7,11 @@
 /* 3. La directive du Dark Mode OBLIGATOIREMENT ici */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* 4. Ton code classique */
+/* 4. Montserrat comme font-sans globale (Tailwind v4) */
+@theme {
+  --font-sans: 'Montserrat', sans-serif;
+}
+
 :root {
   font-family: 'Montserrat', sans-serif;
 }

@@ -69,8 +69,7 @@ const handler = NextAuth({
     strategy: "jwt",
   },
   pages: {
-    // ⚠️ MODIFICATION ICI : On redirige vers l'accueil au lieu de /login
-    signIn: '/', 
+    signIn: '/login',
   },
   secret: process.env.NEXTAUTH_SECRET,
 });

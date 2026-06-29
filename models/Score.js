@@ -7,12 +7,13 @@ const ScoreSchema = new mongoose.Schema({
   homeScore: String,
   homeLogo: String,
   homeColor: String,
-  homeTextColor: String, // <--- INDISPENSABLE
+  homeTextColor: String,
   awayTeam: String,
   awayScore: String,
   awayLogo: String,
   awayColor: String,
-  awayTextColor: String, // <--- INDISPENSABLE
+  awayTextColor: String,
+  isVisible: { type: Boolean, default: true },
 }, { timestamps: true });
 
 export default mongoose.models.Score || mongoose.model('Score', ScoreSchema);

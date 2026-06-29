@@ -1,8 +1,9 @@
 import { Montserrat } from 'next/font/google';
 import './globals.css';
-import Navbar from '@/components/Navbar'; 
-import Footer from '@/components/Footer'; 
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 import AuthProvider from '@/components/AuthProvider';
+import AnnouncementBanner from '@/components/AnnouncementBanner';
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -47,9 +48,12 @@ export default function RootLayout({ children }) {
         
         {/* <-- 2. ON ENVELOPPE TOUTE L'APPLICATION ICI --> */}
         <AuthProvider>
-          {/* Barre de navigation présente sur tout le site */}
-          <Navbar />
-          
+          {/* En-tête fixe : bandeau d'annonce + navbar empilés */}
+          <div className="fixed top-0 w-full z-[100]">
+            <AnnouncementBanner />
+            <Navbar />
+          </div>
+
           <main className="min-h-screen">
             {children}
           </main>
@@ -57,7 +61,6 @@ export default function RootLayout({ children }) {
           {/* Pied de page présent sur tout le site */}
           <Footer />
         </AuthProvider>
-
       </body>
     </html>
   );

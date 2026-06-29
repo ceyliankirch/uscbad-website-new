@@ -2,10 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Home, ArrowRight, Trophy, Calendar, ChevronRight, TrendingUp, MapPin, Instagram, Facebook, Mail, Users, Star, Loader2, X, Clock, CalendarDays, Share2, PartyPopper, Dumbbell, DownloadCloud } from 'lucide-react';
+import { Home, ArrowRight, Trophy, Calendar, ChevronRight, TrendingUp, MapPin, Instagram, Facebook, Mail, Users, Star, Loader2, X, Clock, CalendarDays, Share2, PartyPopper, Dumbbell, DownloadCloud, Building2, ExternalLink, Map, Info, AlertCircle, Activity, ChevronDown, User } from 'lucide-react';
 
 // LES CATÉGORIES EXACTES DU DASHBOARD
 const categories = ["Tout voir", "Événements", "Compétitions", "Vie du Club", "Interclubs", "Jeunes"];
+
+const CRENEAUX_DAYS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+const CRENEAUX_FILTERS = ["Tout voir", "Adultes - Loisirs", "Adultes - Compétiteurs", "Jeunes", "Pôle Féminin", "Indivs"];
 
 export default function HomePage() {
   // --- GESTION DE LA PWA (INSTALLATION) ---
@@ -48,7 +51,8 @@ export default function HomePage() {
     homeTextColor: '#081031',
     awayTeam: 'ADVERSAIRE',
     awayScore: '-',
-    awayTextColor: '#FFFFFF'
+    awayTextColor: '#FFFFFF',
+    isVisible: true,
   });
 
   const [rankings, setRankings] = useState({
@@ -184,6 +188,40 @@ export default function HomePage() {
     setIsModalOpen(false);
     document.body.style.overflow = 'unset';
   };
+
+  // --- GESTION DE LA SECTION CRÉNEAUX ---
+  const [creneauxSessions, setCreneauxSessions] = useState([]);
+  const [creneauxGymnases, setCreneauxGymnases] = useState([]);
+  const [isLoadingCreneaux, setIsLoadingCreneaux] = useState(true);
+  const [activeTabCreneaux, setActiveTabCreneaux] = useState('jeu-libre');
+  const [activeFilterCreneaux, setActiveFilterCreneaux] = useState('Tout voir');
+  const [isFilterDropdownCreneaux, setIsFilterDropdownCreneaux] = useState(false);
+  const [isCreneauxExpanded, setIsCreneauxExpanded] = useState(false);
+
+  useEffect(() => {
+    const fetchCreneaux = async () => {
+      try {
+        const [resCreneaux, resGymnases] = await Promise.all([
+          fetch('/api/creneaux'), fetch('/api/gymnases')
+        ]);
+        const dataCreneaux = await resCreneaux.json();
+        const dataGymnases = await resGymnases.json();
+        if (dataCreneaux.success) setCreneauxSessions(dataCreneaux.data);
+        if (dataGymnases.success) setCreneauxGymnases(dataGymnases.data);
+      } catch (err) {
+        console.error("Erreur créneaux:", err);
+      } finally {
+        setIsLoadingCreneaux(false);
+      }
+    };
+    fetchCreneaux();
+  }, []);
+
+  const filteredCreneaux = creneauxSessions.filter(s => {
+    const matchTab = activeTabCreneaux === 'jeu-libre' ? s.type === 'Jeu Libre' : s.type !== 'Jeu Libre';
+    const matchCat = activeFilterCreneaux === 'Tout voir' || s.category === activeFilterCreneaux || s.type === activeFilterCreneaux || s.title === activeFilterCreneaux;
+    return matchTab && matchCat;
+  });
 
   // --- GESTION DU PROCHAIN CRÉNEAU DE JEU LIBRE ---
   const [nextSession, setNextSession] = useState(null);
@@ -337,7 +375,7 @@ export default function HomePage() {
       </section>
 
       {/* 2. SCORE NATIONALE 1 */}
-      <section className="relative z-20 -mt-28 md:-mt-24 lg:-mt-20 max-w-[1800px] mx-auto px-4 md:px-6 lg:px-8">
+      {liveScore.isVisible && <section className="relative z-20 -mt-28 md:-mt-24 lg:-mt-20 max-w-[1800px] mx-auto px-4 md:px-6 lg:px-8">
         <div className="w-full overflow-visible hide-scrollbar pb-8 pt-8">
           <div className="relative font-['Montserrat'] w-full max-w-sm md:max-w-[1100px] lg:max-w-[1400px] mx-auto flex flex-col md:flex-row h-[172px] md:h-[120px] lg:h-[140px] shrink-0 overflow-visible">
             
@@ -420,9 +458,9 @@ export default function HomePage() {
               </div>
             </div>
 
-          </div> 
-        </div> 
-      </section>
+          </div>
+        </div>
+      </section>}
 
       {/* 3. SECTION : INTÉGRER LE CLUB */}
       <section className="py-16 lg:py-24 px-6 lg:px-8 bg-slate-50/50 dark:bg-[#0a0f25] transition-colors relative z-10">
@@ -474,159 +512,203 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* STATISTIQUES (EN DESSOUS DES CARTES D'INFOS) */}
-          <div className="flex overflow-x-auto xl:grid xl:grid-cols-4 gap-6 pb-8 -mx-6 px-6 xl:mx-0 xl:px-0 snap-x snap-mandatory hide-scrollbar mt-4">
-            
-            {/* CARTE 1 : Prochain Créneau (Déplacée en premier) */}
-            <div className="w-[85vw] sm:w-[320px] xl:w-auto shrink-0 snap-center flex flex-col">
-              <div className="bg-[#081031] dark:bg-[#0065FF]/10 p-6 rounded-[1.5rem] border-none dark:border dark:border-[#0065FF]/20 flex flex-col justify-center relative overflow-hidden group hover:shadow-[0_0_30px_rgba(14,226,226,0.15)] transition-all h-full">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-[#0EE2E2]/20 blur-[40px] rounded-full group-hover:scale-150 transition-transform duration-700"></div>
-                <div className="flex items-center gap-2 mb-3 relative z-10">
-                  {nextSession && nextSession.isToday ? (
-                    <span className="relative flex h-3 w-3">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#0EE2E2] opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-3 w-3 bg-[#0EE2E2] shadow-[0_0_8px_#0EE2E2]"></span>
-                    </span>
-                  ) : (
-                    <CalendarDays size={14} className="text-[#0EE2E2]" />
-                  )}
-                  <span className="text-[10px] font-black uppercase text-[#0EE2E2] tracking-widest">
-                    Prochain créneau (Jeu Libre)
-                  </span>
-                </div>
-                
-                {isLoadingSession ? (
-                  <div className="flex items-center gap-2 text-white font-bold"><Loader2 size={16} className="animate-spin"/> Recherche...</div>
-                ) : nextSession ? (
-                  <>
-                    <div className="text-2xl font-[900] italic text-white uppercase leading-tight mb-2 relative z-10">
-                      {nextSession.type} <span className="text-slate-400">| {nextSession.startTime}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase relative z-10">
-                      <MapPin size={12} className="text-[#0EE2E2] shrink-0" /> 
-                      <span className="truncate">
-                        {nextSession.isToday ? 'Ce soir' : nextSession.day} - {nextSession.gymnasium}
-                      </span>
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-sm font-bold text-slate-400 italic">Aucun créneau programmé</div>
-                )}
-              </div>
-            </div>
-
-            {/* CARTE 2 : Total Licenciés */}
-            <div className="w-[85vw] sm:w-[320px] xl:w-auto shrink-0 snap-center flex flex-col">
-              <div className="bg-white dark:bg-[#0f172a] p-6 rounded-[1.5rem] border border-slate-100 dark:border-white/5 flex items-center justify-between group hover:shadow-lg transition-all h-full">
-                <div>
-                  <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Total Licenciés</div>
-                  <div className="text-5xl font-[900] italic text-[#081031] dark:text-white">
-                    <AnimatedNumber value={307} />
-                  </div>
-                </div>
-                <div className="w-16 h-16 rounded-2xl bg-[#0EE2E2]/10 flex items-center justify-center text-[#0EE2E2] group-hover:scale-110 group-hover:rotate-6 transition-all">
-                  <Users size={32} />
-                </div>
-              </div>
-            </div>
-
-            {/* CARTE 3 : Parité du club */}
-            <div className="w-[85vw] sm:w-[320px] xl:w-auto shrink-0 snap-center flex flex-col">
-              <div className="bg-white dark:bg-[#0f172a] p-6 rounded-[1.5rem] border border-slate-100 dark:border-white/5 flex flex-col justify-center hover:shadow-lg transition-all h-full">
-                <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-4">Parité du club</div>
-                <div className="flex items-center gap-4">
-                  <AnimatedDonut men={184} women={132} />
-                  <div className="flex flex-col gap-3">
-                    <div className="flex flex-col">
-                      <span className="text-[#0065FF] text-[9px] font-black uppercase flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#0065FF] shadow-[0_0_8px_#0065FF]"></span> Hommes</span>
-                      <span className="text-xl font-[900] italic text-[#081031] dark:text-white leading-none"><AnimatedNumber value={184} /></span>
-                    </div>
-                    <div className="flex flex-col">
-                      <span className="text-[#F72585] text-[9px] font-black uppercase flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#F72585] shadow-[0_0_8px_#F72585]"></span> Femmes</span>
-                      <span className="text-xl font-[900] italic text-[#081031] dark:text-white leading-none"><AnimatedNumber value={132} /></span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* CARTE 4 : École de Badminton */}
-            <div className="w-[85vw] sm:w-[320px] xl:w-auto shrink-0 snap-center flex flex-col">
-              <div className="bg-white dark:bg-[#0f172a] p-6 rounded-[1.5rem] border border-slate-100 dark:border-white/5 flex flex-col justify-center items-center text-center group hover:shadow-lg transition-all h-full">
-                <div className="flex gap-1 text-[#FFD500] mb-3 group-hover:scale-110 transition-transform">
-                  <Star size={28} fill="currentColor" className="drop-shadow-[0_0_10px_rgba(255, 213, 0, 0.5)]" />
-                  <Star size={28} fill="currentColor" className="drop-shadow-[0_0_10px_rgba(255, 213, 0, 0.5)] -translate-y-2" />
-                  <Star size={28} fill="currentColor" className="drop-shadow-[0_0_10px_rgba(255, 213, 0, 0.5)]" />
-                </div>
-                <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest">École de Badminton</div>
-                <div className="text-sm font-[900] italic text-[#081031] dark:text-white uppercase mt-1">Labellisée FFBAD</div>
-              </div>
-            </div>
-
-          </div>
         </div>
       </section>
 
-      {/* 4. SECTION : ACTUALITÉS (CONNECTÉE À LA BDD) */}
+      {/* 5. SECTION NOS CRÉNEAUX */}
       <section className="py-16 lg:py-24 bg-white dark:bg-[#040817] border-t border-slate-100 dark:border-white/5 overflow-hidden transition-colors">
-        <div className="max-w-[1600px] mx-auto">
-          
-          <div className="px-6 lg:px-8 flex flex-col md:flex-row justify-between items-start md:items-end mb-8 lg:mb-12 gap-6">
+        <div className="max-w-[1600px] mx-auto px-6 lg:px-8">
+
+          {/* HEADER */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 lg:mb-12 gap-6">
             <div>
-              <h2 className="text-2xl md:text-5xl lg:text-5xl font-[900] italic uppercase text-[#081031] dark:text-white truncate md:whitespace-normal md:overflow-visible">
-                ACTUALITÉS <span className="text-[#0065FF] block sm:inline">RÉCENTES</span>
+              <h2 className="text-2xl md:text-5xl lg:text-5xl font-[900] italic uppercase text-[#081031] dark:text-white">
+                NOS <span className="text-[#0065FF]">CRÉNEAUX</span>
               </h2>
             </div>
-            
-            <div className="flex overflow-x-auto hide-scrollbar w-full md:w-auto gap-2 pb-2 -mx-6 px-6 md:mx-0 md:px-0 md:pb-0">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`px-5 py-2 whitespace-nowrap rounded-full font-bold text-[10px] sm:text-xs uppercase transition-all border shrink-0 ${
-                    activeCategory === cat 
-                      ? 'bg-[#081031] text-white border-[#081031] dark:bg-[#0EE2E2] dark:text-[#081031] dark:border-[#0EE2E2]' 
-                      : 'bg-white text-slate-500 border-slate-200 hover:border-[#0065FF] hover:text-[#0065FF] dark:bg-transparent dark:text-slate-400 dark:border-white/20 dark:hover:text-[#0EE2E2] dark:hover:border-[#0EE2E2]'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
+            <Link href="/creneaux" className="shrink-0 text-[#0065FF] dark:text-[#0EE2E2] font-bold text-xs uppercase tracking-widest flex items-center gap-2 hover:opacity-70 transition-opacity">
+              Voir tout le planning <ArrowRight size={16} />
+            </Link>
           </div>
 
-          {isLoadingNews ? (
-            <div className="flex justify-center py-20 px-6">
-              <Loader2 className="animate-spin text-[#0EE2E2]" size={40} />
-            </div>
-          ) : filteredArticles.length === 0 ? (
-            <div className="text-center py-20 text-slate-500 font-bold uppercase tracking-widest px-6">
-              Aucune actualité trouvée dans cette catégorie.
-            </div>
-          ) : (
-            <div className="flex overflow-x-auto hide-scrollbar gap-6 lg:gap-8 pb-8 snap-x snap-mandatory px-6 lg:px-8">
-              {filteredArticles.map(article => (
-                <NewsCard 
-                  key={article._id} 
-                  article={article} 
-                  onClick={handleOpenArticleModal}
-                />
-              ))}
-              
-              <Link href="/actualites" className="group relative bg-[#0065FF]/5 dark:bg-[#0EE2E2]/5 rounded-[2rem] border-2 border-dashed border-[#0065FF]/20 dark:border-[#0EE2E2]/20 flex flex-col items-center justify-center w-[200px] shrink-0 snap-start hover:bg-[#0065FF] dark:hover:bg-[#0EE2E2] transition-colors">
-                 <div className="text-[#0065FF] dark:text-[#0EE2E2] group-hover:text-white dark:group-hover:text-[#081031] flex flex-col items-center gap-3 transition-colors">
-                    <div className="w-12 h-12 rounded-full bg-[#0065FF]/10 dark:bg-[#0EE2E2]/10 group-hover:bg-white/20 flex items-center justify-center">
-                      <ArrowRight size={24} />
+          {/* ONGLETS */}
+          <div className="flex flex-wrap gap-2 mb-8">
+            {[
+              { id: 'entraînement', label: 'Entraînements', icon: <Dumbbell size={14} /> },
+              { id: 'jeu-libre', label: 'Jeu Libre', icon: <Activity size={14} /> },
+              { id: 'gymnases', label: 'Gymnases', icon: <Building2 size={14} /> },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => { setActiveTabCreneaux(tab.id); setActiveFilterCreneaux('Tout voir'); setIsCreneauxExpanded(false); }}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-xs uppercase tracking-widest transition-all border ${
+                  activeTabCreneaux === tab.id
+                    ? 'bg-[#081031] text-white border-[#081031] dark:bg-[#0EE2E2] dark:text-[#081031] dark:border-[#0EE2E2]'
+                    : 'bg-white text-slate-500 border-slate-200 hover:border-[#0065FF] hover:text-[#0065FF] dark:bg-transparent dark:text-slate-400 dark:border-white/20 dark:hover:text-[#0EE2E2] dark:hover:border-[#0EE2E2]'
+                }`}
+              >
+                {tab.icon} {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* FILTRES CATÉGORIES (onglet entraînement uniquement) */}
+          {activeTabCreneaux === 'entraînement' && !isLoadingCreneaux && (
+            <>
+              {/* Desktop */}
+              <div className="hidden md:flex flex-wrap gap-2 mb-8">
+                {CRENEAUX_FILTERS.map(opt => (
+                  <button
+                    key={opt}
+                    onClick={() => { setActiveFilterCreneaux(opt); setIsCreneauxExpanded(false); }}
+                    className={`flex items-center gap-2 px-4 py-2 whitespace-nowrap rounded-full font-bold text-[10px] uppercase transition-all border ${
+                      activeFilterCreneaux === opt
+                        ? 'bg-[#081031] text-white border-[#081031] dark:bg-[#0EE2E2] dark:text-[#081031] dark:border-[#0EE2E2]'
+                        : 'bg-white text-slate-500 border-slate-200 hover:border-[#0065FF] hover:text-[#0065FF] dark:bg-transparent dark:text-slate-400 dark:border-white/20 dark:hover:text-[#0EE2E2] dark:hover:border-[#0EE2E2]'
+                    }`}
+                  >
+                    {opt !== 'Tout voir' && <span className="w-2 h-2 rounded-full" style={{ backgroundColor: getCategoryColorCreneaux(opt) }} />}
+                    {opt}
+                  </button>
+                ))}
+              </div>
+              {/* Mobile custom select */}
+              <div className="md:hidden w-full mb-6 relative z-[60]">
+                <button
+                  onClick={() => setIsFilterDropdownCreneaux(!isFilterDropdownCreneaux)}
+                  className={`w-full bg-white dark:bg-[#0f172a] border ${isFilterDropdownCreneaux ? 'border-[#0065FF] ring-2 ring-[#0065FF]/20' : 'border-slate-200 dark:border-white/10'} rounded-2xl px-5 py-4 text-xs font-bold flex justify-between items-center transition-all shadow-sm`}
+                >
+                  <span className="flex items-center gap-2 text-[#081031] dark:text-white uppercase tracking-widest">
+                    {activeFilterCreneaux !== 'Tout voir' && <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: getCategoryColorCreneaux(activeFilterCreneaux) }} />}
+                    {activeFilterCreneaux}
+                  </span>
+                  <ChevronDown size={16} className={`text-slate-400 transition-transform duration-300 ${isFilterDropdownCreneaux ? 'rotate-180' : ''}`} />
+                </button>
+                {isFilterDropdownCreneaux && (
+                  <div className="absolute top-full left-0 w-full mt-2 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden">
+                    <div className="py-2">
+                      {CRENEAUX_FILTERS.map(opt => (
+                        <div
+                          key={opt}
+                          onClick={() => { setActiveFilterCreneaux(opt); setIsFilterDropdownCreneaux(false); setIsCreneauxExpanded(false); }}
+                          className={`px-5 py-3.5 text-xs font-bold cursor-pointer transition-colors flex items-center gap-3 uppercase tracking-widest ${
+                            activeFilterCreneaux === opt ? 'bg-[#0065FF]/10 text-[#0065FF]' : 'hover:bg-slate-50 dark:hover:bg-white/5 text-slate-500 dark:text-slate-300'
+                          }`}
+                        >
+                          {opt !== 'Tout voir' && <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: getCategoryColorCreneaux(opt) }} />}
+                          {opt}
+                        </div>
+                      ))}
                     </div>
-                    <span className="font-black uppercase text-[10px] tracking-widest text-center px-4">Toutes les actus</span>
-                 </div>
-              </Link>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* CONTENU */}
+          {isLoadingCreneaux ? (
+            <div className="flex justify-center py-20">
+              <Loader2 className="animate-spin text-[#0065FF]" size={40} />
+            </div>
+          ) : activeTabCreneaux !== 'gymnases' ? (
+            <>
+              {(() => {
+                const daysWithSessions = CRENEAUX_DAYS.filter(day =>
+                  filteredCreneaux.some(c => c.day === day)
+                );
+                return (
+                  <>
+                    <div className="flex md:flex-wrap md:justify-start overflow-x-auto hide-scrollbar snap-x snap-mandatory md:snap-none gap-6 pb-8 md:pb-0 -mx-6 px-6 md:mx-0 md:px-0 items-start">
+                      {daysWithSessions.map(day => {
+                        const dayItems = filteredCreneaux.filter(c => c.day === day).sort((a, b) => a.startTime.localeCompare(b.startTime));
+                        const visibleItems = isCreneauxExpanded ? dayItems : dayItems.slice(0, 2);
+                        return (
+                          <div key={day} className="shrink-0 w-[85vw] sm:w-[300px] md:w-auto md:flex-1 md:min-w-[200px] md:max-w-[320px] snap-center md:snap-align-none flex flex-col gap-4">
+                            <div className="flex items-center gap-3 mb-1 pb-3 border-b-2 border-slate-200 dark:border-white/10">
+                              <div className="h-5 w-1.5 bg-[#0065FF] rounded-full" />
+                              <h3 className="text-xl font-[900] italic uppercase text-[#081031] dark:text-white">{day}</h3>
+                            </div>
+                            <div className="flex flex-col gap-3">
+                              {visibleItems.map((item, idx) => (
+                                <CreneauxSessionCard key={item._id || idx} session={item} />
+                              ))}
+                              {!isCreneauxExpanded && dayItems.length > 2 && (
+                                <div className="text-center text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-600 pt-1">
+                                  +{dayItems.length - 2} créneau{dayItems.length - 2 > 1 ? 'x' : ''}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {filteredCreneaux.length === 0 && (
+                        <div className="text-center py-20 w-full">
+                          <Info size={40} className="mx-auto text-slate-300 mb-4" />
+                          <p className="text-slate-400 font-bold uppercase tracking-widest text-sm">Aucun créneau pour ce filtre.</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {daysWithSessions.some(day => filteredCreneaux.filter(c => c.day === day).length > 2) && (
+                      <div className="flex justify-center mt-8">
+                        <button
+                          onClick={() => setIsCreneauxExpanded(!isCreneauxExpanded)}
+                          className="flex items-center gap-2 px-7 py-3.5 rounded-full font-bold text-xs uppercase tracking-widest border-2 border-[#0065FF] text-[#0065FF] dark:border-[#0EE2E2] dark:text-[#0EE2E2] hover:bg-[#0065FF] hover:text-white dark:hover:bg-[#0EE2E2] dark:hover:text-[#081031] transition-all"
+                        >
+                          {isCreneauxExpanded ? (
+                            <><ChevronDown size={16} className="rotate-180" /> Réduire</>
+                          ) : (
+                            <><ChevronDown size={16} /> Voir tous les créneaux</>
+                          )}
+                        </button>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
+              {activeTabCreneaux === 'jeu-libre' && (
+                <div className="max-w-3xl mx-auto mt-10 p-6 bg-[#FFD500] rounded-[2rem] flex items-center gap-5 border-4 border-[#081031]/10">
+                  <Trophy size={36} className="text-[#081031] shrink-0" />
+                  <div>
+                    <h4 className="text-[#081031] font-black uppercase italic text-sm mb-1">Attention : Rencontres Interclubs</h4>
+                    <p className="text-[#081031] text-[10px] font-bold uppercase leading-relaxed opacity-90">
+                      Les créneaux avec une pastille jaune sont réservés. Le jeu libre y est indisponible.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="flex md:flex-wrap md:justify-start overflow-x-auto hide-scrollbar snap-x snap-mandatory md:snap-none gap-6 pb-8 -mx-6 px-6 md:mx-0 md:px-0">
+              {creneauxGymnases.map(gym => (
+                <div key={gym._id} className="shrink-0 w-[85vw] sm:w-[300px] md:w-auto md:flex-1 md:min-w-[260px] md:max-w-[380px] snap-center bg-white dark:bg-[#0f172a] p-7 rounded-[2rem] border border-slate-200 dark:border-white/10 shadow-sm flex flex-col">
+                  <div className="flex items-start justify-between mb-5">
+                    <div className="bg-slate-50 dark:bg-white/5 p-3 rounded-2xl text-[#0065FF]">
+                      <MapPin size={24} />
+                    </div>
+                    <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(gym.name + " " + gym.address)}`} target="_blank" rel="noopener noreferrer" className="p-2.5 bg-[#081031] text-white rounded-xl hover:scale-110 transition-transform shadow-lg">
+                      <Map size={18} />
+                    </a>
+                  </div>
+                  <h4 className="font-[900] uppercase italic text-xl text-[#081031] dark:text-white mb-1">{gym.name}</h4>
+                  <p className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">{gym.address}</p>
+                </div>
+              ))}
             </div>
           )}
+
+          {/* NOTE BAS DE SECTION */}
+          <div className="mt-10 lg:mt-14 bg-[#0065FF]/5 dark:bg-[#0EE2E2]/5 border border-[#0065FF]/20 dark:border-[#0EE2E2]/20 p-6 rounded-[2rem] text-center">
+            <p className="text-xs font-bold text-[#0065FF] dark:text-[#0EE2E2] italic leading-relaxed">
+              * Les horaires sont susceptibles d'être modifiés lors des vacances scolaires ou d'événements exceptionnels.
+            </p>
+          </div>
+
         </div>
       </section>
 
-      {/* 5. SECTION INTERCLUBS CONNECTÉE À LA BDD (ICBAD) */}
+      {/* 6. SECTION INTERCLUBS CONNECTÉE À LA BDD (ICBAD) */}
       <section className="py-16 lg:py-24 bg-slate-50/50 dark:bg-[#0a0f25] border-t border-slate-100 dark:border-white/5 transition-colors overflow-hidden">
         <div className="max-w-[1600px] mx-auto px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 lg:mb-16 gap-6">
@@ -1095,6 +1177,79 @@ const EventRow = ({ event, onClick }) => {
       
       <div className="hidden sm:flex flex-shrink-0 w-8 h-8 lg:w-10 lg:h-10 rounded-full border border-white/20 items-center justify-center text-white group-hover:bg-white group-hover:text-[#0065FF] transition-all">
         <ChevronRight size={16} />
+      </div>
+    </div>
+  );
+};
+
+const getCategoryColorCreneaux = (category) => {
+  switch (category) {
+    case 'Adultes - Loisirs':
+    case 'Adultes - Compétiteurs': return '#0065FF';
+    case 'Jeunes': return '#FFD500';
+    case 'Pôle Féminin': return '#F72585';
+    case 'Indivs': return '#0cc9c9';
+    default: return 'transparent';
+  }
+};
+
+const CreneauxSessionCard = ({ session }) => {
+  const isJeuLibre = session.type === 'Jeu Libre';
+  const categoryToUse = session.category || session.type;
+  const isCompetiteur = categoryToUse === 'Adultes - Compétiteurs';
+
+  let iconColor = 'text-[#0065FF]';
+  let badgeBg = 'bg-[#0065FF]/10';
+  let badgeText = 'text-[#0065FF]';
+  let infoLink = '#';
+
+  if (categoryToUse === 'Jeunes') {
+    iconColor = 'text-[#FFD500]'; badgeBg = 'bg-[#FFD500]/20'; badgeText = 'text-[#D4AF37] dark:text-[#FFD500]'; infoLink = '/jeunes';
+  } else if (categoryToUse === 'Pôle Féminin') {
+    iconColor = 'text-[#F72585]'; badgeBg = 'bg-[#F72585]/10'; badgeText = 'text-[#F72585]'; infoLink = '/pole-feminines';
+  } else if (categoryToUse === 'Indivs') {
+    iconColor = 'text-[#0cc9c9]'; badgeBg = 'bg-[#0cc9c9]/10'; badgeText = 'text-[#0cc9c9]'; infoLink = '/indivs';
+  } else if (categoryToUse === 'Adultes - Loisirs') {
+    infoLink = '/loisirs';
+  }
+
+  return (
+    <div className={`bg-white dark:bg-[#0f172a] border-slate-200 dark:border-white/10 text-[#081031] dark:text-white shadow-sm group relative p-5 rounded-[1.5rem] transition-all border flex flex-col ${session.isInterclub ? 'ring-2 ring-[#FFD500]' : 'hover:-translate-y-1 hover:shadow-xl'}`}>
+      {isJeuLibre && session.isInterclub && (
+        <div className="absolute -top-3 -right-3 bg-[#FFD500] text-[#081031] w-9 h-9 rounded-full flex items-center justify-center shadow-lg z-10">
+          <Trophy size={18} />
+        </div>
+      )}
+      <div className="flex justify-between items-start mb-4">
+        <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg ${badgeBg} ${badgeText}`}>
+          {session.title || categoryToUse}
+        </span>
+        {!isJeuLibre && !isCompetiteur && infoLink !== '#' && !session.isInterclub && (
+          <Link href={infoLink} className={`p-1.5 -mt-1.5 -mr-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors ${iconColor}`}>
+            <ExternalLink size={16} />
+          </Link>
+        )}
+      </div>
+      <div className="space-y-2.5 mt-auto">
+        <div className="flex items-center gap-2.5">
+          <Clock size={16} className={session.isInterclub ? 'text-[#FFD500]' : iconColor} />
+          <span className="font-[900] italic text-xl leading-none">{session.startTime} - {session.endTime}</span>
+        </div>
+        <div className="flex items-center gap-2.5 opacity-70">
+          <MapPin size={16} />
+          <span className="font-bold text-xs uppercase tracking-wider truncate">{session.gymnasium}</span>
+        </div>
+        {!isJeuLibre && session.isInterclub && (
+          <div className="mt-3 flex items-center justify-center gap-2 bg-[#FFD500] py-2.5 rounded-xl text-[#081031] font-[900] text-[10px] uppercase tracking-widest">
+            <Trophy size={14} /> Interclubs
+          </div>
+        )}
+        {!isJeuLibre && session.coach && !session.isInterclub && (
+          <div className="mt-4 pt-3 border-t border-slate-100 dark:border-white/5 flex items-center gap-2">
+            <User size={14} className={iconColor} />
+            <span className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Coach: {session.coach}</span>
+          </div>
+        )}
       </div>
     </div>
   );

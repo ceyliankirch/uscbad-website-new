@@ -50,12 +50,13 @@ export async function POST(req) {
       homeScore: body.homeScore,
       homeLogo: body.homeLogo,
       homeColor: body.homeColor,
-      homeTextColor: body.homeTextColor, // <--- AJOUT
+      homeTextColor: body.homeTextColor,
       awayTeam: body.awayTeam,
       awayScore: body.awayScore,
       awayLogo: body.awayLogo,
       awayColor: body.awayColor,
-      awayTextColor: body.awayTextColor  // <--- AJOUT
+      awayTextColor: body.awayTextColor,
+      isVisible: body.isVisible !== undefined ? body.isVisible : true,
     };
 
     // findOneAndUpdate avec {} mettra à jour le tout premier document trouvé

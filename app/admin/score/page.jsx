@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Save, Trophy, Clock, Shield, Type } from 'lucide-react';
+import { Save, Trophy, Clock, Shield, Type, Eye, EyeOff } from 'lucide-react';
 
 export default function ScoreAdmin() {
   const [division, setDivision] = useState('NATIONALE 1 | J05');
@@ -17,6 +17,7 @@ export default function ScoreAdmin() {
   const [awayLogo, setAwayLogo] = useState('');
   const [awayColor, setAwayColor] = useState('#081031');
   const [awayTextColor, setAwayTextColor] = useState('#FFFFFF'); // Par défaut blanc
+  const [isVisible, setIsVisible] = useState(true);
 
   const [isSaving, setIsSaving] = useState(false);
 
@@ -37,6 +38,7 @@ export default function ScoreAdmin() {
           setAwayLogo(result.data.awayLogo || '');
           setAwayColor(result.data.awayColor || '#081031');
           setAwayTextColor(result.data.awayTextColor || '#FFFFFF');
+          setIsVisible(result.data.isVisible !== false);
         }
       })
       .catch(err => console.error("Erreur de chargement:", err));
@@ -50,9 +52,10 @@ export default function ScoreAdmin() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          division, date, 
+          division, date,
           homeTeam, homeScore, homeLogo, homeColor, homeTextColor,
-          awayTeam, awayScore, awayLogo, awayColor, awayTextColor
+          awayTeam, awayScore, awayLogo, awayColor, awayTextColor,
+          isVisible,
         })
       });
       if (response.ok) alert('✅ Configuration sauvegardée !');
@@ -99,7 +102,31 @@ export default function ScoreAdmin() {
             </div>
           </div>
 
-          <div className="flex items-end">
+          <div className="flex flex-col gap-4 items-stretch">
+            {/* TOGGLE VISIBILITÉ */}
+            <button
+              type="button"
+              onClick={() => setIsVisible(v => !v)}
+              className={`w-full flex items-center justify-between gap-4 p-4 rounded-2xl border-2 transition-all font-bold text-sm ${
+                isVisible
+                  ? 'border-green-400 bg-green-50 dark:bg-green-500/10 text-green-700 dark:text-green-400'
+                  : 'border-slate-300 dark:border-white/10 bg-slate-50 dark:bg-[#040817] text-slate-400'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                {isVisible ? <Eye size={20} /> : <EyeOff size={20} />}
+                <div className="text-left">
+                  <div className="text-xs font-black uppercase tracking-widest">Affichage du live score</div>
+                  <div className="text-[10px] font-bold opacity-70 mt-0.5">
+                    {isVisible ? 'Visible sur la page d\'accueil' : 'Masqué sur la page d\'accueil'}
+                  </div>
+                </div>
+              </div>
+              <div className={`relative w-12 h-6 rounded-full transition-colors shrink-0 ${isVisible ? 'bg-green-400' : 'bg-slate-300 dark:bg-slate-600'}`}>
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${isVisible ? 'left-7' : 'left-1'}`} />
+              </div>
+            </button>
+
             <button type="submit" disabled={isSaving} className="w-full bg-[#0065FF] text-white p-5 rounded-2xl font-black uppercase italic tracking-widest hover:bg-[#081031] transition-all flex items-center justify-center gap-3 shadow-xl shadow-[#0065FF]/20">
               <Save size={20}/> {isSaving ? 'Publication...' : 'Mettre à jour le live'}
             </button>

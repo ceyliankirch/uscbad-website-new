@@ -26,7 +26,7 @@ const Navbar = () => {
   const [dynamicPromobads, setDynamicPromobads] = useState([]);
 
   // Définir les pages qui ont un "Hero sombre" en haut de page
-  const hasDarkHero = pathname === '/' || pathname === '/interclubs' || pathname.startsWith('/actualites') || pathname === '/presentation' || pathname === '/communication' || pathname === '/entraineurs' || pathname === '/benevoles' || pathname === '/evenements' || pathname.startsWith('/tournois/') || pathname.startsWith('/promobad/') || pathname === '/indivs' || pathname === '/pole-feminines' || pathname === '/mes-indivs' || pathname === '/inscriptions' || pathname === '/profil'; 
+  const hasDarkHero = pathname === '/' || pathname === '/interclubs' || pathname === '/presentation' || pathname === '/communication' || pathname === '/entraineurs' || pathname === '/benevoles' || pathname === '/evenements' || pathname.startsWith('/tournois/') || pathname.startsWith('/promobad/') || pathname === '/indivs' || pathname === '/pole-feminines' || pathname === '/mes-indivs' || pathname === '/inscriptions' || pathname === '/profil';
   
   // APPEL API POUR RÉCUPÉRER LES TOURNOIS ET PROMOBADS DYNAMIQUEMENT
   useEffect(() => {
@@ -59,7 +59,6 @@ const Navbar = () => {
       href: '#',
       dropdown: [
         { name: 'Présentation', href: '/presentation' },
-        { name: 'Actualités', href: '/actualites' },
         { name: 'Tarifs & Inscriptions', href: '/inscriptions' },
       ]
     },
@@ -141,7 +140,7 @@ const Navbar = () => {
   const groupHoverColor = shouldBeSolid ? 'group-hover:text-[#0065FF]' : 'group-hover:text-[#0EE2E2]';
 
   return (
-    <nav className={`fixed top-0 w-full z-[100] transition-all duration-500 px-6 py-4 font-['Montserrat'] ${
+    <nav className={`relative w-full transition-all duration-500 px-6 py-4 font-['Montserrat'] ${
       shouldBeSolid ? 'bg-white dark:bg-[#081031] shadow-md' : 'bg-transparent'
     }`}>
       <div className="max-w-[1600px] mx-auto flex justify-between items-center relative w-full">

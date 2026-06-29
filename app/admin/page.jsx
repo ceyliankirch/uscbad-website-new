@@ -2,10 +2,10 @@
 import React, { useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { 
-  TrendingUp, Users, Trophy, Newspaper, CalendarDays, 
-  Clock, Settings, Shield, Target, Activity, 
-  ChartArea, Heart, Wallet, Wrench, Send, Coffee, Dumbbell, ArrowUpRight
+import {
+  TrendingUp, Users, Trophy, Newspaper, CalendarDays,
+  Clock, Settings, Shield, Target, Activity,
+  ChartArea, Heart, Wallet, Wrench, Send, Coffee, Dumbbell, ArrowUpRight, FileText, Euro
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -83,6 +83,8 @@ export default function AdminDashboard() {
         { name: 'Pôle Féminin', path: '/admin/pole-feminin', icon: <Heart size={24} /> },
         { name: 'Entraînements', path: '/admin/entrainements', icon: <Dumbbell size={24} /> },
         { name: 'Buvette', path: '/admin/buvette', icon: <Coffee size={24} /> },
+        { name: 'Présentation', path: '/admin/presentation', icon: <FileText size={24} /> },
+        { name: 'Tarifs', path: '/admin/tarifs', icon: <Euro size={24} /> },
       ]
     }
   ];

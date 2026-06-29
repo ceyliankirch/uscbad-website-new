@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -147,11 +147,6 @@ function LoginForm() {
         </div>
         
         {/* Rappel pour vos tests */}
-        <div className="mt-8 text-center bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 p-4 rounded-xl text-xs font-medium text-slate-500">
-          <span className="font-black uppercase">Comptes de test actifs :</span><br />
-          Admin: admin@uscreteil.com / admin123<br />
-          Coach: malo@uscreteil.com / coach123
-        </div>
 
       </div>
     </div>

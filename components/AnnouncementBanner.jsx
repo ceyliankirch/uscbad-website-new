@@ -1,9 +1,11 @@
 import Link from 'next/link';
 import { ArrowRight, Megaphone } from 'lucide-react';
+import { unstable_noStore as noStore } from 'next/cache';
 import dbConnect from '@/lib/dbConnect';
 import InscriptionsConfig from '@/models/InscriptionsConfig';
 
 export default async function AnnouncementBanner() {
+  noStore();
   try {
     await dbConnect();
     const config = await InscriptionsConfig.findOne().lean();

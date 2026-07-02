@@ -4,6 +4,10 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import AuthProvider from '@/components/AuthProvider';
 import AnnouncementBanner from '@/components/AnnouncementBanner';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+
+export const dynamic = 'force-dynamic';
 
 const montserrat = Montserrat({
   subsets: ['latin'],
@@ -41,13 +45,14 @@ export const metadata = {
   },
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  const session = await getServerSession(authOptions);
   return (
     <html lang="fr" className="scroll-smooth">
       <body className={`${montserrat.variable} font-sans antialiased bg-white dark:bg-[#040817] text-[#081031] dark:text-white transition-colors duration-300`}>
         
         {/* <-- 2. ON ENVELOPPE TOUTE L'APPLICATION ICI --> */}
-        <AuthProvider>
+        <AuthProvider session={session}>
           {/* En-tête fixe : bandeau d'annonce + navbar empilés */}
           <div className="fixed top-0 w-full z-[100]">
             <AnnouncementBanner />
